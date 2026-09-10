@@ -1,8 +1,0 @@
-<Solution>
-  <Configurations>
-    <Platform Name="x64" />
-    <Platform Name="x86" />
-  </Configurations>
-  <Project Path="Macaw.Tests.vcxproj" Id="c25cfbed-f749-4ea5-986e-c0d1d3914773" />
-  <Project Path="Macaw.vcxproj" Id="a3cf1512-0a3c-44dc-ae30-b6d79239d9a4" />
-</Solution>
