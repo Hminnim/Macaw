@@ -56,7 +56,6 @@ bool FMaterialBuffer::RegisterMaterial(UMaterial* Material) {
     Materials[Index] = Material;
 
     Material->GPUIndex = Index;
-    Material->bGPUDataDirty = true;
 
     return true;
 }

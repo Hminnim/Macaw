@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "FArchive.h"
-#include "../rapidjson/document.h"
+#include <rapidjson/document.h>
 
 class FArchiveJson : public FArchive
 {

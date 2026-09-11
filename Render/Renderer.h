@@ -1,6 +1,7 @@
 ﻿#pragma once 
 #include <d3d11.h>
 #include <wrl/client.h>
+#include <array>
 
 #include "../Core/Base/FRenderProbe.h"
 #include "../Core/Asset/FAssetRegistry.h"
@@ -54,6 +55,7 @@ private:
 	
 	void CreateRTV();
 	void CreateDSV();
+	void CreateSamplerStates();
 
 private:
 	Microsoft::WRL::ComPtr<ID3D11Device> Device;
@@ -66,6 +68,9 @@ private:
 	
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> DepthStencilBuffer;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> DepthStencilView;
+
+	// s0: LinearWrap, s1: LinearClamp, s2: PointClamp, s3: PointWrap, s4: AnisotropicWrap, s5: ShadowCompare.
+	std::array<Microsoft::WRL::ComPtr<ID3D11SamplerState>, 6> SamplerStates{};
 
 	FStateChannel<RenderWindowInfo> WindowInfoChannel{};
 	FStateChannel<RenderWindowInfo>::FWriter WindowInfoWriter{ WindowInfoChannel.GetWriter() };

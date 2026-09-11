@@ -38,6 +38,7 @@ project "Macaw"
     includedirs {
         ".",
         "range_v_3",
+        "Externals/Include",
     }
 
     defines {
@@ -62,6 +63,7 @@ project "Macaw"
     pchsource "pch.cpp"
 
     links {
+        "DirectXTex",
         "d3d11",
         "dxgi",
         "d3dcompiler",
@@ -72,6 +74,14 @@ project "Macaw"
         "user32",
         "kernel32",
     }
+
+filter "configurations:Debug"
+    libdirs { "Externals/bin/debug" }
+
+filter "configurations:Release"
+    libdirs { "Externals/bin/release" }
+
+filter {}
 
 -- ImGui와 SimpleMath는 PCH를 사용하지 않는다.
 filter "files:ImGui/**.cpp"

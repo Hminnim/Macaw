@@ -44,14 +44,16 @@ namespace {
 
         LocalMatrix.Translation(FVector3::Zero);
 
-        FMatrix AxisConversionInverse;
+        FMatrix WorldZUpToSourceYUp;
 
-        if (!FMatrix::CreateYUpToZUp().TryInverse(AxisConversionInverse))
+        if (!FMatrix::CreateYUpToZUp().TryInverse(WorldZUpToSourceYUp))
         {
             return false;
         }
 
-        LocalMatrix = LocalMatrix * AxisConversionInverse;
+        // FTransform appends the source Y-up -> world Z-up conversion when it
+        // creates a world matrix.  Remove it before writing local transform data.
+        LocalMatrix = LocalMatrix * WorldZUpToSourceYUp;
 
         LocalMatrix.Translation(LocalTranslation);
         
@@ -364,6 +366,7 @@ bool UWorld::LoadScene(const std::filesystem::path& ScenePath, ID3D11Device* Dev
     else
         return false;
 
+    AssetRegistry->Finalize(); 
 
     if (LoadDocument.HasMember("Actors") && LoadDocument["Actors"].IsArray())
     {

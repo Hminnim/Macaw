@@ -4,9 +4,6 @@
 
 #include "FAssetRegistry.h"
 
-#include <ranges>
-
-
 bool FAssetRegistry::Initialize(ID3D11Device* Device, uint32 MaxMaterialCount) {
     if (Device == nullptr) {
         return false;
@@ -33,23 +30,15 @@ FAssetHandle FAssetRegistry::AdoptAsset(ID3D11Device* Device, const FGuid& ID, c
     TypedAsset->SetAssetName(Name);
     TypedAsset->Initialize(Device, MetadataPath);
 
-    if (Asset->GetTypeInfo()->IsA(UMaterial::StaticTypeInfo())) {
+    if (Asset->GetTypeInfo()->IsA<UMaterial>()) {
         UMaterial* Material = static_cast<UMaterial*>(Asset.get());
-
-        const uint32 GPUIndex = MaterialBuffer.RegisterMaterial(Material);
-
-        if (GPUIndex == UINT32_MAX) {
-            return {};
-        }
+		ErrorHandler::Report(not MaterialBuffer.RegisterMaterial(Material), "FAssetRegistry::AdoptAsset", "Failed to register material in the material buffer.", ErrorHandler::EErrorLevel::Error);
     }
 
     const FAssetHandle Handle = AllocateHandle();
 
     if (Handle.ID < Assets.size()) {
-        Assets[Handle.ID] = {
-            Handle,
-            std::move(Asset)
-        };
+        Assets[Handle.ID] = {Handle, std::move(Asset)};
     }
     else {
         Assets.emplace_back(Handle, std::move(Asset));
@@ -79,6 +68,11 @@ FAssetHandle FAssetRegistry::GetAsset(const FGuid& ID) const {
     }
 
     return It->second;
+}
+
+UAsset* FAssetRegistry::GetUAsset(const FString& Name) {
+	auto handle = GetAsset(Name);
+	return ResolveAsset<UAsset>(handle);
 }
 
 bool FAssetRegistry::RemoveAsset(FAssetHandle Handle) {
@@ -111,6 +105,15 @@ bool FAssetRegistry::RemoveAsset(FAssetHandle Handle) {
     return true;
 }
 
+void FAssetRegistry::Finalize() {
+	for (auto& [Handle, Asset] : Assets) {
+		if(Asset->GetTypeInfo()->IsA<UMaterial>()) {
+			auto* mat = static_cast<UMaterial*>(Asset.get());
+            mat->Finalize(this); 
+            mat->MarkGPUDataDirty(); 
+		}
+	}
+}
 
 FAssetHandle FAssetRegistry::AllocateHandle() {
     if (!FreeHandles.empty()) {
