@@ -57,6 +57,27 @@ struct FMatrix
         return result;
     }
 
+    static FMatrix CreateYUpToZUp() 
+    {
+        FMatrix result;
+
+        result.m[0][0] = 1.0f;
+        result.m[0][1] = 0.0f;
+        result.m[0][2] = 0.0f;
+
+        result.m[1][0] = 0.0f;
+        result.m[1][1] = 0.0f;
+        result.m[1][2] = 1.0f;
+
+        result.m[2][0] = 0.0f;
+        result.m[2][1] = 1.0f;
+        result.m[2][2] = 0.0f;
+
+        result.m[3][3] = 1.0f;
+
+        return result;
+    }
+
     static FMatrix CreateScale(const FVector& scale)
     {
         FMatrix result;
