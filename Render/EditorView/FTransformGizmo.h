@@ -74,7 +74,7 @@ public:
 
 	FStateChannel<uint8>::FReadWriter GetGizmoMode() { return GizmoModeChannel.GetReadWriter(); }
 private:
-	void SetArrow(const FVector3& BoundsCenter, const FVector3& BoundsExtent, float WorldUnitsPerPixel);
+	void SetArrow(const FVector3& Pivot, float WorldUnitsPerPixel);
 	void UpdateBoundsInGizmoSpace(const FEditorSelectionState& Selection, FVector3& OutCenter, FVector3& OutExtent) const;
 
 	std::optional<FRay> MakeWorldRay(const POINT& ScreenPosition) const;

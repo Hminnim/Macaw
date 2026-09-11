@@ -39,9 +39,26 @@ namespace {
             LocalMatrix = DesiredWorld * parentInverse;
 		}
 
-		FVector3 Scale{};
-		FQuat Rotation{};
-		FVector3 Translation{};
+        
+        const FVector3 LocalTranslation = LocalMatrix.Translation();
+
+        LocalMatrix.Translation(FVector3::Zero);
+
+        FMatrix AxisConversionInverse;
+
+        if (!FMatrix::CreateYUpToZUp().TryInverse(AxisConversionInverse))
+        {
+            return false;
+        }
+
+        LocalMatrix = LocalMatrix * AxisConversionInverse;
+
+        LocalMatrix.Translation(LocalTranslation);
+        
+
+        FVector3 Scale{};
+        FQuat Rotation{};
+        FVector3 Translation{};
 		if (!LocalMatrix.Decompose(Scale, Rotation, Translation)) {
 			return false;
 		}

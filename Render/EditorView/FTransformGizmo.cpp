@@ -120,6 +120,7 @@ void FTransformGizmo::Update(const CameraProbe& Camera) {
 	}
 
 	GizmoWorldTransform = FMatrix::CreateFromQuaternion(TargetRotation) * FMatrix::CreateTranslation(TargetTranslation);
+	// 월드축 기준 GizmoWorldTransform = FMatrix::CreateTranslation(TargetTranslation);
 
 	FVector3 BoundsExtent{};
 	UpdateBoundsInGizmoSpace(Selection, BoundsCenterInGizmoSpace, BoundsExtent);
@@ -138,11 +139,12 @@ void FTransformGizmo::Update(const CameraProbe& Camera) {
 	const float WorldUnitsPerPixel = (2.0f * ViewDepth) / (ViewportHeight * ProjectionYScale);
 	CurrentWorkUnitsPerPixel = WorldUnitsPerPixel;
 
-	SetArrow(BoundsCenterInGizmoSpace, BoundsExtent, WorldUnitsPerPixel);
+	SetArrow(BoundsCenterInGizmoSpace, WorldUnitsPerPixel);
 	bVisible = true;
 }
 
-void FTransformGizmo::SetArrow(const FVector3& BoundsCenter, const FVector3& BoundsExtent, float WorldUnitsPerPixel) {
+void FTransformGizmo::SetArrow(const FVector3& Pivot, float WorldUnitsPerPixel) {
+
 	const float ShaftLength = ShaftLengthPixels * WorldUnitsPerPixel;
 	const float ConeLength = ConeLengthPixels * WorldUnitsPerPixel;
 	const float ShaftRadius = ShaftRadiusPixels * WorldUnitsPerPixel;
@@ -154,36 +156,36 @@ void FTransformGizmo::SetArrow(const FVector3& BoundsCenter, const FVector3& Bou
 	const float HalfConeLength = ConeLength * 0.5f;
 	const float TotalLength = ShaftLength + ConeLength;
 
-	const float StartX = BoundsCenter.x + BoundsExtent.x + BoundsGap;
-	const float StartY = BoundsCenter.y + BoundsExtent.y + BoundsGap;
-	const float StartZ = BoundsCenter.z + BoundsExtent.z + BoundsGap;
+	const float StartX = Pivot.x + BoundsGap;
+	const float StartY = Pivot.y + BoundsGap;
+	const float StartZ = Pivot.z + BoundsGap;
 
-	CylinderXAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength, ShaftRadius) * FMatrix::CreateRotationZ(DirectX::XMConvertToRadians(-90.0f)) * FMatrix::CreateTranslation(StartX + HalfShaftLength, BoundsCenter.y, BoundsCenter.z);
+	CylinderXAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength, ShaftRadius) * FMatrix::CreateRotationZ(DirectX::XMConvertToRadians(-90.0f)) * FMatrix::CreateTranslation(StartX + HalfShaftLength, Pivot.y, Pivot.z);
 
-	CylinderYAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength, ShaftRadius) * FMatrix::CreateTranslation(BoundsCenter.x, StartY + HalfShaftLength, BoundsCenter.z);
+	CylinderYAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength, ShaftRadius) * FMatrix::CreateTranslation(Pivot.x, StartY + HalfShaftLength, Pivot.z);
 
-	CylinderZAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength, ShaftRadius) * FMatrix::CreateRotationX(DirectX::XMConvertToRadians(90.0f)) * FMatrix::CreateTranslation(BoundsCenter.x, BoundsCenter.y, StartZ + HalfShaftLength);
+	CylinderZAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength, ShaftRadius) * FMatrix::CreateRotationX(DirectX::XMConvertToRadians(90.0f)) * FMatrix::CreateTranslation(Pivot.x, Pivot.y, StartZ + HalfShaftLength);
 
-	ConeXAxisTransform = FMatrix::CreateScale(ConeRadius, ConeLength, ConeRadius) * FMatrix::CreateRotationZ(DirectX::XMConvertToRadians(-90.0f)) * FMatrix::CreateTranslation(StartX + ShaftLength + HalfConeLength, BoundsCenter.y, BoundsCenter.z);
+	ConeXAxisTransform = FMatrix::CreateScale(ConeRadius, ConeLength, ConeRadius) * FMatrix::CreateRotationZ(DirectX::XMConvertToRadians(-90.0f)) * FMatrix::CreateTranslation(StartX + ShaftLength + HalfConeLength, Pivot.y, Pivot.z);
 
-	ConeYAxisTransform = FMatrix::CreateScale(ConeRadius, ConeLength, ConeRadius) * FMatrix::CreateTranslation(BoundsCenter.x, StartY + ShaftLength + HalfConeLength, BoundsCenter.z);
+	ConeYAxisTransform = FMatrix::CreateScale(ConeRadius, ConeLength, ConeRadius) * FMatrix::CreateTranslation(Pivot.x, StartY + ShaftLength + HalfConeLength, Pivot.z);
 
-	ConeZAxisTransform = FMatrix::CreateScale(ConeRadius, ConeLength, ConeRadius) * FMatrix::CreateRotationX(DirectX::XMConvertToRadians(90.0f)) * FMatrix::CreateTranslation(BoundsCenter.x, BoundsCenter.y, StartZ + ShaftLength + HalfConeLength);
+	ConeZAxisTransform = FMatrix::CreateScale(ConeRadius, ConeLength, ConeRadius) * FMatrix::CreateRotationX(DirectX::XMConvertToRadians(90.0f)) * FMatrix::CreateTranslation(Pivot.x, Pivot.y, StartZ + ShaftLength + HalfConeLength);
 
 	AxisHitProxies = {
 		FAxisHitProxy{
 			.Axis = EAxis::X,
-			.Center = FVector3{ StartX + TotalLength * 0.5f, BoundsCenter.y, BoundsCenter.z },
+			.Center = FVector3{ StartX + TotalLength * 0.5f, Pivot.y, Pivot.z },
 			.Extent = FVector3{ TotalLength * 0.5f, PickRadius, PickRadius }
 		},
 		FAxisHitProxy{
 			.Axis = EAxis::Y,
-			.Center = FVector3{ BoundsCenter.x, StartY + TotalLength * 0.5f, BoundsCenter.z },
+			.Center = FVector3{ Pivot.x, StartY + TotalLength * 0.5f, Pivot.z },
 			.Extent = FVector3{ PickRadius, TotalLength * 0.5f, PickRadius }
 		},
 		FAxisHitProxy{
 			.Axis = EAxis::Z,
-			.Center = FVector3{ BoundsCenter.x, BoundsCenter.y, StartZ + TotalLength * 0.5f },
+			.Center = FVector3{ Pivot.x, Pivot.y, StartZ + TotalLength * 0.5f },
 			.Extent = FVector3{ PickRadius, PickRadius, TotalLength * 0.5f }
 		}
 	};
