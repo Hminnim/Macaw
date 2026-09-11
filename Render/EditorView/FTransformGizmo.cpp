@@ -16,12 +16,14 @@ void FTransformGizmo::Initialize(ID3D11Device* Device, FAssetRegistry& AssetRegi
 
 	CylinderMesh = AssetRegistry.EmplaceAsset<UMesh>(Device, "CylinderMesh", "./Content/Metadata/CylinderMesh.meta");
 	ConeMesh = AssetRegistry.EmplaceAsset<UMesh>(Device, "ConeMesh", "./Content/Metadata/ConeMesh.meta");
+	CubeMesh = AssetRegistry.EmplaceAsset<UMesh>(Device,"CubeMesh","./Content/Metadata/CubeMesh.meta");
+	GizmoTorusMesh = AssetRegistry.EmplaceAsset<UMesh>(Device, "GizmoTorusMesh", "./Content/Metadata/GizmoTorusMesh.meta");
 
 	RedMaterial = AssetRegistry.EmplaceAsset<UColorMaterial>(Device, "Red", "./Content/Metadata/RedMaterial.meta");
 	GreenMaterial = AssetRegistry.EmplaceAsset<UColorMaterial>(Device, "Green", "./Content/Metadata/GreenMaterial.meta");
 	BlueMaterial = AssetRegistry.EmplaceAsset<UColorMaterial>(Device, "Blue", "./Content/Metadata/BlueMaterial.meta");
 
-	GizmoPipeline = AssetRegistry.EmplaceAsset<UPipeline>(Device, "GizmoPipeline", "./Content/Metadata/BasePipeline.meta");
+	GizmoPipeline = AssetRegistry.EmplaceAsset<UPipeline>(Device, "GizmoPipeline", "./Content/Metadata/GizmoPipeline.meta");
 
 	WindowInfoReader = InWindowInfoReader;
 	SelectionReader = InSelectionReader;
@@ -120,6 +122,7 @@ void FTransformGizmo::Update(const CameraProbe& Camera) {
 	}
 
 	GizmoWorldTransform = FMatrix::CreateFromQuaternion(TargetRotation) * FMatrix::CreateTranslation(TargetTranslation);
+	// 월드축 기준 GizmoWorldTransform = FMatrix::CreateTranslation(TargetTranslation);
 
 	FVector3 BoundsExtent{};
 	UpdateBoundsInGizmoSpace(Selection, BoundsCenterInGizmoSpace, BoundsExtent);
@@ -138,11 +141,31 @@ void FTransformGizmo::Update(const CameraProbe& Camera) {
 	const float WorldUnitsPerPixel = (2.0f * ViewDepth) / (ViewportHeight * ProjectionYScale);
 	CurrentWorkUnitsPerPixel = WorldUnitsPerPixel;
 
-	SetArrow(BoundsCenterInGizmoSpace, BoundsExtent, WorldUnitsPerPixel);
+	const EModifyMode CurrentMode =GizmoMode.HasValue() ? static_cast<EModifyMode>(GizmoMode.Peek()) : EModifyMode::None;
+
+	switch (CurrentMode) {
+	case EModifyMode::Translate:
+		SetTranslate(BoundsCenterInGizmoSpace, WorldUnitsPerPixel);
+		break;
+
+	case EModifyMode::Scale:
+		SetScale(BoundsCenterInGizmoSpace, WorldUnitsPerPixel);
+		break;
+
+	case EModifyMode::Rotate:
+		SetRotate(BoundsCenterInGizmoSpace, WorldUnitsPerPixel);
+		break;
+
+	default:
+		bVisible = false;
+		return;
+	}
+
 	bVisible = true;
 }
 
-void FTransformGizmo::SetArrow(const FVector3& BoundsCenter, const FVector3& BoundsExtent, float WorldUnitsPerPixel) {
+void FTransformGizmo::SetTranslate(const FVector3& Pivot, float WorldUnitsPerPixel) {
+
 	const float ShaftLength = ShaftLengthPixels * WorldUnitsPerPixel;
 	const float ConeLength = ConeLengthPixels * WorldUnitsPerPixel;
 	const float ShaftRadius = ShaftRadiusPixels * WorldUnitsPerPixel;
@@ -154,37 +177,124 @@ void FTransformGizmo::SetArrow(const FVector3& BoundsCenter, const FVector3& Bou
 	const float HalfConeLength = ConeLength * 0.5f;
 	const float TotalLength = ShaftLength + ConeLength;
 
-	const float StartX = BoundsCenter.x + BoundsExtent.x + BoundsGap;
-	const float StartY = BoundsCenter.y + BoundsExtent.y + BoundsGap;
-	const float StartZ = BoundsCenter.z + BoundsExtent.z + BoundsGap;
+	const float StartX = Pivot.x + BoundsGap;
+	const float StartY = Pivot.y + BoundsGap;
+	const float StartZ = Pivot.z + BoundsGap;
 
-	CylinderXAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength, ShaftRadius) * FMatrix::CreateRotationZ(DirectX::XMConvertToRadians(-90.0f)) * FMatrix::CreateTranslation(StartX + HalfShaftLength, BoundsCenter.y, BoundsCenter.z);
+	CylinderXAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength, ShaftRadius) * FMatrix::CreateRotationZ(DirectX::XMConvertToRadians(-90.0f)) * FMatrix::CreateTranslation(StartX + HalfShaftLength, Pivot.y, Pivot.z);
 
-	CylinderYAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength, ShaftRadius) * FMatrix::CreateTranslation(BoundsCenter.x, StartY + HalfShaftLength, BoundsCenter.z);
+	CylinderYAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength, ShaftRadius) * FMatrix::CreateTranslation(Pivot.x, StartY + HalfShaftLength, Pivot.z);
 
-	CylinderZAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength, ShaftRadius) * FMatrix::CreateRotationX(DirectX::XMConvertToRadians(90.0f)) * FMatrix::CreateTranslation(BoundsCenter.x, BoundsCenter.y, StartZ + HalfShaftLength);
+	CylinderZAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength, ShaftRadius) * FMatrix::CreateRotationX(DirectX::XMConvertToRadians(90.0f)) * FMatrix::CreateTranslation(Pivot.x, Pivot.y, StartZ + HalfShaftLength);
 
-	ConeXAxisTransform = FMatrix::CreateScale(ConeRadius, ConeLength, ConeRadius) * FMatrix::CreateRotationZ(DirectX::XMConvertToRadians(-90.0f)) * FMatrix::CreateTranslation(StartX + ShaftLength + HalfConeLength, BoundsCenter.y, BoundsCenter.z);
+	ConeXAxisTransform = FMatrix::CreateScale(ConeRadius, ConeLength, ConeRadius) * FMatrix::CreateRotationZ(DirectX::XMConvertToRadians(-90.0f)) * FMatrix::CreateTranslation(StartX + ShaftLength + HalfConeLength, Pivot.y, Pivot.z);
 
-	ConeYAxisTransform = FMatrix::CreateScale(ConeRadius, ConeLength, ConeRadius) * FMatrix::CreateTranslation(BoundsCenter.x, StartY + ShaftLength + HalfConeLength, BoundsCenter.z);
+	ConeYAxisTransform = FMatrix::CreateScale(ConeRadius, ConeLength, ConeRadius) * FMatrix::CreateTranslation(Pivot.x, StartY + ShaftLength + HalfConeLength, Pivot.z);
 
-	ConeZAxisTransform = FMatrix::CreateScale(ConeRadius, ConeLength, ConeRadius) * FMatrix::CreateRotationX(DirectX::XMConvertToRadians(90.0f)) * FMatrix::CreateTranslation(BoundsCenter.x, BoundsCenter.y, StartZ + ShaftLength + HalfConeLength);
+	ConeZAxisTransform = FMatrix::CreateScale(ConeRadius, ConeLength, ConeRadius) * FMatrix::CreateRotationX(DirectX::XMConvertToRadians(90.0f)) * FMatrix::CreateTranslation(Pivot.x, Pivot.y, StartZ + ShaftLength + HalfConeLength);
 
 	AxisHitProxies = {
 		FAxisHitProxy{
 			.Axis = EAxis::X,
-			.Center = FVector3{ StartX + TotalLength * 0.5f, BoundsCenter.y, BoundsCenter.z },
+			.Center = FVector3{ StartX + TotalLength * 0.5f, Pivot.y, Pivot.z },
 			.Extent = FVector3{ TotalLength * 0.5f, PickRadius, PickRadius }
 		},
 		FAxisHitProxy{
 			.Axis = EAxis::Y,
-			.Center = FVector3{ BoundsCenter.x, StartY + TotalLength * 0.5f, BoundsCenter.z },
+			.Center = FVector3{ Pivot.x, StartY + TotalLength * 0.5f, Pivot.z },
 			.Extent = FVector3{ PickRadius, TotalLength * 0.5f, PickRadius }
 		},
 		FAxisHitProxy{
 			.Axis = EAxis::Z,
-			.Center = FVector3{ BoundsCenter.x, BoundsCenter.y, StartZ + TotalLength * 0.5f },
+			.Center = FVector3{ Pivot.x, Pivot.y, StartZ + TotalLength * 0.5f },
 			.Extent = FVector3{ PickRadius, PickRadius, TotalLength * 0.5f }
+		}
+	};
+}
+
+void FTransformGizmo::SetRotate(const FVector3& Pivot, float WorldUnitsPerPixel) {
+
+	constexpr float RingOuterRadiusPixels = 76.0f;
+	constexpr float RingPickThicknessPixels = 8.0f;
+
+	const float RingOuterRadius = RingOuterRadiusPixels * WorldUnitsPerPixel;
+	const float RingPickThickness = RingPickThicknessPixels * WorldUnitsPerPixel;
+
+	/*
+	 * 기본 Torus의 바깥 반지름은 0.5이므로,
+	 * 목표 바깥 반지름을 만들기 위해 2배로 스케일한다.
+	 */
+
+	CurrentRingRadius = RingOuterRadius * (0.50f / 0.49f);
+	CurrentRingPickHalfWidth = RingPickThicknessPixels * WorldUnitsPerPixel;
+
+	const float TorusScale = RingOuterRadius * 2.0f;
+
+	TorusXAxisTransform =FMatrix::CreateScale(TorusScale,TorusScale,TorusScale)
+		* FMatrix::CreateRotationZ(DirectX::XMConvertToRadians(-90.0f))
+		* FMatrix::CreateTranslation(Pivot);
+
+	TorusYAxisTransform =FMatrix::CreateScale(TorusScale,TorusScale,TorusScale)
+		* FMatrix::CreateTranslation(Pivot);
+
+	TorusZAxisTransform =FMatrix::CreateScale(TorusScale,TorusScale,TorusScale)
+		* FMatrix::CreateRotationX(DirectX::XMConvertToRadians(90.0f))
+		* FMatrix::CreateTranslation(Pivot);
+
+}
+
+void FTransformGizmo::SetScale(const FVector3& Pivot, float WorldUnitsPerPixel) {
+
+	constexpr float ScaleBoxSizePixels = 18.0f;
+
+	const float ShaftLength = ShaftLengthPixels * WorldUnitsPerPixel;
+	const float ShaftRadius = ShaftRadiusPixels * WorldUnitsPerPixel;
+	const float BoxSize = ScaleBoxSizePixels * WorldUnitsPerPixel;
+	const float PickRadius = PickRadiusPixels * WorldUnitsPerPixel;
+	const float BoundsGap = BoundsGapPixels * WorldUnitsPerPixel;
+
+	const float HalfShaftLength = ShaftLength * 0.5f;
+	const float HalfBoxSize = BoxSize * 0.5f;
+	const float TotalLength = ShaftLength + BoxSize;
+
+	const float StartX = Pivot.x + BoundsGap;
+	const float StartY = Pivot.y + BoundsGap;
+	const float StartZ = Pivot.z + BoundsGap;
+
+	CylinderXAxisTransform = FMatrix::CreateScale(ShaftRadius,ShaftLength,ShaftRadius)
+		* FMatrix::CreateRotationZ(DirectX::XMConvertToRadians(-90.0f))
+		* FMatrix::CreateTranslation(StartX + HalfShaftLength,Pivot.y,Pivot.z);
+
+	CylinderYAxisTransform = FMatrix::CreateScale(ShaftRadius,ShaftLength,ShaftRadius)
+		* FMatrix::CreateTranslation(Pivot.x, StartY + HalfShaftLength, Pivot.z);
+
+	CylinderZAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength,ShaftRadius)
+		* FMatrix::CreateRotationX(DirectX::XMConvertToRadians(90.0f))
+		* FMatrix::CreateTranslation(Pivot.x,Pivot.y,StartZ + HalfShaftLength);
+
+	CubeXAxisTransform = FMatrix::CreateScale(BoxSize, BoxSize, BoxSize)
+		* FMatrix::CreateTranslation(StartX + ShaftLength + HalfBoxSize,Pivot.y,Pivot.z);
+
+	CubeYAxisTransform =FMatrix::CreateScale(BoxSize, BoxSize, BoxSize)
+		* FMatrix::CreateTranslation(Pivot.x,StartY + ShaftLength + HalfBoxSize,Pivot.z);
+
+	CubeZAxisTransform =FMatrix::CreateScale(BoxSize, BoxSize, BoxSize)
+		* FMatrix::CreateTranslation(Pivot.x,Pivot.y,StartZ + ShaftLength + HalfBoxSize);
+
+	AxisHitProxies = {FAxisHitProxy{
+			.Axis = EAxis::X,
+			.Center = FVector3{StartX + TotalLength * 0.5f,Pivot.y,Pivot.z},
+			.Extent = FVector3{TotalLength * 0.5f,PickRadius,PickRadius}
+		},
+		FAxisHitProxy{
+			.Axis = EAxis::Y,
+			.Center = FVector3{Pivot.x,StartY + TotalLength * 0.5f,Pivot.z},
+			.Extent = FVector3{PickRadius,TotalLength * 0.5f,PickRadius}
+		},
+		FAxisHitProxy{
+			.Axis = EAxis::Z,
+			.Center = FVector3{Pivot.x,Pivot.y,StartZ + TotalLength * 0.5f},
+			.Extent = FVector3{PickRadius,PickRadius,TotalLength * 0.5f}
 		}
 	};
 }
@@ -248,6 +358,7 @@ std::optional<FRay> FTransformGizmo::MakeWorldRay(const POINT& ScreenPosition) c
 }
 
 std::optional<FTransformGizmo::FAxisHit> FTransformGizmo::HitTest(const FRay& WorldRay) const {
+
 	const FMatrix InverseGizmoWorld = GizmoWorldTransform.Invert();
 	const FVector3 LocalOrigin = FVector3::Transform(FVector3(WorldRay.position), InverseGizmoWorld);
 	FVector3 LocalDirection = FVector3::TransformNormal(FVector3(WorldRay.direction), InverseGizmoWorld);
@@ -258,6 +369,41 @@ std::optional<FTransformGizmo::FAxisHit> FTransformGizmo::HitTest(const FRay& Wo
 
 	const FRay LocalRay{ LocalOrigin.ToSimpleMath(), LocalDirection.ToSimpleMath() };
 	std::optional<FAxisHit> NearestHit;
+	const EModifyMode CurrentMode = GizmoMode.HasValue() ? static_cast<EModifyMode>(GizmoMode.Peek()) : EModifyMode::None;
+
+	if (CurrentMode == EModifyMode::Rotate)
+	{
+		const EAxis Axis[3]{EAxis::X,EAxis::Y,EAxis::Z};
+		const FVector3 PlaneNormals[3]{FVector3::UnitX,FVector3::UnitY,FVector3::UnitZ};
+		for (int i = 0; i < 3; i++)
+		{
+			FVector3 PlaneNormal = PlaneNormals[i];
+			float Denominator = LocalDirection.Dot(PlaneNormal);
+			if (std::abs(Denominator) <= 0.000001f) // 레이와 평면이 거의 평행한 경우 패스
+			{
+				continue;
+			}
+			float Distance = (BoundsCenterInGizmoSpace - LocalOrigin).Dot(PlaneNormal) / Denominator;
+			if (Distance < 0.0f) // 교차점이 카메라 밖에 있는 경우
+			{
+				continue;
+			}
+			FVector3 HitPosition = LocalOrigin + LocalDirection * Distance;
+			float DistanceFromPivot = (HitPosition - BoundsCenterInGizmoSpace).Length(); // 중심과 마우스를 클릭한 사이의 거리
+			float DistanceFromRadius = std::abs(DistanceFromPivot - CurrentRingRadius); // 그 거리 - 현재 링 반지름 => 해당값이 허용 오차 사이에 있어야 인정
+			if (DistanceFromRadius <= CurrentRingPickHalfWidth) // CurrentRingPickHalfWidth = 허용 오차
+			{
+				if (!NearestHit.has_value() || Distance < NearestHit->Distance) // t가 가장 작은걸 선택
+				{
+					NearestHit = FAxisHit{
+						.Axis = Axis[i],
+						.Distance = Distance
+					};
+				}
+			}
+		}
+		return NearestHit;
+	}
 
 	for (const FAxisHitProxy& Proxy : AxisHitProxies) {
 		const DirectX::BoundingBox Box{ Proxy.Center.ToSimpleMath(), Proxy.Extent.ToSimpleMath() };
@@ -274,114 +420,258 @@ std::optional<FTransformGizmo::FAxisHit> FTransformGizmo::HitTest(const FRay& Wo
 }
 
 bool FTransformGizmo::BeginDrag(EAxis Axis, const FRay& WorldRay) {
-	if (!WorldCommandSender.has_value() || Axis == EAxis::None) {
+
+	// 메시지를 보낼 수 없거나 유효한 축이 아니면 드래그를 시작하지 않는다.
+	if (!WorldCommandSender.has_value() || Axis == EAxis::None) 
+	{
 		return false;
 	}
 
-	FVector3 AxisWorld = GetWorldAxis(Axis);
-	if (AxisWorld.LengthSquared() <= std::numeric_limits<float>::epsilon()) {
+	//드래그를 시작한 순간의 모드를 고정한다.	
+	const EModifyMode CurrentMode = GizmoMode.HasValue() ? static_cast<EModifyMode>(GizmoMode.Peek()) : EModifyMode::None;
+
+	if (CurrentMode == EModifyMode::None) 
+	{
 		return false;
 	}
+
+	// 선택한 기즈모 축을 월드 공간 방향으로 변환한다.
+	FVector3 AxisWorld = GetWorldAxis(Axis);
+
+	if (AxisWorld.LengthSquared() <= std::numeric_limits<float>::epsilon()) 
+	{
+		return false;
+	}
+
 	AxisWorld.Normalize();
 
-	const FVector3 InteractionPivotWorld = FVector3::Transform(BoundsCenterInGizmoSpace, GizmoWorldTransform);
-	const FVector3 CameraPosition = LastCamera.View.Invert().Translation();
-	FVector3 ViewDirection = InteractionPivotWorld - CameraPosition;
-	if (ViewDirection.LengthSquared() <= std::numeric_limits<float>::epsilon()) {
-		return false;
+	// 기즈모가 표시된 위치를 월드 공간 Pivot으로 변환한다.
+	const FVector3 InteractionPivotWorld = FVector3::Transform(BoundsCenterInGizmoSpace,GizmoWorldTransform);
+
+	// 우선 모든 모드에서 공통으로 사용하는 세션 정보를 저장한다.
+	FDragSession NewSession{};
+
+	NewSession.SessionId = AcquireTransformEditSessionId();
+	NewSession.TargetHandle = CurrentSelection.TransformTargetHandle;
+	NewSession.InitialWorld = CurrentSelection.TargetWorld;
+	NewSession.InitialTransformRevision = CurrentSelection.TransformRevision;
+	NewSession.ModifyMode = CurrentMode;
+	NewSession.DragAxis = Axis;
+	NewSession.AxisWorld = AxisWorld;
+	NewSession.InteractionPivotWorld = InteractionPivotWorld;
+	NewSession.WorkUnitsPerPixel = CurrentWorkUnitsPerPixel;
+
+	// Rotation은 링 평면을 사용한다.
+	if (CurrentMode == EModifyMode::Rotate) {
+		// 회전 링 평면은 회전축에 수직이므로 평면 법선은 회전축과 같다.
+		NewSession.DragPlaneNormal = AxisWorld;
+
+		const FPlane RotationPlane
+		{
+			InteractionPivotWorld.ToSimpleMath(), 
+			AxisWorld.ToSimpleMath()
+		};
+
+		float Distance = 0.0f;
+
+		if (!WorldRay.Intersects(RotationPlane,Distance)|| Distance < 0.0f) 
+		{
+			return false;
+		}
+
+		const FVector3 HitPosition
+		{
+			WorldRay.position+ WorldRay.direction * Distance
+		};
+
+		//Pivot에서 클릭점으로 향하는 방향이 회전 시작 방향이다.
+		FVector3 InitialDirection = HitPosition - InteractionPivotWorld;
+
+		// 부동소수점 오차로 남을 수 있는 회전축 방향 성분을 제거한다.
+		InitialDirection = InitialDirection - AxisWorld * InitialDirection.Dot(AxisWorld);
+
+		if (InitialDirection.LengthSquared() <= 0.000001f) 
+		{
+			return false;
+		}
+
+		InitialDirection.Normalize();
+
+		NewSession.InitialRotationDirection = InitialDirection;
 	}
-	ViewDirection.Normalize();
+	//Translate와 Scale은 기존 축 드래그 평면을 사용한다.
+	else {
+		const FVector3 CameraPosition = LastCamera.View.Invert().Translation();
+		FVector3 ViewDirection = InteractionPivotWorld - CameraPosition;
 
-	FVector3 PlaneNormal = ViewDirection - AxisWorld * ViewDirection.Dot(AxisWorld);
-	if (PlaneNormal.LengthSquared() <= 0.000001f) {
-		const FVector3 Fallback = std::abs(AxisWorld.Dot(FVector3::UnitY)) < 0.95f ? FVector3::UnitY : FVector3::UnitX;
-		PlaneNormal = Fallback - AxisWorld * Fallback.Dot(AxisWorld);
+		if (ViewDirection.LengthSquared() <= std::numeric_limits<float>::epsilon()) 
+		{
+			return false;
+		}
+
+		ViewDirection.Normalize();
+
+		// 선택 축을 포함하면서 카메라를 향하는 드래그 평면의 법선을 계산한다.
+		FVector3 PlaneNormal = ViewDirection - AxisWorld * ViewDirection.Dot(AxisWorld);
+
+		// 카메라 방향과 축이 거의 일치해서 평면 법선을 만들 수 없을 때의 대체 방향이다.
+		if (PlaneNormal.LengthSquared() <= 0.000001f) 
+		{
+			const FVector3 Fallback = std::abs(AxisWorld.Dot(FVector3::UnitY)) < 0.95f ? FVector3::UnitY : FVector3::UnitX;
+			PlaneNormal = Fallback - AxisWorld * Fallback.Dot(AxisWorld);
+		}
+
+		PlaneNormal.Normalize();
+
+		NewSession.DragPlaneNormal = PlaneNormal;
+
+		//Translate/Scale은 축 위의 시작 위치를 저장한다.
+		if (!GetAxisParameterOnDragPlane(WorldRay,NewSession,NewSession.InitialAxisParameter)) 
+		{
+			return false;
+		}
 	}
-	PlaneNormal.Normalize();
 
-	FDragSession NewSession{
-		.SessionId = AcquireTransformEditSessionId(),
-		.TargetHandle = CurrentSelection.TransformTargetHandle,
-		.InitialWorld = CurrentSelection.TargetWorld,
-		.AxisWorld = AxisWorld,
-		.InteractionPivotWorld = InteractionPivotWorld,
-		.DragPlaneNormal = PlaneNormal,
-		.InitialAxisParameter = 0.0f,
-		.InitialTransformRevision = CurrentSelection.TransformRevision,
-		.DragAxis = Axis,	
-		.WorkUnitsPerPixel = CurrentWorkUnitsPerPixel
-	};
-
-	if (!GetAxisParameterOnDragPlane(WorldRay, NewSession, NewSession.InitialAxisParameter)) {
-		return false;
-	}
-
+	// 모든 초기화가 성공한 뒤에만 실제 드래그 세션으로 확정한다.
 	DragSession = NewSession;
-	SendTransformEdit(NewSession.SessionId, ETransformEditPhase::Begin, NewSession.TargetHandle, NewSession.InitialWorld, NewSession.InitialTransformRevision);
+
+	// World 쪽에 Transform 편집 시작을 알린다. World는 SessionId를 기억하고, 이후 같은 SessionId의 Update/Commit/Cancel만 받는다.
+	SendTransformEdit(
+		NewSession.SessionId,
+		ETransformEditPhase::Begin,
+		NewSession.TargetHandle,
+		NewSession.InitialWorld,
+		NewSession.InitialTransformRevision);
+
 	return true;
 }
 
 void FTransformGizmo::UpdateDrag(const FRay& WorldRay) {
 
-	if (!DragSession.has_value()) {
+	if (!DragSession.has_value()) 
+	{
 			return;
 	}
 	
 	auto& Session = *DragSession;
 
+	FMatrix DesiredWorld = Session.InitialWorld;
 
-	float CurrentAxisParameter = 0.0f;
-	if (!GetAxisParameterOnDragPlane(WorldRay, *DragSession, CurrentAxisParameter)) {
-		return;
-	}
-	
-	const float Delta = CurrentAxisParameter - DragSession->InitialAxisParameter;
-	FMatrix DesiredWorld = DragSession->InitialWorld;
+	// Rotation은 방향 벡터 사이의 각도로 계산한다.
+	if (Session.ModifyMode == EModifyMode::Rotate) {
+		// BeginDrag에서 사용한 것과 동일한 회전 평면.
+		// 평면 중심 = 기즈모 Pivot
+		// 평면 법선 = 선택한 회전축
+		const FPlane RotationPlane
+		{
+			Session.InteractionPivotWorld.ToSimpleMath(),
+			Session.AxisWorld.ToSimpleMath()
+		};
 
-	const EModifyMode CurrentModifyMode = GizmoMode.HasValue() ? static_cast<EModifyMode>(GizmoMode.Peek()) : EModifyMode::None;
+		float Distance = 0.0f;
 
-	if (CurrentModifyMode == EModifyMode::Translate) {
-		DesiredWorld.Translation(DragSession->InitialWorld.Translation() + DragSession->AxisWorld * Delta);
-	}
-	else if (CurrentModifyMode == EModifyMode::Rotate) {
-		const float RotationSpeed = std::max(120.f * Session.WorkUnitsPerPixel, 0.0001f);
-		const float AngleDelta = Delta / RotationSpeed;
-		const FMatrix RotationMatrix = FMatrix::CreateFromQuaternion(FQuat::CreateFromAxisAngle(DragSession->AxisWorld.ToSimpleMath(), AngleDelta));
-		const FVector3 Pivot = DragSession->InteractionPivotWorld;
-
-		DesiredWorld = Session.InitialWorld * FMatrix::CreateTranslation(-Pivot) * RotationMatrix * FMatrix::CreateTranslation(Pivot);
-	}
-	else if (CurrentModifyMode == EModifyMode::Scale) {
-		const float ScaleSpeed = std::max(100.f * Session.WorkUnitsPerPixel, 0.0001f);
-		const float ScaleFactor = std::max(0.01f, 1.f + Delta / ScaleSpeed);
-
-		DesiredWorld = FMatrix::CreateScale(FVector3(ScaleFactor, ScaleFactor, ScaleFactor)) * Session.InitialWorld;
-
-		FVector3 InitialScale{};
-		FQuat InitialRotation{}; 
-		FVector3 InitialTranslation{};
-
-		Session.InitialWorld.Decompose(InitialScale, InitialRotation, InitialTranslation);
-
-		switch (Session.DragAxis) {
-		case EAxis::X:
-			InitialScale.x *= ScaleFactor; 
-			break;
-		case EAxis::Y:
-			InitialScale.y *= ScaleFactor; 
-			break;
-		case EAxis::Z:
-			InitialScale.z *= ScaleFactor; 
-			break;
-		default:
+		// 현재 마우스 레이와 회전 평면의 교차점을 구한다.
+		if (!WorldRay.Intersects(RotationPlane,Distance)|| Distance < 0.0f) 
+		{
 			return;
 		}
 
-		DesiredWorld = FMatrix::CreateScale(InitialScale) * FMatrix::CreateFromQuaternion(InitialRotation) * FMatrix::CreateTranslation(InitialTranslation);
+		const FVector3 HitPosition
+		{
+			WorldRay.position + WorldRay.direction * Distance
+		};
 
+		// Pivot에서 현재 마우스 위치로 향하는 방향.
+		FVector3 CurrentDirection = HitPosition - Session.InteractionPivotWorld;
+
+		// 부동소수점 오차로 남을 수 있는 회전축 방향 성분을 제거한다.
+		CurrentDirection = CurrentDirection - Session.AxisWorld * CurrentDirection.Dot(Session.AxisWorld);
+
+		// 마우스가 Pivot과 너무 가까우면 유효한 방향을 만들 수 없다.
+		if (CurrentDirection.LengthSquared() <= 0.000001f) 
+		{
+			return;
+		}
+
+		CurrentDirection.Normalize();
+
+		// 시작 방향에서 현재 방향까지의 signed angle 계산.
+		// Cross → 회전 방향
+		// Dot   → 회전 각도
+		const float SinAngle = Session.AxisWorld.Dot(Session.InitialRotationDirection.Cross(CurrentDirection));
+		const float CosAngle = std::clamp(Session.InitialRotationDirection.Dot(CurrentDirection),-1.0f,1.0f);
+		const float AngleDelta = std::atan2(SinAngle,CosAngle);
+
+		const FQuat Rotation = FQuat::CreateFromAxisAngle(Session.AxisWorld.ToSimpleMath(),AngleDelta);
+		const FMatrix RotationMatrix = FMatrix::CreateFromQuaternion(Rotation);
+		const FVector3 Pivot = Session.InteractionPivotWorld;
+
+		// 오브젝트를 Pivot 원점으로 옮김
+		//→ 회전
+		// → 원래 Pivot 위치로 되돌림
+		DesiredWorld = Session.InitialWorld * FMatrix::CreateTranslation(-Pivot) * RotationMatrix* FMatrix::CreateTranslation(Pivot);
+	}
+	// Translate와 Scale은 축 위의 이동량으로 계산한다.
+	else {
+		float CurrentAxisParameter = 0.0f;
+
+		if (!GetAxisParameterOnDragPlane(WorldRay,Session,CurrentAxisParameter))
+		{
+			return;
+		}
+
+		const float Delta = CurrentAxisParameter- Session.InitialAxisParameter;
+
+		if (Session.ModifyMode == EModifyMode::Translate) 
+		{
+			const FVector3 NewPosition =Session.InitialWorld.Translation()+ Session.AxisWorld * Delta;
+			DesiredWorld.Translation(NewPosition);
+		}
+		else if (Session.ModifyMode== EModifyMode::Scale)
+		{
+			const float ScaleSpeed = std::max(100.0f * Session.WorkUnitsPerPixel, 0.0001f);
+			const float ScaleFactor = std::max(0.01f,1.0f + Delta / ScaleSpeed);
+
+			FVector3 InitialScale{};
+			FQuat InitialRotation{};
+			FVector3 InitialTranslation{};
+
+			if (!Session.InitialWorld.Decompose(InitialScale,InitialRotation,InitialTranslation))
+			{
+				return;
+			}
+
+			switch (Session.DragAxis) {
+			case EAxis::X:
+				InitialScale.x *= ScaleFactor;
+				break;
+
+			case EAxis::Y:
+				InitialScale.y *= ScaleFactor;
+				break;
+
+			case EAxis::Z:
+				InitialScale.z *= ScaleFactor;
+				break;
+
+			default:
+				return;
+			}
+
+			DesiredWorld = FMatrix::CreateScale(InitialScale) * FMatrix::CreateFromQuaternion(InitialRotation) * FMatrix::CreateTranslation(InitialTranslation);
+		}
+		else {
+			return;
+		}
 	}
 
-	SendTransformEdit(DragSession->SessionId, ETransformEditPhase::Update, DragSession->TargetHandle, DesiredWorld, DragSession->InitialTransformRevision);
+	// 계산한 월드 행렬을 World로 전송한다.
+	SendTransformEdit(
+		Session.SessionId,
+		ETransformEditPhase::Update,
+		Session.TargetHandle,
+		DesiredWorld,
+		Session.InitialTransformRevision);
 }
 
 void FTransformGizmo::EndDrag(bool bCancel) {
@@ -431,53 +721,46 @@ void FTransformGizmo::Render(FRenderProbe& Probe) {
 		return;
 	}
 
-	const FMatrix CylinderXWorld = CylinderXAxisTransform * GizmoWorldTransform;
-	const FMatrix CylinderYWorld = CylinderYAxisTransform * GizmoWorldTransform;
-	const FMatrix CylinderZWorld = CylinderZAxisTransform * GizmoWorldTransform;
+	const EModifyMode CurrentMode = GizmoMode.HasValue() ? static_cast<EModifyMode>(GizmoMode.Peek()) : EModifyMode::None;
 
-	Probe.ActorProbes.emplace_back(FActorProbe{
-		.World = CylinderXWorld,
-		.MeshHandle = CylinderMesh,
-		.MaterialHandle = RedMaterial,
-		.PipelineHandle = GizmoPipeline
-	});
+	const auto Submit = [&](const FMatrix& LocalTransform,FAssetHandle MeshHandle,FAssetHandle MaterialHandle)
+		{
+			Probe.GizmoProbes.emplace_back(FActorProbe{
+				.World = LocalTransform * GizmoWorldTransform,
+				.MeshHandle = MeshHandle,
+				.MaterialHandle = MaterialHandle,
+				.PipelineHandle = GizmoPipeline
+				});
+		};
 
-	Probe.ActorProbes.emplace_back(FActorProbe{
-		.World = CylinderYWorld,
-		.MeshHandle = CylinderMesh,
-		.MaterialHandle = GreenMaterial,
-		.PipelineHandle = GizmoPipeline
-	});
+	switch (CurrentMode) {
+	case EModifyMode::Translate:
+		Submit(CylinderXAxisTransform, CylinderMesh, RedMaterial);
+		Submit(CylinderYAxisTransform, CylinderMesh, GreenMaterial);
+		Submit(CylinderZAxisTransform, CylinderMesh, BlueMaterial);
 
-	Probe.ActorProbes.emplace_back(FActorProbe{
-		.World = CylinderZWorld,
-		.MeshHandle = CylinderMesh,
-		.MaterialHandle = BlueMaterial,
-		.PipelineHandle = GizmoPipeline
-	});
+		Submit(ConeXAxisTransform, ConeMesh, RedMaterial); // 해당 위치에 Cone 메쉬 사용
+		Submit(ConeYAxisTransform, ConeMesh, GreenMaterial);
+		Submit(ConeZAxisTransform, ConeMesh, BlueMaterial);
+		break;
 
-	const FMatrix ConeXWorld = ConeXAxisTransform * GizmoWorldTransform;
-	const FMatrix ConeYWorld = ConeYAxisTransform * GizmoWorldTransform;
-	const FMatrix ConeZWorld = ConeZAxisTransform * GizmoWorldTransform;
+	case EModifyMode::Scale:
+		Submit(CylinderXAxisTransform, CylinderMesh, RedMaterial);
+		Submit(CylinderYAxisTransform, CylinderMesh, GreenMaterial);
+		Submit(CylinderZAxisTransform, CylinderMesh, BlueMaterial);
 
-	Probe.ActorProbes.emplace_back(FActorProbe{
-		.World = ConeXWorld,
-		.MeshHandle = ConeMesh,
-		.MaterialHandle = RedMaterial,
-		.PipelineHandle = GizmoPipeline
-	});
+		Submit(CubeXAxisTransform, CubeMesh, RedMaterial); // 해당 위치에 Cube 메쉬 사용
+		Submit(CubeYAxisTransform, CubeMesh, GreenMaterial);
+		Submit(CubeZAxisTransform, CubeMesh, BlueMaterial);
+		break;
 
-	Probe.ActorProbes.emplace_back(FActorProbe{
-		.World = ConeYWorld,
-		.MeshHandle = ConeMesh,
-		.MaterialHandle = GreenMaterial,
-		.PipelineHandle = GizmoPipeline
-	});
+	case EModifyMode::Rotate:
+		Submit(TorusXAxisTransform, GizmoTorusMesh, RedMaterial);
+		Submit(TorusYAxisTransform, GizmoTorusMesh, GreenMaterial);
+		Submit(TorusZAxisTransform, GizmoTorusMesh, BlueMaterial);
+		break;
 
-	Probe.ActorProbes.emplace_back(FActorProbe{
-		.World = ConeZWorld,
-		.MeshHandle = ConeMesh,
-		.MaterialHandle = BlueMaterial,
-		.PipelineHandle = GizmoPipeline
-	});
+	default:
+		break;
+	}
 }

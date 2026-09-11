@@ -44,14 +44,14 @@ void EditorViewport::RenderGrid(ELineDepthMode DepthMode) {
 		if (x == 0) {
 			continue;
 		}
-		LineRenderer.AddLine(FVector3{ static_cast<float>(x), 0.f, -LineLength }, FVector3{ static_cast<float>(x), 0.f, LineLength }, FVector4{ 0.5f, 0.5f, 0.5f, 1.0f }, 1.0f, DepthMode);
+		LineRenderer.AddLine(FVector3{ static_cast<float>(x), -LineLength, 0.f }, FVector3{ static_cast<float>(x), LineLength, 0.f }, FVector4{ 0.5f, 0.5f, 0.5f, 1.0f }, 1.0f, DepthMode);
 	}
 
-	for (auto z : std::views::iota(-GridSize, GridSize + 1)) {
-		if (z == 0) {
+	for (auto y : std::views::iota(-GridSize, GridSize + 1)) {
+		if (y == 0) {
 			continue;
 		}
-		LineRenderer.AddLine(FVector3{ -LineLength, 0.f, static_cast<float>(z) }, FVector3{ LineLength, 0.f, static_cast<float>(z) }, FVector4{ 0.5f, 0.5f, 0.5f, 1.0f }, 1.0f, DepthMode);
+		LineRenderer.AddLine(FVector3{ -LineLength, static_cast<float>(y), 0.f }, FVector3{ LineLength, static_cast<float>(y), 0.f }, FVector4{ 0.5f, 0.5f, 0.5f, 1.0f }, 1.0f, DepthMode);
 	}
 }
 
@@ -82,4 +82,20 @@ void EditorViewport::RenderOrientationAxis(ID3D11DeviceContext* Context, CameraP
 		.ViewProjection = view * proj,
 		.ViewportSize = FVector2D{ OrientationAxisViewport.Width, OrientationAxisViewport.Height }
 	});
+}
+
+void EditorViewport::RenderSceneGuides(ID3D11DeviceContext* Context,FRenderProbe& Probe)
+{
+	const ELineDepthMode DepthMode = ELineDepthMode::DepthTested;
+
+	RenderGrid(DepthMode);
+	RenderAxis(DepthMode);
+
+	LineRenderer.Render(Context,FLineViewData{.ViewProjection = Probe.MainCameraProbe.ViewProjection,
+			.ViewportSize = FVector2D{
+				WindowInfoReader.Read().Viewport.Width,
+				WindowInfoReader.Read().Viewport.Height
+			}
+		}
+	);
 }

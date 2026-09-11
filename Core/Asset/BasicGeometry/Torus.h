@@ -22,7 +22,7 @@ namespace BasicGeometry {
 			std::array<uint32, IndexCount> Indices{};
 		};
 
-		inline FGeometry GenerateGeometry() {
+		inline FGeometry GenerateGeometry(float InMajorRadius = MajorRadius, float InMinorRadius = MinorRadius) {
 			FGeometry Result{};
 
 			uint32 Vertex = 0;
@@ -39,9 +39,9 @@ namespace BasicGeometry {
 					const float CosPhi = std::cos(Phi);
 					const float SinPhi = std::sin(Phi);
 
-					const float RingRadius = MajorRadius + MinorRadius * CosPhi;
+					const float RingRadius = InMajorRadius + InMinorRadius * CosPhi;
 
-					Result.Positions[Vertex] = FVector3{ RingRadius * CosTheta, MinorRadius * SinPhi, RingRadius * SinTheta };
+					Result.Positions[Vertex] = FVector3{ RingRadius * CosTheta, InMinorRadius * SinPhi, RingRadius * SinTheta };
 					Result.Normals[Vertex] = FVector3{ CosPhi * CosTheta, SinPhi, CosPhi * SinTheta };
 					Result.TexCoords[Vertex++] = FVector2D{ U, V };
 				}

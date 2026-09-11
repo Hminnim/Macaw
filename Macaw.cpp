@@ -535,8 +535,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 			FRenderProbe& Probe{ World.BuildRenderProbe() };
             
 			EditorView.RenderInProbe(Probe);
-            Renderer.Render(Probe);
-            EditorView.Render(Renderer.GetDeviceContext(), Probe);
+            Renderer.RenderScene(Probe);
+            EditorView.RenderSceneGuides(Renderer.GetDeviceContext(),Probe);
+            Renderer.RenderGizmos(Probe);
+            EditorView.RenderOrientationAxis(Renderer.GetDeviceContext(),Probe.MainCameraProbe);
+
 
             ImGui::Render();
             ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());

@@ -73,10 +73,24 @@ void UMesh::Initialize(ID3D11Device* Device, const std::filesystem::path& metaDa
 			);
 		}
 		else if (MeshType == "Torus") {
+			float MajorRadius = MetadataParser.GetOr("MajorRadius",BasicGeometry::Torus::MajorRadius);
+			float MinorRadius = MetadataParser.GetOr("MinorRadius",BasicGeometry::Torus::MinorRadius);
+
+			if (MajorRadius <= 0.0f) 
+			{
+				MajorRadius = BasicGeometry::Torus::MajorRadius;
+			}
+
+			if (MinorRadius <= 0.0f)
+			{
+				MinorRadius = BasicGeometry::Torus::MinorRadius;
+			}
+
+			const BasicGeometry::Torus::FGeometry Geometry =BasicGeometry::Torus::GenerateGeometry(MajorRadius,MinorRadius);
 			UMesh::Make(Device, BasicGeometry::Torus::Indices,
-				MakeVertexAttribute<EVertexAttribute::Position>(BasicGeometry::Torus::Positions),
-				MakeVertexAttribute<EVertexAttribute::Normal>(BasicGeometry::Torus::Normals),
-				MakeVertexAttribute<EVertexAttribute::UV>(BasicGeometry::Torus::TexCoords)
+				MakeVertexAttribute<EVertexAttribute::Position>(Geometry.Positions),
+				MakeVertexAttribute<EVertexAttribute::Normal>(Geometry.Normals),
+				MakeVertexAttribute<EVertexAttribute::UV>(Geometry.TexCoords)
 			);
 		}
 		else {
