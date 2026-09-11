@@ -53,6 +53,8 @@
 #include "Render/Pipeline/UPipeline.h"
 #include "Core/Asset/UMesh.h"
 #include "Core/Asset/UColorMaterial.h"
+#include "Core/Asset/UTexture.h"
+#include "Core/Asset/UTexturedMaterial.h"
 
 #include "Render/EditorView/EditorViewport.h"
 
@@ -306,7 +308,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	AssetRegistry.EmplaceAsset<UMesh>(Renderer.GetDevice(), "CapsuleMesh", "./Content/Metadata/CapsuleMesh.meta");
 	AssetRegistry.EmplaceAsset<UMesh>(Renderer.GetDevice(), "PyrimidMesh", "./Content/Metadata/PyramidMesh.meta");
 
-    
     AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "GreyMaterial", "./Content/Metadata/GreyMaterial.meta");
     AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "RedMaterial", "./Content/Metadata/RedMaterial.meta");
     AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "GreenMaterial", "./Content/Metadata/GreenMaterial.meta");
@@ -324,6 +325,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "TealMaterial", "./Content/Metadata/TealMaterial.meta");
     AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "WhiteMaterial", "./Content/Metadata/WhiteMaterial.meta");
 
+	AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(), "TexturedPipeline", "./Content/Metadata/TexturedTestPipeline.meta");
+	AssetRegistry.EmplaceAsset<UTexture>(Renderer.GetDevice(), "PlankTexture", "./Content/Metadata/TexturedTestTexture.meta");
+	AssetRegistry.EmplaceAsset<UTexturedMaterial>(Renderer.GetDevice(), "TexturedMaterial", "./Content/Metadata/TexturedTestMaterial.meta");
+
+
+	World.SpawnActor(AssetRegistry.GetAsset("SphereMesh"), AssetRegistry.GetAsset("TexturedPipeline"), AssetRegistry.GetAsset("TexturedMaterial"), FVector3{ 0.0f, 0.0f, 5.0f }, AssetRegistry.ResolveAsset<UMesh>(AssetRegistry.GetAsset("SphereMesh")), &AssetRegistry);
 
     AActor* CameraActor = World.AdoptActor<AActor>();
     UCameraComponent* Camera = CameraActor->AddComponent<UCameraComponent>();
@@ -333,7 +340,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     CameraActor->SetRootComponent(Camera);
 
 #endif 
-
+    AssetRegistry.Finalize(); 
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();

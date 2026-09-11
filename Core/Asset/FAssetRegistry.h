@@ -4,9 +4,7 @@
 #include "UAsset.h"
 #include "FAssetHandle.h"
 #include "FMaterialBuffer.h"
-#include "FTextureArrayPool.h"
 #include "UMaterial.h"
-#include "UTexture.h"
 #include "Common.h"
 
 #include <d3d11.h>
@@ -118,7 +116,6 @@ public:
         AssetNameToHandle.clear();
         AssetIDToHandle.clear();
         MaterialBuffer.Reset();
-        TexturePools.clear();
     }
 
     void Finalize();
@@ -135,6 +132,4 @@ private:
     TMap<FGuid, FAssetHandle> AssetIDToHandle{};
 
     FMaterialBuffer MaterialBuffer{};
-	
-	TMap<FTextureProfile, FTextureArrayPool> TexturePools{};
 };

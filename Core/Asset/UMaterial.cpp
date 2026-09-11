@@ -9,6 +9,10 @@ void UMaterial::BuildGPUData(FMaterialGPUSlot& OutSlot) const {
     OutSlot = {};
 }
 
+FMaterialChunkSignature UMaterial::BuildChunkSignature() const {
+    return {};
+}
+
 void UMaterial::Finalize(IAssetQuery* Query) {
 }
 

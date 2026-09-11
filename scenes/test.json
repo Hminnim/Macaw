@@ -185,9 +185,7 @@
             "TypeName": "UColorMaterial",
             "AssetName": "WhiteMaterial",
             "AssetMetaDataPath": "./Content/Metadata/WhiteMaterial.meta"
-        }
-    ],
-    "Actors": [
+        },
         {
             "Guid": "ABFC648D-49D4-9702-2D21-51B81BCF4101",
             "TypeName": "AActor",

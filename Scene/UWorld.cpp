@@ -364,6 +364,7 @@ bool UWorld::LoadScene(const std::filesystem::path& ScenePath, ID3D11Device* Dev
     else
         return false;
 
+    AssetRegistry->Finalize(); 
 
     if (LoadDocument.HasMember("Actors") && LoadDocument["Actors"].IsArray())
     {

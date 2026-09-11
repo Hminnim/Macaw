@@ -16,21 +16,18 @@ void UTexturedMaterial::Initialize(ID3D11Device* Device, const std::filesystem::
 	
 }
 
-void UTexturedMaterial::BuildGPUData(FMaterialGPUSlot& OutSlot) const {
-	FTexturedMaterialGPUData Data{};
-	Data.Location = PackTextureLocation(Location);
-
-	std::memcpy(OutSlot.Data.data(), &Data, sizeof(FTexturedMaterialGPUData));
+FMaterialChunkSignature UTexturedMaterial::BuildChunkSignature() const {
+	FMaterialChunkSignatureBuilder Builder{};
+	Builder.AddTexture(TextureHandle);
+	return Builder.Build();
 }
 
 void UTexturedMaterial::Finalize(IAssetQuery* Query) {
-	auto utex = Query->GetUAsset(TextureName); 
-	
-	ErrorHandler::Report(utex == nullptr, "[ UTexturedMaterial ]", "Failed to resolve texture asset: " + TextureName, ErrorHandler::EErrorLevel::Critical);
+	UAsset* Asset = Query->GetUAsset(TextureName);
+	const bool bValidTexture = Asset != nullptr && Asset->GetTypeInfo()->IsA(UTexture::StaticTypeInfo());
+	ErrorHandler::Report(!bValidTexture, "[ UTexturedMaterial ]", "Failed to resolve texture asset: " + TextureName, ErrorHandler::EErrorLevel::Critical);
 
-	auto tex = static_cast<UTexture*>(utex);
-	
-	Location = tex->GetLocation();
+	TextureHandle = bValidTexture ? Query->GetAsset(TextureName) : FAssetHandle{};
 }
 
 void UTexturedMaterial::Serialize(FArchive& Ar) {

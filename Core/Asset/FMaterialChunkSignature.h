@@ -1,34 +1,38 @@
 #pragma once
 
-#include "FTextureProfile.h"
+#include "FAssetHandle.h"
 
+#include <array>
 #include <functional>
 
 inline constexpr uint8 MAX_MATERIAL_TEXTURE_FIELDS = 8;
-inline constexpr uint8 MATERIAL_CHUNK_PROFILE_ID_BITS = 8;
-
-static_assert(MAX_TEXTURE_PROFILE_COUNT <= (1u << MATERIAL_CHUNK_PROFILE_ID_BITS));
 
 struct FMaterialChunkSignature {
-	uint64 PackedProfileIds{ 0 };
+	std::array<FAssetHandle, MAX_MATERIAL_TEXTURE_FIELDS> TextureHandles{};
 	uint8 TextureFieldCount{ 0 };
 
 	bool IsValid() const {
 		return TextureFieldCount <= MAX_MATERIAL_TEXTURE_FIELDS;
 	}
 
-	uint16 GetProfileId(uint8 TextureFieldIndex) const {
+	FAssetHandle GetTextureHandle(uint8 TextureFieldIndex) const {
 		if (TextureFieldIndex >= TextureFieldCount) {
-			return 0;
+			return {};
 		}
 
-		const uint32 Shift = static_cast<uint32>(TextureFieldIndex) * MATERIAL_CHUNK_PROFILE_ID_BITS;
-		return static_cast<uint16>((PackedProfileIds >> Shift) & 0xffu);
+		return TextureHandles[TextureFieldIndex];
 	}
 
 	size_t GetHash() const noexcept {
-		size_t Hash = std::hash<uint64>{}(PackedProfileIds);
-		return Hash ^ (std::hash<uint8>{}(TextureFieldCount) + static_cast<size_t>(0x9e3779b9u) + (Hash << 6) + (Hash >> 2));
+		size_t Hash = std::hash<uint8>{}(TextureFieldCount);
+
+		for (uint8 TextureFieldIndex = 0; TextureFieldIndex < TextureFieldCount; ++TextureFieldIndex) {
+			const FAssetHandle Handle = TextureHandles[TextureFieldIndex];
+			Hash ^= std::hash<uint32>{}(Handle.ID) + static_cast<size_t>(0x9e3779b9u) + (Hash << 6) + (Hash >> 2);
+			Hash ^= std::hash<uint32>{}(Handle.Generation) + static_cast<size_t>(0x9e3779b9u) + (Hash << 6) + (Hash >> 2);
+		}
+
+		return Hash;
 	}
 
 	bool operator==(const FMaterialChunkSignature& Other) const = default;
@@ -37,7 +41,7 @@ struct FMaterialChunkSignature {
 
 class FMaterialChunkSignatureBuilder {
 public:
-	bool AddTexture(FTextureLocation Location);
+	bool AddTexture(FAssetHandle TextureHandle);
 
 	FMaterialChunkSignature Build() const { return Signature; }
 	void Reset() { Signature = {}; }

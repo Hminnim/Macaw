@@ -4,9 +4,6 @@
 
 #include "FAssetRegistry.h"
 
-#include <ranges>
-
-
 bool FAssetRegistry::Initialize(ID3D11Device* Device, uint32 MaxMaterialCount) {
     if (Device == nullptr) {
         return false;
@@ -37,35 +34,6 @@ FAssetHandle FAssetRegistry::AdoptAsset(ID3D11Device* Device, const FGuid& ID, c
         UMaterial* Material = static_cast<UMaterial*>(Asset.get());
 		ErrorHandler::Report(not MaterialBuffer.RegisterMaterial(Material), "FAssetRegistry::AdoptAsset", "Failed to register material in the material buffer.", ErrorHandler::EErrorLevel::Error);
     }
-
-    if (Asset->GetTypeInfo()->IsA<UTexture>()) {
-        UTexture* Texture = static_cast<UTexture*>(Asset.get());
-        
-		Microsoft::WRL::ComPtr<ID3D11DeviceContext> DeviceContext;
-		Device->GetImmediateContext(DeviceContext.GetAddressOf());
-
-		auto it = TexturePools.find(Texture->GetProfile());
-		std::optional<uint16> sliceId;
-        uint16 ArrayId{}; 
-
-        if (it == TexturePools.end()) {
-			auto& NewPool = TexturePools[Texture->GetProfile()];
-            NewPool.Initialize(Device, Texture->GetProfile());
-			sliceId =  NewPool.AppendImage(DeviceContext.Get(), {Texture->GetSourceImageData(), Texture->GetSourceImageRowPitch(), 0});
-			ArrayId = static_cast<uint16>(TexturePools.size() - 1);
-        }
-        else {
-			auto& Pool = it->second;
-			sliceId = Pool.AppendImage(DeviceContext.Get(), { Texture->GetSourceImageData(), Texture->GetSourceImageRowPitch(), 0 });
-			ArrayId = static_cast<uint16>(std::distance(TexturePools.begin(), it));
-        }
-
-
-		FTextureLocation Location{};
-		Location.ProfileId = ArrayId;
-		Location.SliceId = sliceId.value_or(UINT16_MAX);
-    }
-
 
     const FAssetHandle Handle = AllocateHandle();
 
