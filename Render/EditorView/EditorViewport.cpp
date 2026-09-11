@@ -83,3 +83,19 @@ void EditorViewport::RenderOrientationAxis(ID3D11DeviceContext* Context, CameraP
 		.ViewportSize = FVector2D{ OrientationAxisViewport.Width, OrientationAxisViewport.Height }
 	});
 }
+
+void EditorViewport::RenderSceneGuides(ID3D11DeviceContext* Context,FRenderProbe& Probe)
+{
+	const ELineDepthMode DepthMode = ELineDepthMode::DepthTested;
+
+	RenderGrid(DepthMode);
+	RenderAxis(DepthMode);
+
+	LineRenderer.Render(Context,FLineViewData{.ViewProjection = Probe.MainCameraProbe.ViewProjection,
+			.ViewportSize = FVector2D{
+				WindowInfoReader.Read().Viewport.Width,
+				WindowInfoReader.Read().Viewport.Height
+			}
+		}
+	);
+}

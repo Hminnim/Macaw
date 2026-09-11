@@ -34,11 +34,13 @@ public:
 	void RenderInProbe(FRenderProbe& Probe);
 	void Render(ID3D11DeviceContext* Context, FRenderProbe& Probe);
 
+	void RenderSceneGuides(ID3D11DeviceContext* Context, FRenderProbe& Probe);
+	void RenderOrientationAxis(ID3D11DeviceContext* Context, CameraProbe& Probe);
+
 	FStateChannel<uint8>::FReadWriter GetGizmoMode() { return TransformGizmo.GetGizmoMode(); }
 private:
 	void RenderGrid(ELineDepthMode DepthMode);
 	void RenderAxis(ELineDepthMode DepthMode);
-	void RenderOrientationAxis(ID3D11DeviceContext* Context, CameraProbe& Probe);
 
 private:
 	FStateChannel<RenderWindowInfo>::FReader WindowInfoReader{};

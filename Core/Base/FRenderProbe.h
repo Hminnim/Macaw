@@ -17,5 +17,6 @@ struct CameraProbe {
 
 struct FRenderProbe {
 	TArray<FActorProbe> ActorProbes{};
+	TArray<FActorProbe> GizmoProbes{};
 	CameraProbe MainCameraProbe{}; 
 };
