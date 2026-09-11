@@ -14,7 +14,8 @@ FMatrix FTransform::GetWorldMatrix() const
 
     FMatrix T = FMatrix::CreateTranslation(Position);
 
-    return S * R * T;
+    FMatrix U = FMatrix::CreateYUpToZUp();
+    return S * R * U * T;
 }
 
 void FTransform::Serialize(FArchive& Archive)
