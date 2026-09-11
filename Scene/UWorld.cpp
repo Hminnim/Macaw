@@ -178,6 +178,7 @@ void UWorld::InitializeEditorCameraState(
 FRenderProbe& UWorld::BuildRenderProbe() 
 {
 	Probe.ActorProbes.clear();
+    Probe.GizmoProbes.clear();
 
     for (const UStaticMeshComponent* Component : RenderableComponents)
     {

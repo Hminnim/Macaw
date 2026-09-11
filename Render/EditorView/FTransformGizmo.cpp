@@ -21,7 +21,7 @@ void FTransformGizmo::Initialize(ID3D11Device* Device, FAssetRegistry& AssetRegi
 	GreenMaterial = AssetRegistry.EmplaceAsset<UColorMaterial>(Device, "Green", "./Content/Metadata/GreenMaterial.meta");
 	BlueMaterial = AssetRegistry.EmplaceAsset<UColorMaterial>(Device, "Blue", "./Content/Metadata/BlueMaterial.meta");
 
-	GizmoPipeline = AssetRegistry.EmplaceAsset<UPipeline>(Device, "GizmoPipeline", "./Content/Metadata/BasePipeline.meta");
+	GizmoPipeline = AssetRegistry.EmplaceAsset<UPipeline>(Device, "GizmoPipeline", "./Content/Metadata/GizmoPipeline.meta");
 
 	WindowInfoReader = InWindowInfoReader;
 	SelectionReader = InSelectionReader;
@@ -435,21 +435,21 @@ void FTransformGizmo::Render(FRenderProbe& Probe) {
 	const FMatrix CylinderYWorld = CylinderYAxisTransform * GizmoWorldTransform;
 	const FMatrix CylinderZWorld = CylinderZAxisTransform * GizmoWorldTransform;
 
-	Probe.ActorProbes.emplace_back(FActorProbe{
+	Probe.GizmoProbes.emplace_back(FActorProbe{
 		.World = CylinderXWorld,
 		.MeshHandle = CylinderMesh,
 		.MaterialHandle = RedMaterial,
 		.PipelineHandle = GizmoPipeline
 	});
 
-	Probe.ActorProbes.emplace_back(FActorProbe{
+	Probe.GizmoProbes.emplace_back(FActorProbe{
 		.World = CylinderYWorld,
 		.MeshHandle = CylinderMesh,
 		.MaterialHandle = GreenMaterial,
 		.PipelineHandle = GizmoPipeline
 	});
 
-	Probe.ActorProbes.emplace_back(FActorProbe{
+	Probe.GizmoProbes.emplace_back(FActorProbe{
 		.World = CylinderZWorld,
 		.MeshHandle = CylinderMesh,
 		.MaterialHandle = BlueMaterial,
@@ -460,21 +460,21 @@ void FTransformGizmo::Render(FRenderProbe& Probe) {
 	const FMatrix ConeYWorld = ConeYAxisTransform * GizmoWorldTransform;
 	const FMatrix ConeZWorld = ConeZAxisTransform * GizmoWorldTransform;
 
-	Probe.ActorProbes.emplace_back(FActorProbe{
+	Probe.GizmoProbes.emplace_back(FActorProbe{
 		.World = ConeXWorld,
 		.MeshHandle = ConeMesh,
 		.MaterialHandle = RedMaterial,
 		.PipelineHandle = GizmoPipeline
 	});
 
-	Probe.ActorProbes.emplace_back(FActorProbe{
+	Probe.GizmoProbes.emplace_back(FActorProbe{
 		.World = ConeYWorld,
 		.MeshHandle = ConeMesh,
 		.MaterialHandle = GreenMaterial,
 		.PipelineHandle = GizmoPipeline
 	});
 
-	Probe.ActorProbes.emplace_back(FActorProbe{
+	Probe.GizmoProbes.emplace_back(FActorProbe{
 		.World = ConeZWorld,
 		.MeshHandle = ConeMesh,
 		.MaterialHandle = BlueMaterial,

@@ -36,7 +36,9 @@ public:
 	void Create(HWND WindowHandle, UINT width, UINT height);
 
 	void BeginFrame();
-	void Render(FRenderProbe& Probe);
+	void RenderScene(FRenderProbe& Probe);
+	void RenderGizmos(FRenderProbe& Probe);
+	void RenderActorList(TArray<FActorProbe>& ActorProbes, const CameraProbe& Camera);
 	void EndFrame();
 
 	ID3D11Device* GetDevice() const { return Device.Get(); }
