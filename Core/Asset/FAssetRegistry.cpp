@@ -33,23 +33,33 @@ FAssetHandle FAssetRegistry::AdoptAsset(ID3D11Device* Device, const FGuid& ID, c
     TypedAsset->SetAssetName(Name);
     TypedAsset->Initialize(Device, MetadataPath);
 
-    if (Asset->GetTypeInfo()->IsA(UMaterial::StaticTypeInfo())) {
+    if (Asset->GetTypeInfo()->IsA<UMaterial>()) {
         UMaterial* Material = static_cast<UMaterial*>(Asset.get());
+		ErrorHandler::Report(not MaterialBuffer.RegisterMaterial(Material), "FAssetRegistry::AdoptAsset", "Failed to register material in the material buffer.", ErrorHandler::EErrorLevel::Error);
+    }
 
-        const uint32 GPUIndex = MaterialBuffer.RegisterMaterial(Material);
+    if (Asset->GetTypeInfo()->IsA<UTexture>()) {
+        UTexture* Texture = static_cast<UTexture*>(Asset.get());
+        
+		Microsoft::WRL::ComPtr<ID3D11DeviceContext> DeviceContext;
+		Device->GetImmediateContext(DeviceContext.GetAddressOf());
 
-        if (GPUIndex == UINT32_MAX) {
-            return {};
+		auto it = TexturePools.find(Texture->GetProfile());
+		if (it == TexturePools.end()) {
+			auto& NewPool = TexturePools[Texture->GetProfile()];
+            NewPool.Initialize(Device, Texture->GetProfile());
+			NewPool.AppendImage(DeviceContext.Get(), {Texture->GetSourceImageData(), Texture->GetSourceImageRowPitch(), 0});
+        }
+        else {
+			auto& Pool = it->second;
+			Pool.AppendImage(DeviceContext.Get(), { Texture->GetSourceImageData(), Texture->GetSourceImageRowPitch(), 0 });
         }
     }
 
     const FAssetHandle Handle = AllocateHandle();
 
     if (Handle.ID < Assets.size()) {
-        Assets[Handle.ID] = {
-            Handle,
-            std::move(Asset)
-        };
+        Assets[Handle.ID] = {Handle, std::move(Asset)};
     }
     else {
         Assets.emplace_back(Handle, std::move(Asset));
@@ -111,6 +121,14 @@ bool FAssetRegistry::RemoveAsset(FAssetHandle Handle) {
     return true;
 }
 
+void FAssetRegistry::Finalize() {
+	for (auto& [Handle, Asset] : Assets) {
+		if(Asset->GetTypeInfo()->IsA<UMaterial>()) {
+			auto* mat = static_cast<UMaterial*>(Asset.get());
+            
+		}
+	}
+}
 
 FAssetHandle FAssetRegistry::AllocateHandle() {
     if (!FreeHandles.empty()) {

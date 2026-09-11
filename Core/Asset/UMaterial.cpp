@@ -9,6 +9,9 @@ void UMaterial::BuildGPUData(FMaterialGPUSlot& OutSlot) const {
     OutSlot = {};
 }
 
+void UMaterial::Finalize(IAssetQuery* Query) {
+}
+
 void UMaterial::Serialize(FArchive& Ar) {
 	UAsset::Serialize(Ar);
 }

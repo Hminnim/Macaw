@@ -1,9 +1,10 @@
 ﻿#pragma once
 #include <d3d11.h>
 #include "UAsset.h"
-
+#include "FTextureProfile.h"
 #include <wrl/client.h>
 
+#include <DirectXTex.h>
 /*
 ================================================================================
  D3D11 Texture2DArray Profile Pooling / Material Chunking 설계
@@ -154,17 +155,17 @@
 
  [새로 만들어야 하는 파일]
 
- - Core/Asset/FTextureProfile.h
+ - Core/Asset/FTextureProfile.h -> 완료 
    FTextureProfile, FTextureLocation, FPackedTextureLocation, 16+16 bit
    pack/unpack helper, MAX_TEXTURE_PROFILE_COUNT를 선언한다. CPU의 location은
    typed field로 유지하며, packed uint32는 GPU material ABI에만 사용한다.
 
- - Core/Asset/FTextureArrayPool.h / .cpp
+ - Core/Asset/FTextureArrayPool.h / .cpp -> 완료 
    profile 하나에 대응하는 physical Texture2DArray와 SRV를 소유한다. 빈 slice
    할당/반납, source mip upload, single-slice SRV 기반 GenerateMips를 구현한다.
    profile이 가득 찬 경우 두 번째 page를 만들지 않고 실패를 반환한다.
 
- - Core/Asset/FMaterialChunkSignature.h
+ - Core/Asset/FMaterialChunkSignature.h -> 완료 
    MAX_MATERIAL_TEXTURE_FIELDS(현재 8)개의 ProfileId를 하나의 uint64에 담는
    FMaterialChunkSignature와 builder를 구현한다. Builder.AddTexture(Location)는
    SliceId를 버리고 ProfileId만 canonical texture field 순서대로 압축한다.
@@ -226,10 +227,21 @@ public:
 public:
 	JG_DECLARE_DERIVED_TYPEINFO(UTexture, UAsset);
 
-    virtual void Initialize(ID3D11Device* device, const std::filesystem::path& metaData) override {};
+    virtual void Initialize(ID3D11Device* device, const std::filesystem::path& metaData) override;
 
-	// void Set
+	FTextureProfile GetProfile() const { return Profile; }
+	FTextureLocation GetLocation() const { return Location; }
+
+    const byte* GetSourceImageData() const;
+    const size_t GetSourceImageDataSize() const;
+    const uint32 GetSourceImageRowPitch() const;
+
+protected:
+	virtual void Serialize(FArchive& Ar) override;
 private:
-	Microsoft::WRL::ComPtr<ID3D11Resource> TextureResource{ nullptr };
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> TextureSRV{ nullptr };
+	FTextureProfile Profile{};
+	FTextureLocation Location{};
+    
+	DirectX::ScratchImage SourceImage{};
+	DirectX::TexMetadata SourceImageMetaData{};
 };

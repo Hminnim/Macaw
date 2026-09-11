@@ -4,6 +4,7 @@
 #include "FMaterialGPUData.h"
 
 #include "UAsset.h"
+#include "Common.h"
 
 #include <d3d11.h>
 
@@ -25,6 +26,7 @@ public:
 
     virtual void Initialize(ID3D11Device* Device, const std::filesystem::path& metaData) override;
     virtual void BuildGPUData(FMaterialGPUSlot& OutSlot) const;
+    virtual void Finalize(IAssetQuery* Query);
 
     uint32 GetGPUIndex() const { return GPUIndex; }
 

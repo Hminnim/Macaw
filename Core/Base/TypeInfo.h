@@ -20,6 +20,12 @@ struct FTypeInfo {
         return false;
     }
 
+    template<typename T>
+    [[nodiscard]] bool IsA() const noexcept{
+		const auto TypeInfo = T::StaticTypeInfo();
+		return IsA(TypeInfo);
+    }
+
     [[nodiscard]] bool isExactlyA(const FTypeInfo* Type) const noexcept {
         return this == Type;
 	}
