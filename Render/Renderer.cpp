@@ -44,51 +44,44 @@ void FRenderer::EndFrame() {
 	SwapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
 }
 
-void FRenderer::RenderScene(FRenderProbe& Probe)
-{
-	RenderActorList(
-		Probe.ActorProbes,
-		Probe.MainCameraProbe
-	);
+void FRenderer::RenderScene(FRenderProbe& Probe) {
+	RenderActorList(Probe.ActorProbes,Probe.MainCameraProbe);
 }
 
 
-void FRenderer::RenderGizmos(FRenderProbe& Probe)
-{
-	if (Probe.GizmoProbes.empty())
-	{
+void FRenderer::RenderGizmos(FRenderProbe& Probe) {
+	if (Probe.GizmoProbes.empty()) {
 		return;
 	}
 
 	// Preserve the scene color, but give gizmos a fresh depth buffer so they stay
 	// visible over the scene while still occluding one another correctly.
-	DeviceContext->ClearDepthStencilView(
-		DepthStencilView.Get(),
-		D3D11_CLEAR_DEPTH,
-		1.0f,
-		0
-	);
+	DeviceContext->ClearDepthStencilView(DepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0 );
 
-	RenderActorList(
-		Probe.GizmoProbes,
-		Probe.MainCameraProbe
-	);
+	RenderActorList(Probe.GizmoProbes,Probe.MainCameraProbe);
 }
 
 void FRenderer::RenderActorList(TArray<FActorProbe>& ActorProbes, const CameraProbe& MainCameraProbe) {
-	// 1. MeshHandle + PipelineHandle 로 정렬
-	// 2. 정렬한 뒤 MeshHandle + PipelineHandle 이 같은 것 끼리 Batch 생성 
-	// 3. Batch 순서대로 SRV Push Back  
-	// 4. Batch 순서대로 InstanceDraw 호출
-
 	if (ActorProbes.empty()) {
 		return;
 	}
 
-	std::ranges::sort(ActorProbes, {}, [](const FActorProbe& Data){ return TTuple{Data.MeshHandle.ID, Data.MeshHandle.Generation, Data.PipelineHandle.ID, Data.PipelineHandle.Generation}; });
+	auto GetRenderChunkKey = [this](const FActorProbe& Data) {
+		const FMaterialChunkSignature Signature = AssetRegistry->ResolveAsset<UMaterial>(Data.MaterialHandle)->BuildChunkSignature();
+		return TTuple{
+			Data.PipelineHandle.ID,
+			Data.PipelineHandle.Generation,
+			Signature.TextureFieldCount,
+			Signature.TextureHandles,
+			Data.MeshHandle.ID,
+			Data.MeshHandle.Generation
+			};
+		};
 
-	auto Groups = ActorProbes | ranges::views::chunk_by([](const FActorProbe& A, const FActorProbe& B) {
-		return A.MeshHandle == B.MeshHandle && A.PipelineHandle == B.PipelineHandle;
+	std::ranges::sort(ActorProbes, {}, GetRenderChunkKey);
+
+	auto Groups = ActorProbes | ranges::views::chunk_by([&GetRenderChunkKey](const FActorProbe& A, const FActorProbe& B) {
+		return GetRenderChunkKey(A) == GetRenderChunkKey(B);
 		});
 
 	ModelContextArray.Clear();
@@ -130,12 +123,12 @@ void FRenderer::RenderActorList(TArray<FActorProbe>& ActorProbes, const CameraPr
 		.ViewProjection = MainCameraProbe.ViewProjection
 		}, 0);
 
-	uint32 InstanceCount{ 0 };
-
 	RootConstants.Bind(DeviceContext.Get(), 0, EGraphicsShaderStage::Graphics);
 	AssetRegistry->GetMaterialBuffer().Flush(DeviceContext.Get());
 
 	uint32 InstanceCount{ 0 };
+	FMaterialChunkSignature BoundTextureSet{};
+	bool bTextureSetBound{ false };
 
 	for (auto g : Groups) {
 		const FActorProbe& First = g.front();

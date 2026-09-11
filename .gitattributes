@@ -67,6 +67,26 @@
 ###############################################################################
 * text eol=crlf
 *.ico binary
+*.dds binary
+*.DDS binary
+*.tga binary
+*.TGA binary
+*.bmp binary
+*.BMP binary
+*.png binary
+*.PNG binary
+*.gif binary
+*.GIF binary
+*.tif binary
+*.TIF binary
+*.tiff binary
+*.TIFF binary
+*.jpg binary
+*.JPG binary
+*.jpeg binary
+*.JPEG binary
+*.hdr binary
+*.HDR binary
 *.hlsl -text
 *.hlsli -text
 *.fx -text

@@ -44,13 +44,7 @@ void UTexture::Initialize(ID3D11Device* device, const std::filesystem::path& met
 	const DirectX::TexMetadata* ImageMetaData = &SourceImageMetaData;
 
 	if (SourceImageMetaData.mipLevels == 1) {
-		const HRESULT Result = DirectX::GenerateMipMaps(
-			Images,
-			ImageCount,
-			SourceImageMetaData,
-			DirectX::TEX_FILTER_FANT,
-			0,
-			GeneratedMipChain);
+		const HRESULT Result = DirectX::GenerateMipMaps(Images, ImageCount, SourceImageMetaData, DirectX::TEX_FILTER_FANT, 0, GeneratedMipChain);
 		ErrorHandler::ReportHRESULT(Result, "[ UTexture ]", "Failed to generate mip maps: " + path.string(), ErrorHandler::EErrorLevel::Critical);
 
 		if (FAILED(Result)) {
@@ -62,11 +56,7 @@ void UTexture::Initialize(ID3D11Device* device, const std::filesystem::path& met
 		ImageMetaData = &GeneratedMipChain.GetMetadata();
 	}
 
-	ErrorHandler::ReportHRESULT(
-		DirectX::CreateShaderResourceView(device, Images, ImageCount, *ImageMetaData, ShaderResourceView.ReleaseAndGetAddressOf()),
-		"[ UTexture ]",
-		"Failed to create texture shader resource view: " + path.string(),
-		ErrorHandler::EErrorLevel::Critical);
+	ErrorHandler::ReportHRESULT(DirectX::CreateShaderResourceView(device, Images, ImageCount, *ImageMetaData, ShaderResourceView.ReleaseAndGetAddressOf()), "[ UTexture ]", "Failed to create texture shader resource view: " + path.string(), ErrorHandler::EErrorLevel::Critical);
 
 }
 
