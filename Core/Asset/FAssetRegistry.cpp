@@ -45,16 +45,27 @@ FAssetHandle FAssetRegistry::AdoptAsset(ID3D11Device* Device, const FGuid& ID, c
 		Device->GetImmediateContext(DeviceContext.GetAddressOf());
 
 		auto it = TexturePools.find(Texture->GetProfile());
-		if (it == TexturePools.end()) {
+		std::optional<uint16> sliceId;
+        uint16 ArrayId{}; 
+
+        if (it == TexturePools.end()) {
 			auto& NewPool = TexturePools[Texture->GetProfile()];
             NewPool.Initialize(Device, Texture->GetProfile());
-			NewPool.AppendImage(DeviceContext.Get(), {Texture->GetSourceImageData(), Texture->GetSourceImageRowPitch(), 0});
+			sliceId =  NewPool.AppendImage(DeviceContext.Get(), {Texture->GetSourceImageData(), Texture->GetSourceImageRowPitch(), 0});
+			ArrayId = static_cast<uint16>(TexturePools.size() - 1);
         }
         else {
 			auto& Pool = it->second;
-			Pool.AppendImage(DeviceContext.Get(), { Texture->GetSourceImageData(), Texture->GetSourceImageRowPitch(), 0 });
+			sliceId = Pool.AppendImage(DeviceContext.Get(), { Texture->GetSourceImageData(), Texture->GetSourceImageRowPitch(), 0 });
+			ArrayId = static_cast<uint16>(std::distance(TexturePools.begin(), it));
         }
+
+
+		FTextureLocation Location{};
+		Location.ProfileId = ArrayId;
+		Location.SliceId = sliceId.value_or(UINT16_MAX);
     }
+
 
     const FAssetHandle Handle = AllocateHandle();
 
@@ -91,6 +102,11 @@ FAssetHandle FAssetRegistry::GetAsset(const FGuid& ID) const {
     return It->second;
 }
 
+UAsset* FAssetRegistry::GetUAsset(const FString& Name) {
+	auto handle = GetAsset(Name);
+	return ResolveAsset<UAsset>(handle);
+}
+
 bool FAssetRegistry::RemoveAsset(FAssetHandle Handle) {
     if (Handle.ID >= Assets.size()) {
         return false;
@@ -125,7 +141,8 @@ void FAssetRegistry::Finalize() {
 	for (auto& [Handle, Asset] : Assets) {
 		if(Asset->GetTypeInfo()->IsA<UMaterial>()) {
 			auto* mat = static_cast<UMaterial*>(Asset.get());
-            
+            mat->Finalize(this); 
+            mat->MarkGPUDataDirty(); 
 		}
 	}
 }

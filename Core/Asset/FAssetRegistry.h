@@ -44,6 +44,8 @@ public:
     virtual FAssetHandle GetAsset(const FString& Name) const override;
     virtual FAssetHandle GetAsset(const FGuid& ID) const override;
 
+    virtual UAsset* GetUAsset(const FString& Name) override;
+
     bool RemoveAsset(FAssetHandle Handle);
 
     template<typename T> requires std::is_base_of_v<UAsset, T>

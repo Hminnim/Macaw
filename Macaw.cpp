@@ -162,70 +162,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     FMessageChannel GizmoCommandChannel{ 64 };
 
     
-    
-    /*
-    FMessageChannel UndoCommandChannel{ 64 };
-    FUndoSystem::InitializeSenderToWorldChannel(UndoCommandChannel.GetSender());
-    UndoCommandChannel.TryBind<FMessageUndoObjectStateChanged>(
-        [&World, &AssetRegistry](const FMessageUndoObjectStateChanged& Message)
-        {
-            UObject* Target = UObjectSystem::Resolve(UObjectSystem::FindHandleByGuid(Message.TargetGuid));
-            if (Target)
-            {
-                FArchiveMemory ArchiveLoad(Message.SavedData);
-                Target->Load(ArchiveLoad);
-
-            }
-        });
-    UndoCommandChannel.TryBind<FMessageUndoObjectSpawned>(
-        [&World, &AssetRegistry](const FMessageUndoObjectSpawned& Message)
-        {
-            FGuid ActorGuid;
-            ActorGuid.Parse(Message.TargetGuid.ToString());
-            FString TypeName = Message.TargetTypeName;
-
-            std::unique_ptr<UObject> CreatedObject = TypeRegistry::Find(TypeName)->Creator();
-            std::unique_ptr<AActor> ActorPointer(static_cast<AActor*>(CreatedObject.release()));
-            UObjectSystem::RegisterWithGuid(ActorPointer.get(), ActorGuid);
-
-            const auto SavedData = Message.SavedData;
-            FArchiveMemory ArchiveLoad(SavedData);
-            ArchiveLoad.SetAssetRegistry(&AssetRegistry);
-            ActorPointer->Load(ArchiveLoad);
-            ActorPointer->SetWorld(&World);
-
-            World.AddActor(std::move(ActorPointer));
-        });
-    UndoCommandChannel.TryBind<FMessageUndoObjectDestroyed>(
-        [&World](const FMessageUndoObjectDestroyed& Message)
-        {
-            World.DestroyActor(static_cast<AActor*>(UObjectSystem::Resolve(UObjectSystem::FindHandleByGuid(Message.TargetGuid))));
-            World.FlushPendingDestroyActors();
-        });
-    WorldCommandChannel.TryBind<FMessageUndoApply>(
-        [](const FMessageUndoApply& Message)
-        {
-            if (Message.bIsUndo)
-                FUndoSystem::Undo();
-            else
-                FUndoSystem::Redo();
-        });
-
-        */
 
 
     SpawnCommandChannel.TryBind<FMessageSpawnPrimitive>(
         [&World, &AssetRegistry](const FMessageSpawnPrimitive& Message)
         {
-            /*
-            FString TransactionName;
-            // "Spawn "(6자) + 32비트 정수 최대 길이(11자) + PrimitiveType 길이
-            TransactionName.reserve(17 + Message.PrimitiveType.size());
-            std::format_to(std::back_inserter(TransactionName), "Spawn {}{}(es)", Message.SpawnCount, Message.PrimitiveType);
-
-            FUndoSystem::BeginTransaction(TransactionName);
-            FUndoSystem::EndTransaction();
-            */
             World.HandleSpawnPrimitive(Message, AssetRegistry);
         }
     );
@@ -391,97 +332,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     CameraActor->SetRootComponent(Camera);
 
-    /*
-    {
-        constexpr uint32 InstanceCount = 120;
-        constexpr float MinInstanceX = -30.0f;
-        constexpr float MaxInstanceX = 30.0f;
-        constexpr float MinInstanceY = -12.0f;
-        constexpr float MaxInstanceY = 12.0f;
-        constexpr float NearInstanceDepth = 6.0f;
-        constexpr float FarInstanceDepth = 70.0f;
-
-        const FAssetHandle MeshHandle = AssetRegistry.GetAsset("SphereMesh");
-        const FAssetHandle BasePipelineHandle = AssetRegistry.GetAsset("BasePipeline");
-        const FAssetHandle AlternatePipelineHandle = AssetRegistry.GetAsset("AlternatePipeline");
-        const FAssetHandle MaterialHandle = AssetRegistry.GetAsset("GreyMaterial");
-
-
-        const auto Random01 = [](uint32 Seed) {
-            Seed ^= Seed >> 16;
-            Seed *= 0x7feb352dU;
-            Seed ^= Seed >> 15;
-            Seed *= 0x846ca68bU;
-            Seed ^= Seed >> 16;
-
-            return static_cast<float>(Seed & 0x00ffffffU) / static_cast<float>(0x00ffffffU);
-            };
-
-        UMesh* Mesh =
-            AssetRegistry.ResolveAsset<UMesh>( MeshHandle);
-
-        for (uint32 InstanceIndex = 0; InstanceIndex < InstanceCount; ++InstanceIndex) {
-            const float PositionX = MinInstanceX + Random01(InstanceIndex * 7U + 1U) * (MaxInstanceX - MinInstanceX);
-            const float PositionY = MinInstanceY + Random01(InstanceIndex * 7U + 2U) * (MaxInstanceY - MinInstanceY);
-            const float PositionZ = NearInstanceDepth + Random01(InstanceIndex * 7U + 3U) * (FarInstanceDepth - NearInstanceDepth);
-            const float ScaleFactor = 0.65f + Random01(InstanceIndex * 7U + 4U) * 0.7f;
-            const float Pitch = (Random01(InstanceIndex * 7U + 5U) - 0.5f) * 0.5f;
-            const float Yaw = (Random01(InstanceIndex * 7U + 6U) - 0.5f) * 0.5f;
-            const float Roll = (Random01(InstanceIndex * 7U + 7U) - 0.5f) * 1.3f;
-
-            AActor* InstanceActor = World.AdoptActor<AActor>();
-            UStaticMeshComponent* InstanceComponent = InstanceActor->AddComponent<UStaticMeshComponent>();
-            UCollisionComponent* CollisionComponent = InstanceActor->AddComponent<UCollisionComponent>();
-
-            InstanceActor->SetRootComponent(InstanceComponent);
-            CollisionComponent->AttachTo(InstanceComponent);
-
-            InstanceComponent->GetTransform().SetPosition({
-                PositionX,
-                PositionY,
-                PositionZ
-                });
-            InstanceComponent->GetTransform().SetRotation({ Pitch, Yaw, Roll });
-            InstanceComponent->GetTransform().SetScale({ ScaleFactor, ScaleFactor, ScaleFactor });
-
-            if (Mesh != nullptr)
-            {
-                CollisionComponent->SetBounds(Mesh->GetLocalBoundingBox());
-            }
-
-            InstanceComponent->SetMeshHandle(MeshHandle);
-
-
-
-
-
-            const bool bUseAlternatePipeline = InstanceIndex % 2 == 1;
-            InstanceComponent->SetPipelineHandle(bUseAlternatePipeline ? AlternatePipelineHandle : BasePipelineHandle);
-            InstanceComponent->SetMaterialHandle(MaterialHandle);
-
-            if (InstanceIndex == 0)
-            {
-                TestCollision = CollisionComponent;
-            }
-        }
-
-    }
-    World.SaveScene("test", &AssetRegistry);
-    */
-
 #endif 
-
-    FRenderProbe Probe = World.BuildRenderProbe();
-
-    std::string DebugText =
-        "Actor Count = " + std::to_string(Probe.ActorProbes.size()) + "\n";
-
 
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGui_ImplWin32_Init((void*)hWnd);
     ImGui_ImplDX11_Init(Renderer.GetDevice(), Renderer.GetDeviceContext());
+
+    auto& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; 
 
     auto LastTickTime = std::chrono::steady_clock::now();
 
@@ -506,6 +366,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             ImGui_ImplDX11_NewFrame();
             ImGui_ImplWin32_NewFrame();
             ImGui::NewFrame();
+            ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
             // 입력 상태는 WndProc의 ProcessWindowMessage에서 갱신한다.
 			EditorView.ProcessInput(GKeyboardInput, GMouseInput, ImGui::GetIO().WantCaptureMouse);

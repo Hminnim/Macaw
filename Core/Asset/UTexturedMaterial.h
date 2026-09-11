@@ -5,7 +5,7 @@
 #include "../Base/TypeInfo.h"
 
 struct FTexturedMaterialGPUData {
-    FTextureLocation Location;
+    FPackedTextureLocation Location;
     FVector3 Padding{};
     FVector4 Reserved0{};
     FVector4 Reserved1{};
@@ -40,4 +40,5 @@ public:
 
 private:
 	FTextureLocation Location{};
+    FString TextureName{}; 
 };

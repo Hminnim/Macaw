@@ -30,10 +30,11 @@ public:
 
     uint32 GetGPUIndex() const { return GPUIndex; }
 
+    void MarkGPUDataDirty() { bGPUDataDirty = true; }
+
 protected:
 	virtual void Serialize(FArchive& Ar) override;
 
-    void MarkGPUDataDirty() { bGPUDataDirty = true; }
 private:
     friend class FMaterialBuffer;
 

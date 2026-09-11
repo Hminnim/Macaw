@@ -236,6 +236,7 @@ public:
     const size_t GetSourceImageDataSize() const;
     const uint32 GetSourceImageRowPitch() const;
 
+	void SetLocation(FTextureLocation InLocation) { Location = InLocation; }
 protected:
 	virtual void Serialize(FArchive& Ar) override;
 private:
