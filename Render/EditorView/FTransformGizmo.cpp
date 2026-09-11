@@ -303,7 +303,10 @@ void FTransformGizmo::UpdateBoundsInGizmoSpace(const FEditorSelectionState& Sele
 	DirectX::BoundingOrientedBox LocalBounds{};
 	LocalBounds.Center = Selection.BoundsCenter.ToSimpleMath();
 	LocalBounds.Extents = Selection.BoundsExtent.ToSimpleMath();
-	LocalBounds.Orientation = Selection.BoundsOrientation;
+	LocalBounds.Orientation.x = Selection.BoundsOrientation.x;
+	LocalBounds.Orientation.y = Selection.BoundsOrientation.y;
+	LocalBounds.Orientation.z = Selection.BoundsOrientation.z;
+	LocalBounds.Orientation.w = Selection.BoundsOrientation.w;
 
 	std::array<DirectX::XMFLOAT3, DirectX::BoundingOrientedBox::CORNER_COUNT> Corners{};
 	LocalBounds.GetCorners(Corners.data());
@@ -602,7 +605,7 @@ void FTransformGizmo::UpdateDrag(const FRay& WorldRay) {
 		const float CosAngle = std::clamp(Session.InitialRotationDirection.Dot(CurrentDirection),-1.0f,1.0f);
 		const float AngleDelta = std::atan2(SinAngle,CosAngle);
 
-		const FQuat Rotation = FQuat::CreateFromAxisAngle(Session.AxisWorld.ToSimpleMath(),AngleDelta);
+		const FQuat Rotation = FQuat::CreateFromAxisAngle(FVector(Session.AxisWorld.ToSimpleMath().x, Session.AxisWorld.ToSimpleMath().y, Session.AxisWorld.ToSimpleMath().z),AngleDelta);
 		const FMatrix RotationMatrix = FMatrix::CreateFromQuaternion(Rotation);
 		const FVector3 Pivot = Session.InteractionPivotWorld;
 
