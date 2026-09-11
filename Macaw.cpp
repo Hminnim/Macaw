@@ -254,6 +254,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
         EditorCameraStateChannel.GetWriter(),
         EditorCameraStateChannel.GetReader(),
+        Renderer.GetRenderModeWriter(),
 
         gHWND,
 

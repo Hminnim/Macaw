@@ -15,6 +15,9 @@
 #include "../Core/Channel/FStateChannel.h"
 #include "RenderWindowInfo.h"
 
+#include "../FRenderModeRequestMessage.h"
+
+
 class FRenderer {
 	struct ModelContext {
 		FMatrix World{};
@@ -47,6 +50,12 @@ public:
 	FStateChannel<RenderWindowInfo>::FReader GetWindowInfoReader() const { return WindowInfoChannel.GetReader(); }
 
 	void ReSize(uint32 width, uint32 height);
+
+	void HandleRenderModeRequest(const FRenderModeRequestMessage& Message);
+
+	FStateChannel<size_t>::FWriter GetRenderModeWriter() {
+		return RenderModeState.GetWriter();
+	}
 private:
 	void CreateDeviceAndSwapChain(HWND WindowHandle);
 	
@@ -75,4 +84,9 @@ private:
 	TGraphicsRootConstants<64> RootConstants{};
 
 	const float ClearColor[4] = { 0.2f, 0.2f, 0.7f, 1.0f };
+
+	FStateChannel<size_t> RenderModeState{};
+
+	FStateChannel<size_t>::FReader RenderModeStateReader{};
+	size_t RenderIndex = 0;
 };

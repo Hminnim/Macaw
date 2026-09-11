@@ -8,6 +8,8 @@
 #include <ranges>
 #include <range/v3/view/chunk_by.hpp>
 
+#include "../Render/Panel/FEditorInfo.h"
+
 FRenderer::~FRenderer() {
 
 }
@@ -25,6 +27,10 @@ void FRenderer::Create(HWND WindowHandle, UINT width, UINT height) {
 
 	ModelContextArray.Initialize(Device.Get(), DeviceContext.Get(), 128);
 	RootConstants.Initialize(Device.Get());
+
+	RenderModeStateReader = RenderModeState.GetReader();
+
+	RenderModeState.GetWriter().Emplace(0);
 }
 
 void FRenderer::BeginFrame() {
@@ -96,6 +102,10 @@ void FRenderer::Render(FRenderProbe& Probe) {
 		UMesh* Mesh = AssetRegistry->ResolveAsset<UMesh>(First.MeshHandle);
 		
 		Pipeline->Bind(DeviceContext.Get());
+
+		size_t Result = RenderModeStateReader.Read();
+
+		Pipeline->SetRenderMode(static_cast<ERenderMode>(Result)); 
 
 		ID3D11Buffer* VertexBuffers[] = { 
 			Mesh->GetVertexBuffer(EVertexAttribute::Position),
@@ -172,6 +182,11 @@ void FRenderer::ReSize(uint32 width, uint32 height) {
 	CreateDSV();
 
 	DeviceContext->RSSetViewports(1, &Viewport);
+}
+
+void FRenderer::HandleRenderModeRequest(const FRenderModeRequestMessage& Message)
+{
+	RenderIndex = Message.ModeIndex;
 }
 
 void FRenderer::CreateDeviceAndSwapChain(HWND WindowHandle) {

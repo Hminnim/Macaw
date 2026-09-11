@@ -16,12 +16,14 @@ public:
     FControlPanel(
         FStateChannel<FMessageEditorCameraState>::FWriter InCamWriter,
         FStateChannel<FMessageEditorCameraState>::FReader InCamReader,
+        FStateChannel<size_t>::FWriter InRenderModeWriter,
         HWND InputWindowHandle,
         FMessageChannel::FSender InSpawnSender,
         FMessageChannel::FSender InSceneSender
     )
         : CamWriter(std::move(InCamWriter))
         , CamReader(std::move(InCamReader))
+        , RenderModeWriter(std::move(InRenderModeWriter))
         , WindowHandle(InputWindowHandle)
         , SpawnSender(std::move(InSpawnSender))
         , SceneSender(std::move(InSceneSender))
@@ -35,6 +37,7 @@ public:
 private:
     FStateChannel<FMessageEditorCameraState>::FWriter CamWriter;
     FStateChannel<FMessageEditorCameraState>::FReader CamReader;
+    FStateChannel<size_t>::FWriter RenderModeWriter;
 
     //FMessageChannel::FSender WorldCommandSender;
 
@@ -54,4 +57,6 @@ private:
     float CachedFOV = 1.0472f;
 
     HWND WindowHandle;
+
+    size_t RenderModeIndex = 0;
 };

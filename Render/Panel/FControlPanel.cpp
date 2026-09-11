@@ -157,6 +157,25 @@ void FControlPanel::DrawPanel()
             });
     }
 
+    ImGui::Separator();
+
+    // =====================================================
+    // RenderMode
+    // =====================================================
+    bool bRenderModeChanged = false;
+    int renderIndex = RenderModeIndex;
+
+    const char* renderMode[] = { "Solid", "Lit", "Unlit", "Wireframe" };
+
+    if (ImGui::Combo("Render Mode", &renderIndex, renderMode, IM_ARRAYSIZE(renderMode))) {
+        bRenderModeChanged = true;
+    }
+
+    if (bRenderModeChanged)
+    {
+        RenderModeWriter.Write(static_cast<size_t>(renderIndex));
+    }
+
     /*
     if (ImGui::Button("Undo"))
     {
