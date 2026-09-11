@@ -52,6 +52,8 @@ class FTransformGizmo {
 		float InitialAxisParameter = 0.0f;
 		std::uint64_t InitialTransformRevision = 0;
 		EAxis DragAxis = EAxis::None;
+		EModifyMode ModifyMode = EModifyMode::None;
+		FVector3 InitialRotationDirection{};
 		float WorkUnitsPerPixel = 1.0f;
 	};
 
@@ -74,7 +76,14 @@ public:
 
 	FStateChannel<uint8>::FReadWriter GetGizmoMode() { return GizmoModeChannel.GetReadWriter(); }
 private:
-	void SetArrow(const FVector3& Pivot, float WorldUnitsPerPixel);
+
+	void SetTranslate(const FVector3& Pivot, float WorldUnitsPerPixel);
+	void SetScale(const FVector3& Pivot, float WorldUnitsPerPixel);
+	void SetRotate(const FVector3& Pivot, float WorldUnitsPerPixel);
+
+	FAssetHandle GetAxisMaterial(EAxis Axis) const;
+	void AddRenderPart(EAxis Axis,const FMatrix& LocalTransform,FAssetHandle MeshHandle);
+
 	void UpdateBoundsInGizmoSpace(const FEditorSelectionState& Selection, FVector3& OutCenter, FVector3& OutExtent) const;
 
 	std::optional<FRay> MakeWorldRay(const POINT& ScreenPosition) const;
@@ -96,8 +105,13 @@ private:
 	static constexpr float PickRadiusPixels = 10.0f;
 	static constexpr float BoundsGapPixels = 2.0f;
 
+	float CurrentRingRadius = 0.0f;
+	float CurrentRingPickHalfWidth = 0.0f;
+
 	FAssetHandle CylinderMesh{};
 	FAssetHandle ConeMesh{};
+	FAssetHandle CubeMesh{};
+	FAssetHandle GizmoTorusMesh{};
 
 	FAssetHandle RedMaterial{};
 	FAssetHandle GreenMaterial{};
@@ -112,6 +126,14 @@ private:
 	FMatrix ConeXAxisTransform{ FMatrix::Identity };
 	FMatrix ConeYAxisTransform{ FMatrix::Identity };
 	FMatrix ConeZAxisTransform{ FMatrix::Identity };
+
+	FMatrix CubeXAxisTransform{ FMatrix::Identity };
+	FMatrix CubeYAxisTransform{ FMatrix::Identity };
+	FMatrix CubeZAxisTransform{ FMatrix::Identity };
+
+	FMatrix TorusXAxisTransform{ FMatrix::Identity };
+	FMatrix TorusYAxisTransform{ FMatrix::Identity };
+	FMatrix TorusZAxisTransform{ FMatrix::Identity };
 
 	FMatrix GizmoWorldTransform{ FMatrix::Identity };
 	FVector3 BoundsCenterInGizmoSpace{};

@@ -52,8 +52,8 @@
   },
 
   "DepthStencil": {
-    "DepthEnable": false,
-    "DepthWriteEnable": false,
+    "DepthEnable": true,
+    "DepthWriteEnable": true,
     "DepthFunc": "LessEqual"
   },
 

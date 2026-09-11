@@ -51,6 +51,20 @@ void FRenderer::RenderScene(FRenderProbe& Probe)
 
 void FRenderer::RenderGizmos(FRenderProbe& Probe)
 {
+	if (Probe.GizmoProbes.empty())
+	{
+		return;
+	}
+
+	// Preserve the scene color, but give gizmos a fresh depth buffer so they stay
+	// visible over the scene while still occluding one another correctly.
+	DeviceContext->ClearDepthStencilView(
+		DepthStencilView.Get(),
+		D3D11_CLEAR_DEPTH,
+		1.0f,
+		0
+	);
+
 	RenderActorList(
 		Probe.GizmoProbes,
 		Probe.MainCameraProbe
