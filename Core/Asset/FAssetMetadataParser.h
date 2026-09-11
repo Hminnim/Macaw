@@ -385,7 +385,6 @@ private:
     static bool ConvertValue(const rapidjson::Value& Value, FVector2D& OutValue);
     static bool ConvertValue(const rapidjson::Value& Value, FVector3& OutValue);
     static bool ConvertValue(const rapidjson::Value& Value, FVector4& OutValue);
-    static bool ConvertValue(const rapidjson::Value& Value, FColor4& OutValue);
 
     template<typename T>
     static bool ConvertValue(const rapidjson::Value& Value, T& OutValue) {

@@ -3,6 +3,57 @@
 #include <cmath>
 #include "SimpleMath/SimpleMath.h"
 
+struct FVector2
+{
+	float x = 0.0f;
+	float y = 0.0f;
+
+	constexpr FVector2() = default;
+	constexpr FVector2(float InX, float InY) : x(InX), y(InY) {}
+
+	float LengthSquared() const
+	{
+		return x * x + y * y;
+	}
+
+	float Length() const
+	{
+		return sqrt(LengthSquared());
+	}
+
+	void Normalize()
+	{
+		float VectorLength = Length();
+		if (VectorLength > 0.0f)
+		{
+			x /= VectorLength;
+			y /= VectorLength;
+		}
+	}
+
+	FVector2 operator+(const FVector2& Other) const
+	{
+		return FVector2(x + Other.x, y + Other.y);
+	}
+
+	FVector2 operator-(const FVector2& Other) const
+	{
+		return FVector2(x - Other.x, y - Other.y);
+	}
+
+	FVector2 operator*(float Scalar) const
+	{
+		return FVector2(x * Scalar, y * Scalar);
+	}
+
+	FVector2& operator/=(float Scalar)
+	{
+		x /= Scalar;
+		y /= Scalar;
+		return *this;
+	}
+};
+
 struct FMatrix;
 
 struct FVector
@@ -90,3 +141,82 @@ inline const FVector FVector::Zero{};
 inline const FVector FVector::UnitX{1, 0, 0};
 inline const FVector FVector::UnitY{0, 1, 0};
 inline const FVector FVector::UnitZ{0, 0, 1};
+
+struct FVector4
+{
+	float x = 0.0f;
+	float y = 0.0f;
+	float z = 0.0f;
+	float w = 0.0f;
+
+	constexpr FVector4() = default;
+	constexpr FVector4(float InX, float InY, float InZ, float InW) : x(InX), y(InY), z(InZ), w(InW) {}
+	constexpr FVector4(FVector InXYZ, float InW) : x(InXYZ.x), y(InXYZ.y), z(InXYZ.z), w(InW) {}
+
+	float Dot(const FVector4& Rhs) const
+	{
+		return x * Rhs.x + y * Rhs.y + z * Rhs.z+ w * Rhs.w;
+	}
+
+	float LengthSquared() const
+	{
+		return Dot(*this);
+	}
+	float Length() const
+	{
+		return std::sqrt(LengthSquared());
+	}
+	//float Length3Squared() const;
+	//float Length3() const;
+
+	FVector4 operator+(const FVector4& Rhs) const
+	{
+		return FVector4(x + Rhs.x, y + Rhs.y, z + Rhs.z, w + Rhs.w);
+	}
+
+	FVector4 operator-(const FVector4& Rhs) const
+	{
+		return FVector4(x - Rhs.x, y - Rhs.y, z - Rhs.z, w - Rhs.w);
+	}
+
+	FVector4 operator*(float Scalar) const
+	{
+		return FVector4(x * Scalar, y * Scalar, z * Scalar, w * Scalar);
+	}
+
+	FVector4& operator+=(const FVector4& Rhs)
+	{
+		x += Rhs.x;
+		y += Rhs.y;
+		z += Rhs.z;
+		w += Rhs.w;
+		return *this;
+	}
+
+	FVector4& operator-=(const FVector4& Rhs)
+	{
+		x -= Rhs.x;
+		y -= Rhs.y;
+		z -= Rhs.z;
+		w -= Rhs.w;
+		return *this;
+	}
+
+	FVector4& operator*=(float Scalar)
+	{
+		x *= Scalar;
+		y *= Scalar;
+		z *= Scalar;
+		w *= Scalar;
+		return *this;
+	}
+
+	FVector4& operator/=(float Scalar)
+	{
+		x /= Scalar;
+		y /= Scalar;
+		z /= Scalar;
+		w /= Scalar;
+		return *this;
+	}
+};

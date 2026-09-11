@@ -255,17 +255,3 @@ bool FAssetMetadataParser::ConvertValue(const rapidjson::Value& Value, FVector4&
     OutValue = FVector4{ X, Y, Z, W };
     return true;
 }
-
-bool FAssetMetadataParser::ConvertValue(const rapidjson::Value& Value, FColor4& OutValue) {
-    float R;
-    float G;
-    float B;
-    float A;
-
-    if (!TryReadColor(Value, R, G, B, A)) {
-        return false;
-    }
-
-    OutValue = FColor4{ R, G, B, A };
-    return true;
-}
