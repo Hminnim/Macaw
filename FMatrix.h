@@ -1,10 +1,10 @@
-﻿#pragma once
+﻿/*#pragma once
 
 #include <cmath>
 #include <limits>
 #include "FVector.h"
-
-using FQuat = DirectX::SimpleMath::Quaternion;
+#include "FQuat.h"
+//using FQuat = DirectX::SimpleMath::Quaternion;
 
 struct FMatrix
 {
@@ -417,7 +417,7 @@ struct FMatrix
 
     FQuat ToQuaternion() const
     {
-        return FQuat::CreateFromRotationMatrix(ToSimpleMath());
+        return FQuat::CreateFromRotationMatrix(*this);
     }
 
     bool Decompose(
@@ -513,4 +513,4 @@ inline FVector FVector::Transform(const FVector& position, const FMatrix& matrix
 inline FVector FVector::TransformNormal(const FVector& direction, const FMatrix& matrix)
 {
     return matrix.TransformDirection(direction);
-}
+}*/
