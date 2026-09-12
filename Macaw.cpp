@@ -228,70 +228,32 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 
     FMessageChannel WorldCommandChannel{ 64 };
-
-    FStateChannel<FMessageEditorCameraState> EditorCameraStateChannel;
-
-    FMessageChannel SpawnCommandChannel{ 64 };
-    FMessageChannel SceneCommandChannel{ 64 };
-    FMessageChannel GizmoCommandChannel{ 64 };
-
-    
-
-
-    SpawnCommandChannel.TryBind<FMessageSpawnPrimitive>(
-        [&World, &AssetRegistry](const FMessageSpawnPrimitive& Message)
-        {
-            World.HandleSpawnPrimitive(Message, AssetRegistry);
-        }
-    );
-
-    SpawnCommandChannel.TryBind<FMessageDeletePrimitive>(
-        [&World, &EditorContext](const FMessageDeletePrimitive& Message)
-        {
-            if (EditorContext.GetSelectionStateReader().HasValue())
-            {
-                if (UCollisionComponent* SelectedCollider = EditorContext.GetSelectedCollider()) {
-                    World.DestroyActor(SelectedCollider->GetOwner());
-                }
-                World.FlushPendingDestroyActors();
-            }
-
-        }
-    );
+    EditorContext.InitializeChannels(AssetRegistry, Renderer.GetDevice());
 
     
 
     EditorViewport EditorView{};
-    EditorView.Initialize(Renderer.GetDevice(), AssetRegistry, Renderer.GetWindowInfoReader(), EditorContext.GetSelectionStateReader(), WorldCommandChannel.GetSender());
+    EditorView.Initialize(Renderer.GetDevice(), AssetRegistry, Renderer.GetWindowInfoReader(), EditorContext);
 
     FEditorUIManager EditorUIManager;
 
     EditorUIManager.Initialize(
         World,
 
-        EditorCameraStateChannel.GetWriter(),
-        EditorCameraStateChannel.GetReader(),
+        EditorContext,
 
         gHWND,
 
-        EditorContext.GetSelectionStateReader(),
-        WorldCommandChannel.GetSender(),
-
-        SpawnCommandChannel.GetSender(),
-        SceneCommandChannel.GetSender(),
         EditorView.GetGizmoMode()
-    );
-
-    World.InitializeEditorCameraState(
-        EditorCameraStateChannel.GetWriter(),
-        EditorCameraStateChannel.GetReader()
     );
 
     GMouseInput.InitializeWorldCommandSender(WorldCommandChannel.GetSender());
     GKeyboardInput.InitializeWorldCommandSender(WorldCommandChannel.GetSender());
 	World.SetWindowInfoReader(Renderer.GetWindowInfoReader());
 	World.SetAssetRegistry(&AssetRegistry);
-    EditorContext.BindEditorCommands(WorldCommandChannel);
+
+    WorldCommandChannel.TryBind<FMousePickRequestMessage>(
+        [&World](const FMousePickRequestMessage& Message) { World.HandleMousePickRequest(Message); });
 
     WorldCommandChannel.TryBind<FMouseCameraRotateRequestMessage>(
         [&World](const FMouseCameraRotateRequestMessage& Message)
@@ -307,30 +269,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                 World.HandleKeyboardCameraMoveRequest(Message);
             });
 
-    SceneCommandChannel.TryBind<FMessageNewScene>(
-        [&World](const FMessageNewScene& Message)
-        {
-            World.HandleNewScene(Message);
-        }
-    );
-
-    if constexpr (bEnableSceneSave) {
-        SceneCommandChannel.TryBind<FMessageSaveScene>(
-            [&World, &AssetRegistry](const FMessageSaveScene& Message)
-            {
-                World.SaveScene(
-                    Message.SceneName,
-                    &AssetRegistry
-                );
-            }
-        );
-    }
-	WorldCommandChannel.TryBind<FMousePickReleaseRequestMessage>(
-		[&World](const FMousePickReleaseRequestMessage& Message)
-		{
-			World.HandleMousePickReleaseRequest(Message);
-		});
-
 	WorldCommandChannel.TryBind<FTransformEditRequestMessage>(
 		[&World](const FTransformEditRequestMessage& Message) {
 			World.HandleTransformEditRequest(Message);
@@ -339,23 +277,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 
   
-    SceneCommandChannel.TryBind<FMessageLoadScene>(
-        [&World, &AssetRegistry](const FMessageLoadScene& Message)
-        {
-            World.LoadScene(
-                std::filesystem::path(Message.FilePath.c_str()),
-                Renderer.GetDevice(),
-                &AssetRegistry
-            );
-        }
-    );
-
-    GizmoCommandChannel.TryBind<FMessageChangeGizmoMode>(
-        [&World](const FMessageChangeGizmoMode& Message)
-        {
-            World.HandleChangeGizmoMode(Message);
-        }
-    );
 	
     if constexpr (bLoadTestScene) {
 		World.LoadScene("./scenes/test.json", Renderer.GetDevice(), &AssetRegistry);
@@ -457,9 +378,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             WorldCommandChannel.Dispatch();
             World.Tick(DeltaTime);
 
-            SpawnCommandChannel.Dispatch();
-            SceneCommandChannel.Dispatch();
-            GizmoCommandChannel.Dispatch();
+            EditorContext.Dispatch();
 
             //UndoCommandChannel.Dispatch();
 

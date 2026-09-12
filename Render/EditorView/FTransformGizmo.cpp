@@ -12,7 +12,7 @@
 #include "../../Core/Asset/BasicGeometry/Cylinder.h"
 #include "../../Core/Asset/UColorMaterial.h"
 
-void FTransformGizmo::Initialize(ID3D11Device* Device, FAssetRegistry& AssetRegistry, FStateChannel<RenderWindowInfo>::FReader InWindowInfoReader, FStateChannel<FEditorSelectionState>::FReader InSelectionReader, FMessageChannel::FSender InWorldCommandSender) {
+void FTransformGizmo::Initialize(ID3D11Device* Device, FAssetRegistry& AssetRegistry, FStateChannel<RenderWindowInfo>::FReader InWindowInfoReader, FWorldEditorContext& InEditorContext) {
 
 	CylinderMesh = AssetRegistry.EmplaceAsset<UMesh>(Device, "CylinderMesh", "./Content/Metadata/CylinderMesh.meta");
 	ConeMesh = AssetRegistry.EmplaceAsset<UMesh>(Device, "ConeMesh", "./Content/Metadata/ConeMesh.meta");
@@ -26,8 +26,7 @@ void FTransformGizmo::Initialize(ID3D11Device* Device, FAssetRegistry& AssetRegi
 	GizmoPipeline = AssetRegistry.EmplaceAsset<UPipeline>(Device, "GizmoPipeline", "./Content/Metadata/GizmoPipeline.meta");
 
 	WindowInfoReader = InWindowInfoReader;
-	SelectionReader = InSelectionReader;
-	WorldCommandSender.emplace(std::move(InWorldCommandSender));
+	EditorContext = &InEditorContext;
 
 	GizmoMode = GizmoModeChannel.GetReadWriter();
 	GizmoMode.Emplace(static_cast<uint8>(EModifyMode::Translate));
@@ -92,7 +91,7 @@ void FTransformGizmo::Update(const CameraProbe& Camera) {
 	LastCamera = Camera;
 	bHasCamera = true;
 
-	if (!SelectionReader.HasValue() || !WindowInfoReader.HasValue()) {
+	if (EditorContext == nullptr || EditorContext->GetSelectionState() == nullptr || !WindowInfoReader.HasValue()) {
 		if (DragSession.has_value()) {
 			EndDrag(true);
 		}
@@ -100,7 +99,7 @@ void FTransformGizmo::Update(const CameraProbe& Camera) {
 		return;
 	}
 
-	const FEditorSelectionState& Selection = SelectionReader.Read();
+	const FEditorSelectionState& Selection = *EditorContext->GetSelectionState();
 	if (!Selection.TransformTargetHandle.IsValid()) {
 		bVisible = false;
 		return;
@@ -425,7 +424,7 @@ std::optional<FTransformGizmo::FAxisHit> FTransformGizmo::HitTest(const FRay& Wo
 bool FTransformGizmo::BeginDrag(EAxis Axis, const FRay& WorldRay) {
 
 	// 메시지를 보낼 수 없거나 유효한 축이 아니면 드래그를 시작하지 않는다.
-	if (!WorldCommandSender.has_value() || Axis == EAxis::None) 
+	if (EditorContext == nullptr || Axis == EAxis::None)
 	{
 		return false;
 	}
@@ -712,11 +711,11 @@ FVector3 FTransformGizmo::GetWorldAxis(EAxis Axis) const {
 }
 
 void FTransformGizmo::SendTransformEdit(std::uint64_t SessionId, ETransformEditPhase Phase, FObjectHandle TargetHandle, const FMatrix& DesiredWorld, std::uint64_t ExpectedTransformRevision) {
-	if (!WorldCommandSender.has_value()) {
+	if (EditorContext == nullptr) {
 		return;
 	}
 
-	WorldCommandSender->TryEmplace<FTransformEditRequestMessage>(SessionId, Phase, TargetHandle, DesiredWorld, ExpectedTransformRevision);
+	EditorContext->GetEditorToWorldSender().TryEmplace<FTransformEditRequestMessage>(SessionId, Phase, TargetHandle, DesiredWorld, ExpectedTransformRevision);
 }
 
 void FTransformGizmo::Render(FRenderProbe& Probe) {

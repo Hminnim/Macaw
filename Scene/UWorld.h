@@ -18,6 +18,7 @@
 #include "Core/Base/UObject.h"
 #include "Core/Base/UObjectSystem.h"
 #include "Core/Base/FRenderProbe.h"
+#include "FWorldEditorContext.h"
 #include "FKeyboardCameraMoveRequestMessage.h"
 #include "FMouseCameraRotateRequestMessage.h"
 #include "FMousePickRequestMessage.h"
@@ -29,7 +30,6 @@
 class UCameraSubsystem;
 class UCollisionSubsystem;
 class URenderSubsystem;
-class FWorldEditorContext;
 
 class UWorld : public UObject
 {
@@ -78,13 +78,7 @@ public:
 
 	JG_DECLARE_DERIVED_TYPEINFO(UWorld, UObject);
 
-    void InitializeEditorCameraState(
-        FStateChannel<FMessageEditorCameraState>::FWriter InWriter,
-        FStateChannel<FMessageEditorCameraState>::FReader InReader);
-
     void HandleMousePickRequest(const FMousePickRequestMessage& Message);
-
-	void HandleMousePickReleaseRequest(const FMousePickReleaseRequestMessage& Message);
 
 	void HandleTransformEditRequest(const FTransformEditRequestMessage& Message);
 
@@ -93,15 +87,7 @@ public:
     void HandleKeyboardCameraMoveRequest(const FKeyboardCameraMoveRequestMessage& Message);
 
     void HandleSpawnPrimitive(const FMessageSpawnPrimitive& Message, FAssetRegistry& AssetRegistry);
-    void HandleNewScene(const FMessageNewScene& Message);
-    void HandleLoadScene(const FMessageLoadScene& Message);
 
-    void HandleChangeGizmoMode(const FMessageChangeGizmoMode& Message);
-
-    std::optional<FStateChannel<FMessageEditorCameraState>::FWriter> EditorCameraWriter;
-    std::optional<FStateChannel<FMessageEditorCameraState>::FReader> EditorCameraReader;
-
-	void UpdateEditorCameraState();
     void SetAssetRegistry(FAssetRegistry* InAssetRegistry);
 	void SetWindowInfoReader(FStateChannel<RenderWindowInfo>::FReader InReader) { WindowInfoReader = InReader; }
 
@@ -140,9 +126,4 @@ private:
     void ApplyEditorCameraState();
     void PublishEditorCameraState();
 
-    std::optional<FStateChannel<FMessageEditorCameraState>::FWriter>
-        EditorCameraStateWriter;
-
-    std::optional<FStateChannel<FMessageEditorCameraState>::FReader>
-        EditorCameraStateReader;
 };

@@ -10,6 +10,7 @@
 #include "Core/Channel/FStateChannel.h"
 #include "../../FEditorSelectionState.h"
 #include "../../FTransformEditRequestMessage.h"
+#include "../../Scene/FWorldEditorContext.h"
 
 class FPropertyPanel : public IEditorPanel {
 	struct FTransformEditSession {
@@ -21,21 +22,19 @@ class FPropertyPanel : public IEditorPanel {
 
 public:
 	FPropertyPanel(
-		FStateChannel<FEditorSelectionState>::FReader InSelectionReader,
-		FStateChannel<uint8>::FReadWriter InGizmoMode,
-		FMessageChannel::FSender InWorldCommandSender)
-		: SelectionReader(std::move(InSelectionReader))
-		, WorldCommandSender(std::move(InWorldCommandSender))
+		FWorldEditorContext& InEditorContext,
+		FStateChannel<uint8>::FReadWriter InGizmoMode)
+		: EditorContext(&InEditorContext)
 		, GizmoMode(std::move(InGizmoMode)) {
 	}
 
 	void DrawPanel() override {
-		if (!SelectionReader.HasValue()) {
+		if (EditorContext == nullptr || EditorContext->GetSelectionState() == nullptr) {
 			CancelTransformEdit();
 			return;
 		}
 
-		const FEditorSelectionState& Selection = SelectionReader.Read();
+		const FEditorSelectionState& Selection = *EditorContext->GetSelectionState();
 		if (!Selection.TransformTargetHandle.IsValid()) {
 			CancelTransformEdit();
 			return;
@@ -125,7 +124,7 @@ private:
 		FObjectHandle TargetHandle,
 		const FMatrix& DesiredWorld,
 		std::uint64_t ExpectedTransformRevision) {
-		return WorldCommandSender.TryEmplace<FTransformEditRequestMessage>(
+		return EditorContext->GetEditorToWorldSender().TryEmplace<FTransformEditRequestMessage>(
 			SessionId,
 			Phase,
 			TargetHandle,
@@ -189,9 +188,8 @@ private:
 	}
 
 private:
-	FStateChannel<FEditorSelectionState>::FReader SelectionReader;
+	FWorldEditorContext* EditorContext = nullptr;
 	FStateChannel<uint8>::FReadWriter GizmoMode;
-	FMessageChannel::FSender WorldCommandSender;
 
 	std::optional<FTransformEditSession> ActiveTransformEdit;
 	FVector3 EditPosition{};

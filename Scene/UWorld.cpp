@@ -7,7 +7,6 @@
 #include "AActor.h"
 #include "Component/UCameraComponent.h"
 #include "Component/UStaticMeshComponent.h"
-#include "Component/UBoxColliderComponent.h"
 #include "Subsystem/UCameraSubsystem.h"
 #include "Subsystem/UCollisionSubsystem.h"
 #include "Subsystem/URenderSubsystem.h"
@@ -39,11 +38,6 @@ namespace {
 	}
 }
 
-std::string GetFilePathFromExplorer()
-{
-    return "./scenes/test.json";
-}
-
 UWorld::UWorld() {
     InitializeSubsystems();
 }
@@ -62,7 +56,6 @@ UWorld::~UWorld() {
 bool UWorld::SpawnActor(const FAssetHandle& MeshHandle, const FAssetHandle& PipelineHandle, const FAssetHandle& MaterialHandle, 
                         const FVector3& Position)
 {
-    //std::unique_ptr<AActor> Actor;
     auto Actor = UWorld::AdoptActor<AActor>();
 
     UStaticMeshComponent* MeshComponent = Actor->AddComponent<UStaticMeshComponent>();
@@ -78,10 +71,6 @@ bool UWorld::SpawnActor(const FAssetHandle& MeshHandle, const FAssetHandle& Pipe
             Position.y,
             Position.z
         });
-
-    FGuid Guid = Actor->GetGuid();
-    
-    //FUndoSystem::RecordObject(UObjectSystem::Resolve(UObjectSystem::FindHandleByGuid(Guid)), EUndoType::Spawn, AssetRegistry);
 
     return true;
 }
@@ -176,19 +165,6 @@ FWorldEditorContext* UWorld::GetEditorContext() const noexcept {
     return EditorContext;
 }
 
-void UWorld::InitializeEditorCameraState(
-    FStateChannel<FMessageEditorCameraState>::FWriter InWriter,
-    FStateChannel<FMessageEditorCameraState>::FReader InReader)
-{
-    EditorCameraStateWriter.emplace(std::move(InWriter));
-    EditorCameraStateReader.emplace(std::move(InReader));
-
-    if (GetCameraSubsystem().GetMainCamera() != nullptr)
-    {
-        PublishEditorCameraState();
-    }
-}
-
 FRenderProbe& UWorld::BuildRenderProbe() 
 {
     GetRenderSubsystem().BuildRenderProbes(Probe);
@@ -214,6 +190,9 @@ void UWorld::Tick(float DeltaTime)
     }
 
     ApplyEditorCameraState();
+    if (EditorContext != nullptr && EditorContext->GetCameraState() == nullptr) {
+        PublishEditorCameraState();
+    }
     if (EditorContext != nullptr) {
         EditorContext->RefreshSelectionState(TransformRevision);
     }
@@ -490,10 +469,6 @@ void UWorld::HandleMousePickRequest(const FMousePickRequestMessage& Message) {
 
 }
 
-void UWorld::HandleMousePickReleaseRequest(const FMousePickReleaseRequestMessage& Message)
-{
-}
-
 void UWorld::HandleTransformEditRequest(const FTransformEditRequestMessage& Message) {
 	TObjectRef<USceneComponent> TargetRef{ Message.TargetHandle };
 	USceneComponent* Target = TargetRef.Get();
@@ -571,17 +546,6 @@ void UWorld::HandleMouseCameraRotateRequest(const FMouseCameraRotateRequestMessa
 
     PublishEditorCameraState();
 
-    if (EditorCameraWriter.has_value())
-    {
-        EditorCameraWriter->Write(
-            FMessageEditorCameraState
-            {
-                CameraTransform.GetPosition(),
-                CameraTransform.GetRotation(),
-                Camera->GetFOV()
-            }
-        );
-    }
 }
 
 AActor* UWorld::AddActor(std::unique_ptr<AActor> InActor) 
@@ -715,48 +679,6 @@ void UWorld::ResetWorld(FAssetRegistry* AssetRegistry, ID3D11Device* Device)
     AssetRegistry->Initialize(Device);
 }
 
-void UWorld::HandleNewScene(
-    const FMessageNewScene& Message)
-{
-    // 현재 Scene 초기화
-}
-
-void UWorld::HandleChangeGizmoMode(
-    const FMessageChangeGizmoMode& Message)
-{
-    // Gizmo mode 변경
-}
-
-void UWorld::UpdateEditorCameraState()
-{
-    UCameraComponent* Camera = GetCameraSubsystem().GetMainCamera();
-    if (!EditorCameraReader.has_value() || Camera == nullptr)
-    {
-        return;
-    }
-
-    auto Result =
-        EditorCameraReader->ReadIfChanged();
-
-    if (!Result.Changed ||
-        Result.Value == nullptr)
-    {
-        return;
-    }
-
-    FTransform& Transform =
-        Camera->GetRelativeTransform();
-
-    Transform.SetPosition(
-        Result.Value->Position);
-
-    Transform.SetRotation(
-        Result.Value->Rotation);
-
-    Camera->SetFOV(
-        Result.Value->FOV);
-}
-
 void UWorld::SetAssetRegistry(FAssetRegistry* InAssetRegistry) {
 	AssetRegistry = InAssetRegistry;
 }
@@ -764,31 +686,29 @@ void UWorld::SetAssetRegistry(FAssetRegistry* InAssetRegistry) {
 void UWorld::ApplyEditorCameraState()
 {
     UCameraComponent* Camera = GetCameraSubsystem().GetMainCamera();
-    if (!EditorCameraStateReader.has_value() || Camera == nullptr)
+    if (EditorContext == nullptr || Camera == nullptr)
     {
         return;
     }
 
-    auto Result = EditorCameraStateReader->ReadIfChanged();
-
-    if (!Result.Changed ||
-        Result.Value == nullptr)
+    const FMessageEditorCameraState* CameraState = EditorContext->GetCameraState();
+    if (CameraState == nullptr)
     {
         return;
     }
 
     FTransform& CameraTransform = Camera->GetRelativeTransform();
 
-    CameraTransform.SetPosition(Result.Value->Position);
-    CameraTransform.SetRotation(Result.Value->Rotation);
+    CameraTransform.SetPosition(CameraState->Position);
+    CameraTransform.SetRotation(CameraState->Rotation);
 
-    Camera->SetFOV(Result.Value->FOV);
+    Camera->SetFOV(CameraState->FOV);
 }
 
 void UWorld::PublishEditorCameraState()
 {
     UCameraComponent* Camera = GetCameraSubsystem().GetMainCamera();
-    if (!EditorCameraStateWriter.has_value() || Camera == nullptr)
+    if (EditorContext == nullptr || Camera == nullptr)
     {
         return;
     }
@@ -796,12 +716,9 @@ void UWorld::PublishEditorCameraState()
     const FTransform& CameraTransform =
         Camera->GetRelativeTransform();
 
-    EditorCameraStateWriter->Write(
-        FMessageEditorCameraState
-        {
-            CameraTransform.GetPosition(),
-            CameraTransform.GetRotation(),
-            Camera->GetFOV()
-        }
-    );
+    EditorContext->SetCameraState(FMessageEditorCameraState{
+        CameraTransform.GetPosition(),
+        CameraTransform.GetRotation(),
+        Camera->GetFOV()
+    });
 }

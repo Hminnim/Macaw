@@ -9,9 +9,9 @@
 #include "../../Core/Asset/UMaterial.h"
 #include "../../Core/Asset/UMesh.h"
 #include "../../Core/Base/FRenderProbe.h"
-#include "../../Core/Channel/FMessageChannel.h"
 #include "../../Core/Channel/FStateChannel.h"
 #include "../../FEditorSelectionState.h"
+#include "../../Scene/FWorldEditorContext.h"
 #include "../../FTransformEditRequestMessage.h"
 #include "../Pipeline/UPipeline.h"
 #include "../RenderWindowInfo.h"
@@ -68,7 +68,7 @@ public:
 	FTransformGizmo& operator=(FTransformGizmo&&) = default;
 
 public:
-	void Initialize(ID3D11Device* Device, FAssetRegistry& AssetRegistry, FStateChannel<RenderWindowInfo>::FReader InWindowInfoReader, FStateChannel<FEditorSelectionState>::FReader InSelectionReader, FMessageChannel::FSender InWorldCommandSender);
+	void Initialize(ID3D11Device* Device, FAssetRegistry& AssetRegistry, FStateChannel<RenderWindowInfo>::FReader InWindowInfoReader, FWorldEditorContext& InEditorContext);
 
 	void ProcessInput(FKeyboardInput& KeyboardInput, FMouseInput& MouseInput, bool bMouseCapturedByUI);
 	void Update(const CameraProbe& Camera);
@@ -140,10 +140,9 @@ private:
 	std::array<FAxisHitProxy, 3> AxisHitProxies{};
 
 	FStateChannel<RenderWindowInfo>::FReader WindowInfoReader{};
-	FStateChannel<FEditorSelectionState>::FReader SelectionReader{};
+	FWorldEditorContext* EditorContext = nullptr;
 	FStateChannel<uint8> GizmoModeChannel{};
 	FStateChannel<uint8>::FReadWriter GizmoMode{};
-	std::optional<FMessageChannel::FSender> WorldCommandSender;
 
 	FEditorSelectionState CurrentSelection{};
 	CameraProbe LastCamera{};
