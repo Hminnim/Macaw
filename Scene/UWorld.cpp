@@ -258,7 +258,7 @@ void UWorld::Tick(float DeltaTime)
         Actor->Tick(DeltaTime);
     }
 
-    // FlushPendingDestroyActors();
+    FlushPendingDestroyActors();
 }
 
 void UWorld::RegisterRenderable(UStaticMeshComponent* Component)
