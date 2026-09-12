@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <filesystem>
+#include <memory>
 #include <optional>
 
 #include <d3d11.h>
@@ -28,11 +29,14 @@
 
 #include "../Render/RenderWindowInfo.h"
 
+class UCameraSubsystem;
+class UCollisionSubsystem;
+class URenderSubsystem;
 
 class UWorld : public UObject
 {
 public:
-    UWorld() = default;
+    UWorld();
     ~UWorld() override;
 
     AActor* AddActor(std::unique_ptr<AActor> InActor);
@@ -65,10 +69,12 @@ public:
 
     void Tick(float DeltaTime);
 
-    void RegisterRenderable(UStaticMeshComponent* Component);
-    void UnregisterRenderable(UStaticMeshComponent* Component);
-    void SetMainCamera(UCameraComponent* InCamera);
-    void ClearMainCamera(UCameraComponent* InCamera);
+    URenderSubsystem& GetRenderSubsystem();
+    const URenderSubsystem& GetRenderSubsystem() const;
+    UCollisionSubsystem& GetCollisionSubsystem();
+    const UCollisionSubsystem& GetCollisionSubsystem() const;
+    UCameraSubsystem& GetCameraSubsystem();
+    const UCameraSubsystem& GetCameraSubsystem() const;
 
     bool SaveScene(const FString& SceneName, FAssetRegistry* AssetRegistry);
     bool LoadScene(const std::filesystem::path& ScenePath, ID3D11Device* Device, FAssetRegistry* AssetRegistry);
@@ -89,9 +95,6 @@ public:
     void HandleMouseCameraRotateRequest(const FMouseCameraRotateRequestMessage& Message);
 
     void HandleKeyboardCameraMoveRequest(const FKeyboardCameraMoveRequestMessage& Message);
-
-    void RegisterCollision(UCollisionComponent* Component);
-    void UnregisterCollision(UCollisionComponent* Component);
 
     void HandleSpawnPrimitive(const FMessageSpawnPrimitive& Message, FAssetRegistry& AssetRegistry);
     void HandleNewScene(const FMessageNewScene& Message);
@@ -118,11 +121,11 @@ private:
 	};
 
 	void PublishEditorSelectionState();
+	void InitializeSubsystems();
+	void DeinitializeSubsystems();
 
     TArray<std::unique_ptr<AActor>> Actors;
     TArray<AActor*> PendingDestroyActors;
-    TArray<UStaticMeshComponent*> RenderableComponents;
-    TArray<TObjectRef<UCollisionComponent>> CollisionComponents;
 
 
 	TObjectRef<UCollisionComponent> SelectedCollider;
@@ -136,9 +139,9 @@ private:
 
     FAssetRegistry* AssetRegistry = nullptr;
 
-	//AActor* SelectedActor = nullptr;
-
-    UCameraComponent* Camera = nullptr;
+    std::unique_ptr<URenderSubsystem> RenderSubsystem;
+    std::unique_ptr<UCollisionSubsystem> CollisionSubsystem;
+    std::unique_ptr<UCameraSubsystem> CameraSubsystem;
     FRenderProbe Probe{};
 
     void ApplyEditorCameraState();

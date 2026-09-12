@@ -5,6 +5,7 @@
 #include "UStaticMeshComponent.h"
 #include "Scene/AActor.h"
 #include "Scene/UWorld.h"
+#include "Scene/Subsystem/UCollisionSubsystem.h"
 #include "Core/Asset/UMesh.h"
 #include "Core/Asset/FAssetRegistry.h"
 
@@ -27,7 +28,7 @@ void UCollisionComponent::OnRegister()
 
     if (Owner != nullptr && Owner->GetWorld() != nullptr)
     {
-        Owner->GetWorld()->RegisterCollision(this);
+        Owner->GetWorld()->GetCollisionSubsystem().RegisterComponent(this);
     }
 }
 
@@ -37,7 +38,7 @@ void UCollisionComponent::OnUnregister()
 
     if (Owner != nullptr && Owner->GetWorld() != nullptr)
     {
-        Owner->GetWorld()->UnregisterCollision(this);
+        Owner->GetWorld()->GetCollisionSubsystem().UnregisterComponent(this);
     }
 
     UPrimitiveComponent::OnUnregister();

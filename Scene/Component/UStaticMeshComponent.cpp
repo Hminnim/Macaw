@@ -4,6 +4,7 @@
 #include "Core/Base/FRenderProbe.h"
 #include "Scene/AActor.h"
 #include "Scene/UWorld.h"
+#include "Scene/Subsystem/URenderSubsystem.h"
 #include "../../Serialize/FArchive.h"
 #include "../../Core/Asset/FAssetRegistry.h"
 
@@ -34,7 +35,7 @@ void UStaticMeshComponent::OnRegister()
 
     if (Owner != nullptr && Owner->GetWorld() != nullptr)
     {
-        Owner->GetWorld()->RegisterRenderable(this);
+        Owner->GetWorld()->GetRenderSubsystem().RegisterComponent(this);
     }
 }
 
@@ -44,7 +45,7 @@ void UStaticMeshComponent::OnUnregister()
 
     if (Owner != nullptr && Owner->GetWorld() != nullptr)
     {
-        Owner->GetWorld()->UnregisterRenderable(this);
+        Owner->GetWorld()->GetRenderSubsystem().UnregisterComponent(this);
     }
 
     UPrimitiveComponent::OnUnregister();

@@ -8,6 +8,9 @@
 #include "Component/UCameraComponent.h"
 #include "Component/UStaticMeshComponent.h"
 #include "Component/UCollisionComponent.h"
+#include "Subsystem/UCameraSubsystem.h"
+#include "Subsystem/UCollisionSubsystem.h"
+#include "Subsystem/URenderSubsystem.h"
 #include "FMouseCameraRotateRequestMessage.h"
 #include "FMousePickRequestMessage.h"
 #include "FWorldSelectionChangedMessage.h"
@@ -41,8 +44,11 @@ std::string GetFilePathFromExplorer()
     return "./scenes/test.json";
 }
 
-UWorld::~UWorld()
-{
+UWorld::UWorld() {
+    InitializeSubsystems();
+}
+
+UWorld::~UWorld() {
     for (const std::unique_ptr<AActor>& Actor : Actors)
     {
         Actor->SetWorld(nullptr);
@@ -50,6 +56,7 @@ UWorld::~UWorld()
     }
 
     Actors.clear();
+    DeinitializeSubsystems();
 }
 
 bool UWorld::SpawnActor(const FAssetHandle& MeshHandle, const FAssetHandle& PipelineHandle, const FAssetHandle& MaterialHandle, 
@@ -138,6 +145,28 @@ const TArray<std::unique_ptr<AActor>>& UWorld::GetActors() const
     return Actors;
 }
 
+void UWorld::InitializeSubsystems() {
+    RenderSubsystem = std::make_unique<URenderSubsystem>();
+    CollisionSubsystem = std::make_unique<UCollisionSubsystem>();
+    CameraSubsystem = std::make_unique<UCameraSubsystem>();
+
+    RenderSubsystem->Initialize(this);
+    CollisionSubsystem->Initialize(this);
+    CameraSubsystem->Initialize(this);
+}
+
+void UWorld::DeinitializeSubsystems() {
+    if (CameraSubsystem != nullptr) {
+        CameraSubsystem->Deinitialize();
+    }
+    if (CollisionSubsystem != nullptr) {
+        CollisionSubsystem->Deinitialize();
+    }
+    if (RenderSubsystem != nullptr) {
+        RenderSubsystem->Deinitialize();
+    }
+}
+
 void UWorld::InitializeEditorEventSender(
     FMessageChannel::FSender&& InSender)
 {
@@ -151,7 +180,7 @@ void UWorld::InitializeEditorCameraState(
     EditorCameraStateWriter.emplace(std::move(InWriter));
     EditorCameraStateReader.emplace(std::move(InReader));
 
-    if (Camera != nullptr)
+    if (GetCameraSubsystem().GetMainCamera() != nullptr)
     {
         PublishEditorCameraState();
     }
@@ -159,24 +188,11 @@ void UWorld::InitializeEditorCameraState(
 
 FRenderProbe& UWorld::BuildRenderProbe() 
 {
-	Probe.ActorProbes.clear();
-    Probe.GizmoProbes.clear();
+    UCollisionComponent* SelectedCollision = SelectedCollider.Get();
+    const AActor* HighlightedActor = SelectedCollision != nullptr ? SelectedCollision->GetOwner() : nullptr;
+    GetRenderSubsystem().BuildRenderProbes(Probe, HighlightedActor);
 
-    for (const UStaticMeshComponent* Component : RenderableComponents)
-    {
-		FActorProbe ActorProbe{};
-		Component->MakeRender(ActorProbe);
-
-		
-		UCollisionComponent* SelectedCollision = SelectedCollider.Get();
-		if (SelectedCollision != nullptr && Component->GetOwner() == SelectedCollision->GetOwner()) {
-			ActorProbe.Flags |= 0x0000'0001; 
-		}
-
-		Probe.ActorProbes.push_back(ActorProbe);
-    }
-
-    if (Camera != nullptr)
+    if (UCameraComponent* Camera = GetCameraSubsystem().GetMainCamera())
     {
         Probe.MainCameraProbe.View =
             Camera->GetViewMatrix();
@@ -192,7 +208,7 @@ FRenderProbe& UWorld::BuildRenderProbe()
 
 void UWorld::Tick(float DeltaTime)
 {
-    if (WindowInfoReader.HasChanged()) {
+    if (UCameraComponent* Camera = GetCameraSubsystem().GetMainCamera(); Camera != nullptr && WindowInfoReader.HasChanged()) {
 		Camera->SetAspectRatio(static_cast<float>(WindowInfoReader.Read().ScreenWidth) / static_cast<float>(WindowInfoReader.Read().ScreenHeight));
     }
 
@@ -207,34 +223,28 @@ void UWorld::Tick(float DeltaTime)
      FlushPendingDestroyActors();
 }
 
-void UWorld::RegisterRenderable(UStaticMeshComponent* Component)
-{
-    if (Component == nullptr || std::ranges::find(RenderableComponents, Component) != RenderableComponents.end())
-    {
-        return;
-    }
-
-    RenderableComponents.push_back(Component);
+URenderSubsystem& UWorld::GetRenderSubsystem() {
+    return *RenderSubsystem;
 }
 
-void UWorld::UnregisterRenderable(UStaticMeshComponent* Component)
-{
-    std::erase(RenderableComponents, Component);
+const URenderSubsystem& UWorld::GetRenderSubsystem() const {
+    return *RenderSubsystem;
 }
 
-void UWorld::SetMainCamera(UCameraComponent* InCamera)
-{
-    Camera = InCamera;
-
-    PublishEditorCameraState();
+UCollisionSubsystem& UWorld::GetCollisionSubsystem() {
+    return *CollisionSubsystem;
 }
 
-void UWorld::ClearMainCamera(UCameraComponent* InCamera)
-{
-    if (Camera == InCamera)
-    {
-        Camera = nullptr;
-    }
+const UCollisionSubsystem& UWorld::GetCollisionSubsystem() const {
+    return *CollisionSubsystem;
+}
+
+UCameraSubsystem& UWorld::GetCameraSubsystem() {
+    return *CameraSubsystem;
+}
+
+const UCameraSubsystem& UWorld::GetCameraSubsystem() const {
+    return *CameraSubsystem;
 }
 
 
@@ -425,6 +435,7 @@ bool UWorld::LoadScene(const std::filesystem::path& ScenePath, ID3D11Device* Dev
 
 void UWorld::HandleMousePickRequest(const FMousePickRequestMessage& Message) {
     FObjectHandle SelectedComponentHandle{};
+    UCameraComponent* Camera = GetCameraSubsystem().GetMainCamera();
 
     if (Camera != nullptr &&
         WindowInfoReader.Read().Viewport.Width != 0 &&
@@ -451,30 +462,13 @@ void UWorld::HandleMousePickRequest(const FMousePickRequestMessage& Message) {
         {
             RayDirection.Normalize();
 
-            float NearestDistance = std::numeric_limits<float>::max();
             UCollisionComponent* NearestCollision = nullptr;
-
-
-
-            for (const TObjectRef<UCollisionComponent>& CollisionRef : CollisionComponents)
-            {
-                UCollisionComponent* CollisionComponent = CollisionRef.Get();
-
-                if (CollisionComponent == nullptr)
-                {
-                    continue;
-                }
-
-				float dist = 0.0f;
-                if (CollisionComponent->Raycast(FRay{ RayOrigin.ToSimpleMath(), RayDirection.ToSimpleMath() }, dist))
-                {
-                    if (dist < NearestDistance)
-                    {
-                        NearestDistance = dist;
-                        NearestCollision = CollisionComponent;
-                        Console::AddLog(Console::STDOutHandle, ELogLevel::Log, ELogCategory::Etc, "Raycast hit bounds of collision component %f", dist);
-                    }
-                }
+            float NearestDistance = 0.0f;
+            if (GetCollisionSubsystem().Raycast(
+                FRay{ RayOrigin.ToSimpleMath(), RayDirection.ToSimpleMath() },
+                NearestCollision,
+                NearestDistance)) {
+                Console::AddLog(Console::STDOutHandle, ELogLevel::Log, ELogCategory::Etc, "Raycast hit bounds of collision component %f", NearestDistance);
             }
 
             if (NearestCollision != nullptr)
@@ -595,6 +589,7 @@ void UWorld::PublishEditorSelectionState() {
 
 void UWorld::HandleMouseCameraRotateRequest(const FMouseCameraRotateRequestMessage& Message)
 {
+    UCameraComponent* Camera = GetCameraSubsystem().GetMainCamera();
     if (Camera == nullptr)
     {
         return;
@@ -654,43 +649,10 @@ AActor* UWorld::AddActor(std::unique_ptr<AActor> InActor)
     return Actor;
 }
 
-void UWorld::RegisterCollision(UCollisionComponent* Component)
-{
-    if (Component == nullptr)
-    {
-        return;
-    }
-
-    const auto FoundComponent = std::ranges::find_if(
-        CollisionComponents,
-        [Component](const TObjectRef<UCollisionComponent>& ComponentRef)
-        {
-            return ComponentRef.Get() == Component;
-        });
-
-    if (FoundComponent != CollisionComponents.end())
-    {
-        return;
-    }
-
-    CollisionComponents.emplace_back(Component);
-}
-
-void UWorld::UnregisterCollision(UCollisionComponent* Component)
-{
-    std::erase_if(
-        CollisionComponents,
-        [Component](const TObjectRef<UCollisionComponent>& ComponentRef)
-        {
-            UCollisionComponent* RegisteredComponent = ComponentRef.Get();
-
-            return RegisteredComponent == nullptr || RegisteredComponent == Component;
-        });
-}
-
 void UWorld::HandleKeyboardCameraMoveRequest(
     const FKeyboardCameraMoveRequestMessage& Message)
 {
+    UCameraComponent* Camera = GetCameraSubsystem().GetMainCamera();
     if (Camera == nullptr || Message.DeltaTime <= 0.0f)
     {
         return;
@@ -810,8 +772,8 @@ void UWorld::HandleChangeGizmoMode(
 
 void UWorld::UpdateEditorCameraState()
 {
-    if (!EditorCameraReader.has_value() ||
-        Camera == nullptr)
+    UCameraComponent* Camera = GetCameraSubsystem().GetMainCamera();
+    if (!EditorCameraReader.has_value() || Camera == nullptr)
     {
         return;
     }
@@ -844,6 +806,7 @@ void UWorld::SetAssetRegistry(FAssetRegistry* InAssetRegistry) {
 
 void UWorld::ApplyEditorCameraState()
 {
+    UCameraComponent* Camera = GetCameraSubsystem().GetMainCamera();
     if (!EditorCameraStateReader.has_value() || Camera == nullptr)
     {
         return;
@@ -867,6 +830,7 @@ void UWorld::ApplyEditorCameraState()
 
 void UWorld::PublishEditorCameraState()
 {
+    UCameraComponent* Camera = GetCameraSubsystem().GetMainCamera();
     if (!EditorCameraStateWriter.has_value() || Camera == nullptr)
     {
         return;

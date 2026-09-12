@@ -3,6 +3,7 @@
 
 #include "Scene/AActor.h"
 #include "Scene/UWorld.h"
+#include "Scene/Subsystem/UCameraSubsystem.h"
 
 UCameraComponent::UCameraComponent() {
     SetRelativeLocation({ 5.0f, 5.0f, 5.0f });
@@ -62,7 +63,7 @@ void UCameraComponent::OnRegister() {
     AActor* Owner = GetOwner();
 
     if (Owner != nullptr && Owner->GetWorld() != nullptr) {
-        Owner->GetWorld()->SetMainCamera(this);
+        Owner->GetWorld()->GetCameraSubsystem().SetMainCamera(this);
     }
 }
 
@@ -72,7 +73,7 @@ void UCameraComponent::OnUnregister() {
     AActor* Owner = GetOwner();
 
     if (Owner != nullptr && Owner->GetWorld() != nullptr) {
-        Owner->GetWorld()->ClearMainCamera(this);
+        Owner->GetWorld()->GetCameraSubsystem().ClearMainCamera(this);
     }
 }
 
