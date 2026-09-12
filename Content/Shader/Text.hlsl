@@ -53,6 +53,7 @@ void mainGS(point VS_OUTPUT Input[1], inout TriangleStream<PS_INPUT> Stream) // 
     float3 CameraRight = normalize(CameraWorld[0].xyz);
     float3 CameraUp = normalize(CameraWorld[1].xyz);
     
+    
     float Left = Glyph.LocalPosition.x;
     float Right = Left + Glyph.Size.x;
     float Top = Glyph.LocalPosition.y;
@@ -86,7 +87,7 @@ void mainGS(point VS_OUTPUT Input[1], inout TriangleStream<PS_INPUT> Stream) // 
 
 float4 mainPS(PS_INPUT Input) : SV_TARGET
 {
-    float4 AtlasColor = FontAtlas.SampleLevel(PointClamp, Input.UV, 0.0f);
+    float4 AtlasColor = FontAtlas.SampleLevel(PointClamp, Input.UV, 0.0f); // Atlas 텍스처의 Input.UV 위치 색상을 읽어라.
     float Coverage = AtlasColor.r;
     
     return float4(TextColor.rgb, TextColor.a * Coverage);

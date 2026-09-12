@@ -355,8 +355,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         TextComponent->SetLetterSpacing(0.05f);
         TextComponent->SetLineSpacing(0.01f);
         TextComponent->SetColor( FVector4{1.0f,1.0f,1.0f, 1.0f});
-        TextComponent->SetText(FString{ "abcdefghijklmonpqrstuvwxyz\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n 0123456789[]"});
-        TextComponent->GetTransform().SetPosition(FVector3{0.0f, 0.0f, 0.0f});
+        TextComponent->SetText(FString{ "abcdefghijklmonpqrstuvwxyzA\ndjaklsjdflkds"});
+        TextComponent->GetTransform().SetPosition(FVector3{5.0f, 5.0f, 5.0f});
     }
 
 	World.SpawnActor(AssetRegistry.GetAsset("SphereMesh"), AssetRegistry.GetAsset("TexturedPipeline"), AssetRegistry.GetAsset("TexturedMaterial"), FVector3{ 0.0f, 0.0f, 5.0f }, AssetRegistry.ResolveAsset<UMesh>(AssetRegistry.GetAsset("SphereMesh")), &AssetRegistry);

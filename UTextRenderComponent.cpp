@@ -124,6 +124,8 @@ void UTextRenderComponent::RebuildTextGeometry()
 	}
 	float PenX = 0.0f;
 	float PenY = 0.0f;
+	float MaxRight = -1.0f;
+	float MaxBottom = 1.0f;
 	for (const char RawCharacter : Text)
 	{
 		if (RawCharacter == '\r')
@@ -133,7 +135,7 @@ void UTextRenderComponent::RebuildTextGeometry()
 		if (RawCharacter == '\n')
 		{
 			PenX = 0.0f;
-			PenY -= CharacterHeight + LineSpacing;
+			PenY -= CharacterHeight + LineSpacing - 0.2f; //Todo : 하드 코딩 수정
 			continue;
 		}
 		std::uint8_t Character = static_cast<std::uint8_t>(static_cast<unsigned char>(RawCharacter));
@@ -162,5 +164,14 @@ void UTextRenderComponent::RebuildTextGeometry()
 			);
 		}
 		PenX += CharacterAdvance + LetterSpacing;
+		MaxRight = std::max(MaxRight, PenX + CharacterWidth);
+		MaxBottom = std::min(MaxBottom, PenY - CharacterHeight);
+	}
+	const float CenterX = MaxRight / 2.0f;
+	const float CenterY = MaxBottom / 2.0f;
+	for (FTextVertex& Vertex : Vertices)
+	{
+		Vertex.LocalPosition.x -= CenterX;
+		Vertex.LocalPosition.y -= CenterY;
 	}
 }
