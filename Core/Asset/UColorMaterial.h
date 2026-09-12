@@ -32,10 +32,9 @@ public:
 	JG_DECLARE_DERIVED_TYPEINFO(UColorMaterial, UMaterial);
 
     virtual void Initialize(ID3D11Device* Device, const std::filesystem::path& metaData) override;
-    bool Initialize(ID3D11Device* Device, const FVector4& InColor);
 
     virtual void BuildGPUData(FMaterialGPUSlot& OutSlot) const override;
-
+	virtual void Finalize(IAssetQuery* Query) override;
 	virtual void Serialize(FArchive& Ar) override;
 public:
     void SetColor(const FVector4& InColor);

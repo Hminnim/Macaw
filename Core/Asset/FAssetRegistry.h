@@ -5,6 +5,7 @@
 #include "FAssetHandle.h"
 #include "FMaterialBuffer.h"
 #include "UMaterial.h"
+#include "Common.h"
 
 #include <d3d11.h>
 #include <filesystem>
@@ -14,7 +15,7 @@
 #include <utility>
 #include <ranges>
 
-class FAssetRegistry {
+class FAssetRegistry : public IAssetQuery {
 public:
     FAssetRegistry() = default;
     ~FAssetRegistry() = default;
@@ -38,8 +39,10 @@ public:
         return AdoptAsset(Device, FGuid::NewGuid(), Name, MetadataPath, std::move(Asset));
     }
 
-    FAssetHandle GetAsset(const FString& Name) const;
-    FAssetHandle GetAsset(const FGuid& ID) const;
+    virtual FAssetHandle GetAsset(const FString& Name) const override;
+    virtual FAssetHandle GetAsset(const FGuid& ID) const override;
+
+    virtual UAsset* GetUAsset(const FString& Name) override;
 
     bool RemoveAsset(FAssetHandle Handle);
 
@@ -105,6 +108,7 @@ public:
             return Pair.second.get();
             });
     }
+
     void Reset()
     {
         Assets.clear();
@@ -113,6 +117,9 @@ public:
         AssetIDToHandle.clear();
         MaterialBuffer.Reset();
     }
+
+    void Finalize();
+
 private:
     FAssetHandle AllocateHandle();
     void RemoveHandleMappings(FAssetHandle Handle);

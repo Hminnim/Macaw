@@ -194,7 +194,7 @@ void UCollisionComponent::Serialize(FArchive& Archive)
     {
         OBB.Center = center.ToSimpleMath();
         OBB.Extents = extent.ToSimpleMath();
-        OBB.Orientation = orientation;
+        OBB.Orientation = orientation.ToSimpleMath();
     }
     Archive.Serialize("bCollisionEnabled", bCollisionEnabled);
 

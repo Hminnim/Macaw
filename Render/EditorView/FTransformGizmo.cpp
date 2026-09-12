@@ -303,7 +303,10 @@ void FTransformGizmo::UpdateBoundsInGizmoSpace(const FEditorSelectionState& Sele
 	DirectX::BoundingOrientedBox LocalBounds{};
 	LocalBounds.Center = Selection.BoundsCenter.ToSimpleMath();
 	LocalBounds.Extents = Selection.BoundsExtent.ToSimpleMath();
-	LocalBounds.Orientation = Selection.BoundsOrientation;
+	LocalBounds.Orientation.x = Selection.BoundsOrientation.x;
+	LocalBounds.Orientation.y = Selection.BoundsOrientation.y;
+	LocalBounds.Orientation.z = Selection.BoundsOrientation.z;
+	LocalBounds.Orientation.w = Selection.BoundsOrientation.w;
 
 	std::array<DirectX::XMFLOAT3, DirectX::BoundingOrientedBox::CORNER_COUNT> Corners{};
 	LocalBounds.GetCorners(Corners.data());
@@ -602,7 +605,7 @@ void FTransformGizmo::UpdateDrag(const FRay& WorldRay) {
 		const float CosAngle = std::clamp(Session.InitialRotationDirection.Dot(CurrentDirection),-1.0f,1.0f);
 		const float AngleDelta = std::atan2(SinAngle,CosAngle);
 
-		const FQuat Rotation = FQuat::CreateFromAxisAngle(Session.AxisWorld.ToSimpleMath(),AngleDelta);
+		const FQuat Rotation = FQuat::CreateFromAxisAngle(FVector(Session.AxisWorld.ToSimpleMath().x, Session.AxisWorld.ToSimpleMath().y, Session.AxisWorld.ToSimpleMath().z),AngleDelta);
 		const FMatrix RotationMatrix = FMatrix::CreateFromQuaternion(Rotation);
 		const FVector3 Pivot = Session.InteractionPivotWorld;
 
@@ -736,28 +739,30 @@ void FTransformGizmo::Render(FRenderProbe& Probe) {
 	switch (CurrentMode) {
 	case EModifyMode::Translate:
 		Submit(CylinderXAxisTransform, CylinderMesh, RedMaterial);
-		Submit(CylinderYAxisTransform, CylinderMesh, GreenMaterial);
-		Submit(CylinderZAxisTransform, CylinderMesh, BlueMaterial);
+		// Source transforms are Y-up, while the editor world is Z-up.  Keep the
+		// gizmo's colors aligned with the world-space axis each handle moves.
+		Submit(CylinderYAxisTransform, CylinderMesh, BlueMaterial);
+		Submit(CylinderZAxisTransform, CylinderMesh, GreenMaterial);
 
 		Submit(ConeXAxisTransform, ConeMesh, RedMaterial); // 해당 위치에 Cone 메쉬 사용
-		Submit(ConeYAxisTransform, ConeMesh, GreenMaterial);
-		Submit(ConeZAxisTransform, ConeMesh, BlueMaterial);
+		Submit(ConeYAxisTransform, ConeMesh, BlueMaterial);
+		Submit(ConeZAxisTransform, ConeMesh, GreenMaterial);
 		break;
 
 	case EModifyMode::Scale:
 		Submit(CylinderXAxisTransform, CylinderMesh, RedMaterial);
-		Submit(CylinderYAxisTransform, CylinderMesh, GreenMaterial);
-		Submit(CylinderZAxisTransform, CylinderMesh, BlueMaterial);
+		Submit(CylinderYAxisTransform, CylinderMesh, BlueMaterial);
+		Submit(CylinderZAxisTransform, CylinderMesh, GreenMaterial);
 
 		Submit(CubeXAxisTransform, CubeMesh, RedMaterial); // 해당 위치에 Cube 메쉬 사용
-		Submit(CubeYAxisTransform, CubeMesh, GreenMaterial);
-		Submit(CubeZAxisTransform, CubeMesh, BlueMaterial);
+		Submit(CubeYAxisTransform, CubeMesh, BlueMaterial);
+		Submit(CubeZAxisTransform, CubeMesh, GreenMaterial);
 		break;
 
 	case EModifyMode::Rotate:
 		Submit(TorusXAxisTransform, GizmoTorusMesh, RedMaterial);
-		Submit(TorusYAxisTransform, GizmoTorusMesh, GreenMaterial);
-		Submit(TorusZAxisTransform, GizmoTorusMesh, BlueMaterial);
+		Submit(TorusYAxisTransform, GizmoTorusMesh, BlueMaterial);
+		Submit(TorusZAxisTransform, GizmoTorusMesh, GreenMaterial);
 		break;
 
 	default:

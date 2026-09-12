@@ -1,4 +1,4 @@
-﻿#pragma once
+﻿/*#pragma once
 
 #include <cmath>
 #include "SimpleMath/SimpleMath.h"
@@ -53,8 +53,6 @@ struct FVector2
 		return *this;
 	}
 };
-
-struct FMatrix;
 
 struct FVector
 {
@@ -219,4 +217,4 @@ struct FVector4
 		w /= Scalar;
 		return *this;
 	}
-};
+};*/
