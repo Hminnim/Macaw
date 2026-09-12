@@ -1,0 +1,167 @@
+#include "PCH.h"
+#include "doctest.h"
+
+#include <rapidjson/document.h>
+
+#include "../Core/Base/TypeRegistry.h"
+#include "../Scene/AActor.h"
+#include "../Scene/Component/USceneComponent.h"
+#include "../Scene/UWorld.h"
+#include "../Serialize/FArchiveJson.h"
+
+namespace {
+    void RegisterSceneAttachmentTypes() {
+        TypeRegistry::Register(AActor::StaticTypeInfo());
+        TypeRegistry::Register(USceneComponent::StaticTypeInfo());
+    }
+}
+
+TEST_SUITE("CH4 Scene Attachment") {
+    TEST_CASE("FTransform matrix variants make scale and inverse semantics explicit") {
+        const FTransform Transform({ 3.0f, 4.0f, 5.0f }, FRotator::Zero, { 2.0f, 3.0f, 4.0f });
+        const FMatrix MatrixWithScale = Transform.ToMatrixWithScale();
+        const FMatrix MatrixNoScale = Transform.ToMatrixNoScale();
+        const FMatrix InverseMatrixWithScale = Transform.ToInverseMatrixWithScale();
+
+        CHECK(MatrixWithScale.m[0][0] == doctest::Approx(2.0f));
+        CHECK(MatrixWithScale.m[1][2] == doctest::Approx(3.0f));
+        CHECK(MatrixWithScale.m[2][1] == doctest::Approx(4.0f));
+        CHECK(MatrixNoScale.m[0][0] == doctest::Approx(1.0f));
+        CHECK(MatrixNoScale.m[1][2] == doctest::Approx(1.0f));
+        CHECK(MatrixNoScale.m[2][1] == doctest::Approx(1.0f));
+
+        const FMatrix Identity = MatrixWithScale * InverseMatrixWithScale;
+        for (uint32 Row = 0; Row < 4; ++Row) {
+            for (uint32 Column = 0; Column < 4; ++Column) {
+                CHECK(Identity.m[Row][Column] == doctest::Approx(Row == Column ? 1.0f : 0.0f).epsilon(0.0001f));
+            }
+        }
+    }
+
+    TEST_CASE("KeepWorldTransform preserves world location through attach and detach") {
+        UWorld World;
+        AActor* Actor = World.AdoptActor<AActor>();
+        REQUIRE(Actor != nullptr);
+
+        USceneComponent* FirstParent = Actor->AddComponent<USceneComponent>();
+        USceneComponent* SecondParent = Actor->AddComponent<USceneComponent>();
+        USceneComponent* Child = Actor->AddComponent<USceneComponent>();
+        REQUIRE(FirstParent != nullptr);
+        REQUIRE(SecondParent != nullptr);
+        REQUIRE(Child != nullptr);
+
+        FirstParent->SetRelativeLocation({ 10.0f, 0.0f, 0.0f });
+        SecondParent->SetRelativeLocation({ 20.0f, 0.0f, 0.0f });
+        Child->SetRelativeLocation({ 5.0f, 0.0f, 0.0f });
+        REQUIRE(Child->AttachToComponent(FirstParent));
+        CHECK_EQ(Child->GetComponentLocation(), FVector3(15.0f, 0.0f, 0.0f));
+
+        REQUIRE(Child->AttachToComponent(SecondParent, EAttachmentTransformRule::KeepWorldTransform));
+        CHECK_EQ(Child->GetParent(), SecondParent);
+        CHECK_EQ(Child->GetComponentLocation(), FVector3(15.0f, 0.0f, 0.0f));
+        CHECK_EQ(Child->GetRelativeLocation(), FVector3(-5.0f, 0.0f, 0.0f));
+
+        REQUIRE(Child->DetachFromComponent(EAttachmentTransformRule::KeepWorldTransform));
+        CHECK_EQ(Child->GetParent(), nullptr);
+        CHECK_EQ(Child->GetComponentLocation(), FVector3(15.0f, 0.0f, 0.0f));
+        CHECK_EQ(Child->GetRelativeLocation(), FVector3(15.0f, 0.0f, 0.0f));
+    }
+
+    TEST_CASE("Actor transform APIs operate on an attached root component in world space") {
+        UWorld World;
+        AActor* ParentActor = World.AdoptActor<AActor>();
+        AActor* ChildActor = World.AdoptActor<AActor>();
+        REQUIRE(ParentActor != nullptr);
+        REQUIRE(ChildActor != nullptr);
+
+        USceneComponent* Parent = ParentActor->AddComponent<USceneComponent>();
+        USceneComponent* Root = ChildActor->AddComponent<USceneComponent>();
+        REQUIRE(Parent != nullptr);
+        REQUIRE(Root != nullptr);
+        REQUIRE(ChildActor->SetRootComponent(Root));
+
+        Parent->SetRelativeLocation({ 100.0f, 0.0f, 0.0f });
+        Root->SetRelativeLocation({ 5.0f, 0.0f, 0.0f });
+        REQUIRE(Root->AttachToComponent(Parent));
+        CHECK_EQ(ChildActor->GetActorLocation(), FVector3(105.0f, 0.0f, 0.0f));
+
+        REQUIRE(ChildActor->SetActorLocation({ 25.0f, 0.0f, 0.0f }));
+        CHECK_EQ(ChildActor->GetActorLocation(), FVector3(25.0f, 0.0f, 0.0f));
+        CHECK_EQ(Root->GetRelativeLocation(), FVector3(-75.0f, 0.0f, 0.0f));
+
+        REQUIRE(ChildActor->SetActorRelativeLocationAndRotation({ -50.0f, 0.0f, 0.0f }, FRotator::Zero));
+        CHECK_EQ(ChildActor->GetActorRelativeLocation(), FVector3(-50.0f, 0.0f, 0.0f));
+        CHECK_EQ(ChildActor->GetActorLocation(), FVector3(50.0f, 0.0f, 0.0f));
+
+        REQUIRE(ChildActor->SetActorTransform(FTransform({ 60.0f, 0.0f, 0.0f }, FRotator::Zero, { 1.0f, 1.0f, 1.0f })));
+        CHECK_EQ(ChildActor->GetActorTransform().GetLocation(), FVector3(60.0f, 0.0f, 0.0f));
+    }
+
+    TEST_CASE("Scene and actor transform APIs expose relative and world rotation and scale") {
+        UWorld World;
+        AActor* Actor = World.AdoptActor<AActor>();
+        REQUIRE(Actor != nullptr);
+
+        USceneComponent* Root = Actor->AddComponent<USceneComponent>();
+        REQUIRE(Root != nullptr);
+        REQUIRE(Actor->SetRootComponent(Root));
+
+        Root->SetRelativeRotation({ 0.25f, -0.5f, 0.75f });
+        Root->SetRelativeScale3D({ 2.0f, 3.0f, 4.0f });
+        CHECK_EQ(Root->GetRelativeRotation(), FVector3(0.25f, -0.5f, 0.75f));
+        CHECK_EQ(Root->GetRelativeScale3D(), FVector3(2.0f, 3.0f, 4.0f));
+
+        REQUIRE(Actor->SetActorRotation(FRotator::Zero));
+        REQUIRE(Actor->SetActorScale3D({ 1.5f, 2.0f, 2.5f }));
+
+        const FRotator WorldRotation = Actor->GetActorRotation();
+        const FVector3 WorldScale = Actor->GetActorScale3D();
+        CHECK(WorldRotation.x == doctest::Approx(0.0f).epsilon(0.0001f));
+        CHECK(WorldRotation.y == doctest::Approx(0.0f).epsilon(0.0001f));
+        CHECK(WorldRotation.z == doctest::Approx(0.0f).epsilon(0.0001f));
+        CHECK(WorldScale.x == doctest::Approx(1.5f).epsilon(0.0001f));
+        CHECK(WorldScale.y == doctest::Approx(2.0f).epsilon(0.0001f));
+        CHECK(WorldScale.z == doctest::Approx(2.5f).epsilon(0.0001f));
+
+        REQUIRE(Root->SetWorldLocationAndRotation({ 10.0f, 20.0f, 30.0f }, FRotator::Zero));
+        CHECK_EQ(Actor->GetActorLocation(), FVector3(10.0f, 20.0f, 30.0f));
+    }
+
+    TEST_CASE("Scene component parent references survive serialization and resolve") {
+        RegisterSceneAttachmentTypes();
+        rapidjson::Document Document;
+        Document.SetObject();
+
+        {
+            UWorld SourceWorld;
+            AActor* SourceActor = SourceWorld.AdoptActor<AActor>();
+            REQUIRE(SourceActor != nullptr);
+
+            USceneComponent* SourceParent = SourceActor->AddComponent<USceneComponent>();
+            USceneComponent* SourceChild = SourceActor->AddComponent<USceneComponent>();
+            SourceParent->SetRelativeLocation({ 10.0f, 0.0f, 0.0f });
+            SourceChild->SetRelativeLocation({ 5.0f, 0.0f, 0.0f });
+            REQUIRE(SourceChild->AttachToComponent(SourceParent));
+
+            FArchiveJson ArchiveSave(Document, Document.GetAllocator());
+            SourceActor->Save(ArchiveSave);
+        }
+
+        AActor LoadedActor;
+        FArchiveJson ArchivePreLoad(Document);
+        REQUIRE(LoadedActor.PreLoadComponents(ArchivePreLoad));
+
+        FArchiveJson ArchiveLoad(Document);
+        LoadedActor.Load(ArchiveLoad);
+        REQUIRE(LoadedActor.ResolveLoadedReferences());
+
+        REQUIRE_EQ(LoadedActor.GetComponents().size(), 2);
+        USceneComponent* LoadedParent = static_cast<USceneComponent*>(LoadedActor.GetComponents()[0].get());
+        USceneComponent* LoadedChild = static_cast<USceneComponent*>(LoadedActor.GetComponents()[1].get());
+
+        CHECK_EQ(LoadedChild->GetParent(), LoadedParent);
+        CHECK_EQ(LoadedParent->GetChildren().size(), 1);
+        CHECK_EQ(LoadedChild->GetRelativeLocation(), FVector3(5.0f, 0.0f, 0.0f));
+        CHECK_EQ(LoadedChild->GetComponentLocation(), FVector3(15.0f, 0.0f, 0.0f));
+    }
+}

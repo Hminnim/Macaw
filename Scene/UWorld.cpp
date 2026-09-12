@@ -32,44 +32,7 @@
 
 namespace {
 	bool ApplyWorldMatrix(USceneComponent& Component, const FMatrix& DesiredWorld) {
-		FMatrix LocalMatrix = DesiredWorld;
-		if (USceneComponent* Parent = Component.GetParent()) {
-			FMatrix parentInverse;
-            if (!Parent->GetWorldMatrix().TryInverse(parentInverse)) return false;
-            LocalMatrix = DesiredWorld * parentInverse;
-		}
-
-        
-        const FVector3 LocalTranslation = LocalMatrix.Translation();
-
-        LocalMatrix.Translation(FVector3::Zero);
-
-        FMatrix WorldZUpToSourceYUp;
-
-        if (!FMatrix::CreateYUpToZUp().TryInverse(WorldZUpToSourceYUp))
-        {
-            return false;
-        }
-
-        // FTransform appends the source Y-up -> world Z-up conversion when it
-        // creates a world matrix.  Remove it before writing local transform data.
-        LocalMatrix = LocalMatrix * WorldZUpToSourceYUp;
-
-        LocalMatrix.Translation(LocalTranslation);
-        
-
-        FVector3 Scale{};
-        FQuat Rotation{};
-        FVector3 Translation{};
-		if (!LocalMatrix.Decompose(Scale, Rotation, Translation)) {
-			return false;
-		}
-
-		FTransform& Transform = Component.GetTransform();
-		Transform.SetPosition(Translation);
-		Transform.SetRotation(FVector3(Rotation.ToEuler()));
-		Transform.SetScale(Scale);
-		return true;
+		return Component.SetWorldTransform(DesiredWorld);
 	}
 }
 
@@ -100,13 +63,13 @@ bool UWorld::SpawnActor(const FAssetHandle& MeshHandle, const FAssetHandle& Pipe
 
     Actor->SetRootComponent(MeshComponent);
 
-    CollisionComponent->AttachTo(MeshComponent);
+    CollisionComponent->AttachToComponent(MeshComponent);
 
     MeshComponent->SetMeshHandle(MeshHandle);
     MeshComponent->SetPipelineHandle(PipelineHandle);
     MeshComponent->SetMaterialHandle(MaterialHandle);
 
-    MeshComponent->GetTransform().SetPosition(
+    MeshComponent->SetRelativeLocation(
         FVector3{
             Position.x,
             Position.y,
@@ -570,7 +533,7 @@ void UWorld::HandleTransformEditRequest(const FTransformEditRequestMessage& Mess
 		ActiveTransformEdit = FActiveTransformEdit{
 			.SessionId = Message.SessionId,
 			.TargetHandle = Message.TargetHandle,
-			.OriginalWorld = Target->GetWorldMatrix()
+			.OriginalWorld = Target->GetComponentToWorld()
 		};
 		break;
 
@@ -620,8 +583,8 @@ void UWorld::PublishEditorSelectionState() {
 	EditorSelectionState.GetWriter().Emplace(FEditorSelectionState{
 		.TransformTargetHandle = Target->GetHandle(),
 		.PickedColliderHandle = Collision->GetHandle(),
-		.TargetWorld = Target->GetWorldMatrix(),
-		.ColliderWorld = Collision->GetWorldMatrix(),
+		.TargetWorld = Target->GetComponentToWorld(),
+		.ColliderWorld = Collision->GetComponentToWorld(),
 		.BoundsCenter = Collision->GetBoundsCenter(),
 		.BoundsExtent = Collision->GetExtent(),
 		.BoundsOrientation = Collision->GetBoundsOrientation(),
@@ -640,7 +603,7 @@ void UWorld::HandleMouseCameraRotateRequest(const FMouseCameraRotateRequestMessa
     constexpr float RotationSensitivity = 0.003f;
     constexpr float MaximumPitch = 1.5f;
 
-    FTransform& CameraTransform = Camera->GetTransform();
+    FTransform& CameraTransform = Camera->GetRelativeTransform();
     FRotator Rotation = CameraTransform.GetRotation();
 
     Rotation.y += Message.DeltaX * RotationSensitivity;
@@ -733,7 +696,7 @@ void UWorld::HandleKeyboardCameraMoveRequest(
         return;
     }
 
-    const FMatrix CameraWorldMatrix = Camera->GetWorldMatrix();
+    const FMatrix CameraWorldMatrix = Camera->GetComponentToWorld();
 
     const FVector3 ForwardDirection = CameraWorldMatrix.Forward();
     const FVector3 RightDirection = CameraWorldMatrix.Right();
@@ -752,7 +715,7 @@ void UWorld::HandleKeyboardCameraMoveRequest(
 
     constexpr float CameraMoveSpeed = 5.0f;
 
-    FTransform& CameraTransform = Camera->GetTransform();
+    FTransform& CameraTransform = Camera->GetRelativeTransform();
 
     CameraTransform.SetPosition(CameraTransform.GetPosition() + MoveDirection * CameraMoveSpeed * Message.DeltaTime);
 
@@ -863,7 +826,7 @@ void UWorld::UpdateEditorCameraState()
     }
 
     FTransform& Transform =
-        Camera->GetTransform();
+        Camera->GetRelativeTransform();
 
     Transform.SetPosition(
         Result.Value->Position);
@@ -894,7 +857,7 @@ void UWorld::ApplyEditorCameraState()
         return;
     }
 
-    FTransform& CameraTransform = Camera->GetTransform();
+    FTransform& CameraTransform = Camera->GetRelativeTransform();
 
     CameraTransform.SetPosition(Result.Value->Position);
     CameraTransform.SetRotation(Result.Value->Rotation);
@@ -910,7 +873,7 @@ void UWorld::PublishEditorCameraState()
     }
 
     const FTransform& CameraTransform =
-        Camera->GetTransform();
+        Camera->GetRelativeTransform();
 
     EditorCameraStateWriter->Write(
         FMessageEditorCameraState

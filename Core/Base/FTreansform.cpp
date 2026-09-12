@@ -3,23 +3,31 @@
 #include "FTransform.h"
 #include "Serialize/FArchive.h"
 
-FMatrix FTransform::GetWorldMatrix() const
-{
-	FMatrix S = FMatrix::CreateScale(Scale);
+namespace {
+    FMatrix MakeTransformMatrix(const FVector3& Position, const FRotator& Rotation, const FVector3& Scale) {
+        FMatrix ScaleMatrix = FMatrix::CreateScale(Scale);
 
-    FMatrix R = FMatrix::CreateFromYawPitchRoll(
-        Rotation.y,
-        Rotation.x,
-        Rotation.z);
+        FMatrix RotationMatrix = FMatrix::CreateFromYawPitchRoll(Rotation.y, Rotation.x,Rotation.z);
 
-    FMatrix T = FMatrix::CreateTranslation(Position);
-
-    FMatrix U = FMatrix::CreateYUpToZUp();
-    return S * R * U * T;
+        FMatrix TranslationMatrix = FMatrix::CreateTranslation(Position);
+        FMatrix SourceYUpToWorldZUp = FMatrix::CreateYUpToZUp();
+        return ScaleMatrix * RotationMatrix * SourceYUpToWorldZUp * TranslationMatrix;
+    }
 }
 
-void FTransform::Serialize(FArchive& Archive)
-{
+FMatrix FTransform::ToMatrixWithScale() const {
+    return MakeTransformMatrix(Position, Rotation, Scale);
+}
+
+FMatrix FTransform::ToMatrixNoScale() const {
+    return MakeTransformMatrix(Position, Rotation, { 1.0f, 1.0f, 1.0f });
+}
+
+FMatrix FTransform::ToInverseMatrixWithScale() const {
+    return ToMatrixWithScale().Invert();
+}
+
+void FTransform::Serialize(FArchive& Archive) {
     Archive.Serialize("Position", Position);
     Archive.Serialize("Rotation", Rotation);
     Archive.Serialize("Scale", Scale);

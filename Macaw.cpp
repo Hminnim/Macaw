@@ -85,7 +85,81 @@ LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 HWND gHWND;
 FRenderer Renderer;
 
-#define LOAD 
+namespace {
+    constexpr bool bLoadTestScene = false;
+    constexpr bool bEnableSceneSave = false;
+
+    void ConfigureTestStaticMesh(UStaticMeshComponent* MeshComponent, const FAssetHandle& MeshHandle, const FAssetHandle& PipelineHandle, const FAssetHandle& MaterialHandle, const FVector3& Location) {
+        MeshComponent->SetMeshHandle(MeshHandle);
+        MeshComponent->SetPipelineHandle(PipelineHandle);
+        MeshComponent->SetMaterialHandle(MaterialHandle);
+        MeshComponent->SetRelativeLocation(Location);
+    }
+
+    UStaticMeshComponent* AddTestStaticMesh(AActor* Actor, const FAssetHandle& MeshHandle, const FAssetHandle& PipelineHandle, const FAssetHandle& MaterialHandle, const FVector3& Location) {
+        UStaticMeshComponent* MeshComponent = Actor->AddComponent<UStaticMeshComponent>();
+        if (MeshComponent != nullptr) {
+            ConfigureTestStaticMesh(MeshComponent, MeshHandle, PipelineHandle, MaterialHandle, Location);
+        }
+        return MeshComponent;
+    }
+
+    void AddTestCollider(AActor* Actor, USceneComponent* Parent, const UMesh* Mesh) {
+        UCollisionComponent* Collider = Actor->AddComponent<UCollisionComponent>();
+        if (Collider == nullptr || !Collider->AttachToComponent(Parent)) {
+            return;
+        }
+
+        if (Mesh != nullptr) {
+            Collider->SetBounds(Mesh->GetLocalBoundingBox());
+        }
+    }
+
+    void CreateComponentHierarchyTest(UWorld& World, const FAssetHandle& MeshHandle, const FAssetHandle& PipelineHandle, const FAssetHandle& MaterialHandle, const UMesh* Mesh) {
+        AActor* Actor = World.AdoptActor<AActor>();
+        UStaticMeshComponent* Root = AddTestStaticMesh(Actor, MeshHandle, PipelineHandle, MaterialHandle, { -12.0f, 0.0f, 8.0f });
+        if (Root == nullptr || !Actor->SetRootComponent(Root)) {
+            return;
+        }
+
+        USceneComponent* Parent = Root;
+        for (uint32 Index = 0; Index < 4; ++Index) {
+            UStaticMeshComponent* Child = AddTestStaticMesh(Actor, MeshHandle, PipelineHandle, MaterialHandle, { 0.0f, 0.0f, 2.0f });
+            if (Child == nullptr || !Child->AttachToComponent(Parent)) {
+                return;
+            }
+            Parent = Child;
+        }
+
+        AddTestCollider(Actor, Root, Mesh);
+    }
+
+    void CreateActorHierarchyTest(UWorld& World, const FAssetHandle& MeshHandle, const FAssetHandle& PipelineHandle, const FAssetHandle& MaterialHandle, const UMesh* Mesh) {
+        AActor* ParentActor = World.AdoptActor<AActor>();
+        UStaticMeshComponent* ParentRoot = AddTestStaticMesh(ParentActor, MeshHandle, PipelineHandle, MaterialHandle, { 12.0f, 0.0f, 8.0f });
+        if (ParentRoot == nullptr || !ParentActor->SetRootComponent(ParentRoot)) {
+            return;
+        }
+        AddTestCollider(ParentActor, ParentRoot, Mesh);
+
+        AActor* ChildActor = World.AdoptActor<AActor>();
+        UStaticMeshComponent* ChildRoot = AddTestStaticMesh(ChildActor, MeshHandle, PipelineHandle, MaterialHandle, { 0.0f, 0.0f, 3.0f });
+        if (ChildRoot == nullptr || !ChildActor->SetRootComponent(ChildRoot)) {
+            return;
+        }
+
+        if (!ChildRoot->AttachToComponent(ParentRoot)) {
+            return;
+        }
+
+        AddTestCollider(ChildActor, ChildRoot, Mesh);
+    }
+
+    void CreateHierarchyTests(UWorld& World, const FAssetHandle& MeshHandle, const FAssetHandle& PipelineHandle, const FAssetHandle& MaterialHandle, const UMesh* Mesh) {
+        CreateComponentHierarchyTest(World, MeshHandle, PipelineHandle, MaterialHandle, Mesh);
+        CreateActorHierarchyTest(World, MeshHandle, PipelineHandle, MaterialHandle, Mesh);
+    }
+}
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -254,15 +328,17 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
     );
 
-    SceneCommandChannel.TryBind<FMessageSaveScene>(
-        [&World, &AssetRegistry](const FMessageSaveScene& Message)
-        {
-            World.SaveScene(
-                Message.SceneName,
-                &AssetRegistry
-            );
-        }
-    );
+    if constexpr (bEnableSceneSave) {
+        SceneCommandChannel.TryBind<FMessageSaveScene>(
+            [&World, &AssetRegistry](const FMessageSaveScene& Message)
+            {
+                World.SaveScene(
+                    Message.SceneName,
+                    &AssetRegistry
+                );
+            }
+        );
+    }
 	WorldCommandChannel.TryBind<FMousePickReleaseRequestMessage>(
 		[&World](const FMousePickReleaseRequestMessage& Message)
 		{
@@ -295,9 +371,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
     );
 	
-#ifdef LOAD
-	World.LoadScene("./scenes/test.json", Renderer.GetDevice(), &AssetRegistry);
-#else 
+    if constexpr (bLoadTestScene) {
+		World.LoadScene("./scenes/test.json", Renderer.GetDevice(), &AssetRegistry);
+    } else {
 	AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(), "BasePipeline", "./Content/Metadata/BasePipeline.meta");
 	AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(), "AlternatePipeline", "./Content/Metadata/AlternatePipeline.meta");
     // Triangle
@@ -332,7 +408,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	AssetRegistry.EmplaceAsset<UTexturedMaterial>(Renderer.GetDevice(), "TexturedMaterial", "./Content/Metadata/TexturedTestMaterial.meta");
 
 
-	World.SpawnActor(AssetRegistry.GetAsset("SphereMesh"), AssetRegistry.GetAsset("TexturedPipeline"), AssetRegistry.GetAsset("TexturedMaterial"), FVector3{ 0.0f, 0.0f, 5.0f }, AssetRegistry.ResolveAsset<UMesh>(AssetRegistry.GetAsset("SphereMesh")), &AssetRegistry);
+    const FAssetHandle MeshHandle = AssetRegistry.GetAsset("CubeMesh");
+    const FAssetHandle PipelineHandle = AssetRegistry.GetAsset("BasePipeline");
+    const FAssetHandle MaterialHandle = AssetRegistry.GetAsset("GreyMaterial");
+    CreateHierarchyTests(World, MeshHandle, PipelineHandle, MaterialHandle, AssetRegistry.ResolveAsset<UMesh>(MeshHandle));
 
     AActor* CameraActor = World.AdoptActor<AActor>();
     UCameraComponent* Camera = CameraActor->AddComponent<UCameraComponent>();
@@ -341,7 +420,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     CameraActor->SetRootComponent(Camera);
 
-#endif 
+    }
     AssetRegistry.Finalize(); 
 
     IMGUI_CHECKVERSION();
@@ -425,7 +504,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
 
-	World.SaveScene("test", &AssetRegistry);
+    if constexpr (bEnableSceneSave) {
+		World.SaveScene("test", &AssetRegistry);
+    }
 
     return (int) msg.wParam;
 }

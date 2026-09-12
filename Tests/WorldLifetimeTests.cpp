@@ -146,7 +146,7 @@ TEST_SUITE("World Lifetime")
             USceneComponent* Parent = Actor->AddComponent<USceneComponent>();
             USceneComponent* Child = Actor->AddComponent<USceneComponent>();
             Actor->SetRootComponent(Parent);
-            Child->AttachTo(Parent);
+            Child->AttachToComponent(Parent);
 
             const FObjectHandle ParentHandle = Parent->GetHandle();
 

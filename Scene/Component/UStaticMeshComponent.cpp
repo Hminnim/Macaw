@@ -58,7 +58,7 @@ void UStaticMeshComponent::MakeRender(FActorProbe& OutProbe) const
     }
 
     OutProbe = FActorProbe{
-        GetWorldMatrix(),
+        GetComponentToWorld(),
         MeshHandle,
         MaterialHandle,
         PipelineHandle,

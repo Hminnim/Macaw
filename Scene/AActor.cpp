@@ -24,7 +24,8 @@ bool AActor::DestroyComponent(UActorComponent* Component) {
 
     auto It = std::ranges::find_if(Components, [Component](const std::unique_ptr<UActorComponent>& Ptr) {
             return Ptr.get() == Component;
-        });
+        }
+    );
 
     if (It == Components.end()) {
         return false;
@@ -53,11 +54,9 @@ const USceneComponent* AActor::GetRootComponent() const {
 
 bool AActor::SetRootComponent(USceneComponent* InRootComponent) {
     if (InRootComponent != nullptr) {
-        const bool bIsOwnedComponent = std::ranges::any_of(
-            Components,
-            [InRootComponent](const std::unique_ptr<UActorComponent>& Component) {
-                return Component.get() == InRootComponent;
-            }
+        const bool bIsOwnedComponent = std::ranges::any_of(Components, [InRootComponent](const std::unique_ptr<UActorComponent>& Component) {
+            return Component.get() == InRootComponent;
+        }
         );
 
         if (!bIsOwnedComponent) {
@@ -113,28 +112,119 @@ FTransform AActor::GetActorTransform() const {
         return {};
     }
 
-    return RootComponent->GetTransform();
+    return RootComponent->GetComponentTransform();
 }
 
-bool AActor::SetActorTransform(const FTransform& InTransform) {
+bool AActor::SetActorTransform(const FTransform& Transform) {
     if (RootComponent == nullptr) {
         return false;
     }
 
-    RootComponent->GetTransform() = InTransform;
-    return true;
+    return RootComponent->SetWorldTransform(Transform);
 }
 
 FVector3 AActor::GetActorLocation() const {
-    return GetActorTransform().GetPosition();
+    if (RootComponent == nullptr) {
+        return FVector3::Zero;
+    }
+
+    return RootComponent->GetComponentLocation();
 }
 
-bool AActor::SetActorLocation(const FVector3& InLocation) {
+bool AActor::SetActorLocation(const FVector3& Location) {
     if (RootComponent == nullptr) {
         return false;
     }
 
-    RootComponent->GetTransform().SetPosition(InLocation);
+    return RootComponent->SetWorldLocation(Location);
+}
+
+bool AActor::SetActorLocationAndRotation(const FVector3& Location, const FRotator& Rotation) {
+    return RootComponent != nullptr && RootComponent->SetWorldLocationAndRotation(Location, Rotation);
+}
+
+FRotator AActor::GetActorRotation() const {
+    if (RootComponent == nullptr) {
+        return FRotator::Zero;
+    }
+
+    return RootComponent->GetComponentRotation();
+}
+
+bool AActor::SetActorRotation(const FRotator& Rotation) {
+    return RootComponent != nullptr && RootComponent->SetWorldRotation(Rotation);
+}
+
+FVector3 AActor::GetActorScale3D() const {
+    if (RootComponent == nullptr) {
+        return { 1.0f, 1.0f, 1.0f };
+    }
+
+    return RootComponent->GetComponentScale();
+}
+
+bool AActor::SetActorScale3D(const FVector3& Scale) {
+    return RootComponent != nullptr && RootComponent->SetWorldScale3D(Scale);
+}
+
+FTransform AActor::GetActorRelativeTransform() const {
+    return RootComponent != nullptr ? RootComponent->GetRelativeTransform() : FTransform{};
+}
+
+bool AActor::SetActorRelativeTransform(const FTransform& Transform) {
+    if (RootComponent == nullptr) {
+        return false;
+    }
+
+    RootComponent->SetRelativeTransform(Transform);
+    return true;
+}
+
+FVector3 AActor::GetActorRelativeLocation() const {
+    return RootComponent != nullptr ? RootComponent->GetRelativeLocation() : FVector3::Zero;
+}
+
+bool AActor::SetActorRelativeLocation(const FVector3& Location) {
+    if (RootComponent == nullptr) {
+        return false;
+    }
+
+    RootComponent->SetRelativeLocation(Location);
+    return true;
+}
+
+bool AActor::SetActorRelativeLocationAndRotation(const FVector3& Location, const FRotator& Rotation) {
+    if (RootComponent == nullptr) {
+        return false;
+    }
+
+    RootComponent->SetRelativeLocationAndRotation(Location, Rotation);
+    return true;
+}
+
+FRotator AActor::GetActorRelativeRotation() const {
+    return RootComponent != nullptr ? RootComponent->GetRelativeRotation() : FRotator::Zero;
+}
+
+bool AActor::SetActorRelativeRotation(const FRotator& Rotation) {
+    if (RootComponent == nullptr) {
+        return false;
+    }
+
+    RootComponent->SetRelativeRotation(Rotation);
+    return true;
+}
+
+FVector3 AActor::GetActorRelativeScale3D() const {
+    return RootComponent != nullptr ? RootComponent->GetRelativeScale3D() : FVector3{ 1.0f, 1.0f, 1.0f };
+}
+
+bool AActor::SetActorRelativeScale3D(const FVector3& Scale) {
+    if (RootComponent == nullptr) {
+        return false;
+    }
+
+    RootComponent->SetRelativeScale3D(Scale);
     return true;
 }
 

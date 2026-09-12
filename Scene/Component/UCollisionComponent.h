@@ -28,7 +28,6 @@ public:
     JG_DECLARE_DERIVED_TYPEINFO(UCollisionComponent, UPrimitiveComponent);
 
     void SetBounds(const DirectX::BoundingBox& InBounds);
-    bool ResolveLoadedReferences() override;
 
 protected:
     void Serialize(FArchive& Archive) override;
@@ -36,7 +35,6 @@ protected:
 private:
     DirectX::BoundingOrientedBox OBB{}; 
     bool bCollisionEnabled = true;
-    FGuid PendingParentGuid{};
 
     bool RaycastBounds(const FRay& Ray, float& OutDistance) const;
     bool RaycastMesh(const FRay& Ray, const UStaticMeshComponent& MeshComponent, float& OutDistance) const;

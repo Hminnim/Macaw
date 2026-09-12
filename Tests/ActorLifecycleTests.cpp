@@ -133,7 +133,7 @@ TEST_SUITE("CH3 Actor Lifecycle")
 
         REQUIRE(Actor->SetActorLocation({ 1.0f, 2.0f, 3.0f }));
         CHECK_EQ(Actor->GetActorLocation(), FVector3(1.0f, 2.0f, 3.0f));
-        CHECK_EQ(Root->GetTransform().GetPosition(), FVector3(1.0f, 2.0f, 3.0f));
+        CHECK_EQ(Root->GetRelativeLocation(), FVector3(1.0f, 2.0f, 3.0f));
     }
 
     TEST_CASE("Component lifecycle follows actor entry, dynamic add, and removal")

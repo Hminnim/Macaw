@@ -80,7 +80,7 @@ void UCollisionComponent::SetExtent(const FVector3& InExtent)
 
 bool UCollisionComponent::RaycastBounds(const FRay& Ray, float& OutDistance) const {
     DirectX::BoundingOrientedBox WorldBox;
-    OBB.Transform(WorldBox, GetWorldMatrix().ToSimpleMath());
+    OBB.Transform(WorldBox, GetComponentToWorld().ToSimpleMath());
 
     return WorldBox.Intersects(Ray.position, Ray.direction, OutDistance);
 }
@@ -111,7 +111,7 @@ bool UCollisionComponent::RaycastMesh(const FRay& Ray, const UStaticMeshComponen
         return false;
     }
 
-    const FMatrix WorldMatrix = GetWorldMatrix(); 
+    const FMatrix WorldMatrix = GetComponentToWorld();
 
     bool bHit = false;
     float ClosestDistance = std::numeric_limits<float>::max();
@@ -177,12 +177,6 @@ void UCollisionComponent::MakeRender(FActorProbe& Probe) const
 void UCollisionComponent::Serialize(FArchive& Archive) {
     UPrimitiveComponent::Serialize(Archive);
 
-    FGuid GuidParent{};
-    if (Archive.IsSaving() && GetParent() != nullptr) {
-        GuidParent = GetParent()->GetGuid();
-    }
-
-    Archive.Serialize("Parent", GuidParent);
     FVector3 center(OBB.Center), extent(OBB.Extents);
     FQuat orientation(OBB.Orientation);
     Archive.Serialize("OBB_Center", center);
@@ -193,30 +187,6 @@ void UCollisionComponent::Serialize(FArchive& Archive) {
         OBB.Center = center.ToSimpleMath();
         OBB.Extents = extent.ToSimpleMath();
         OBB.Orientation = orientation.ToSimpleMath();
-        PendingParentGuid = GuidParent;
     }
     Archive.Serialize("bCollisionEnabled", bCollisionEnabled);
-}
-
-bool UCollisionComponent::ResolveLoadedReferences() {
-    if (!UPrimitiveComponent::ResolveLoadedReferences()) {
-        return false;
-    }
-
-    if (!PendingParentGuid.IsValid()) {
-        return true;
-    }
-
-    UObject* ResolvedObject = UObjectSystem::Resolve(
-        UObjectSystem::FindHandleByGuid(PendingParentGuid)
-    );
-
-    if (ResolvedObject == nullptr ||
-        !ResolvedObject->GetTypeInfo()->IsA(USceneComponent::StaticTypeInfo())) {
-        return false;
-    }
-
-    USceneComponent* ParentComponent = static_cast<USceneComponent*>(ResolvedObject);
-    AttachTo(ParentComponent);
-    return GetParent() == ParentComponent;
 }
