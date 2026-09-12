@@ -428,19 +428,20 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             FName NameA = FName(InputBufferA);
             FName NameB = FName(InputBufferB);       
 
+            ImGui::Text("Display Text");
+            ImGui::Spacing();
             ImGui::Text("NameA String : %s", NameA.ToString().c_str());
             ImGui::Spacing();
             ImGui::Text("NameB String : %s", NameB.ToString().c_str());
 
             ImGui::Separator();
-            ImGui::Text("Comparison Result :");
             if (NameA == NameB)
             {
-                ImGui::Text("Eqaul");
+                ImGui::Text("Comparison Result : Eqaul");
             }
             else
             {
-                ImGui::Text("Not Eqaul");
+                ImGui::Text("Comparison Result : Not Eqaul");
             }
             ImGui::End();
             // FName Test ImGui

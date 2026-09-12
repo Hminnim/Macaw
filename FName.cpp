@@ -172,6 +172,15 @@ struct FNameComparisonValue : public FNameValue
 		Hash = FNameHash(LowerBuffer, Len);
 	}
 };
+// FNameDisplayValue
+struct FNameDisplayValue : public FNameValue
+{
+	FNameDisplayValue(std::string_view InName)
+		: FNameValue(InName)
+	{
+		Hash = FNameHash(InName.data(), InName.length());
+	}
+};
 
 // FNamePool
 // HashBuckets, Entries
@@ -188,42 +197,17 @@ public:
 		// Comparison
 		FNameComparisonValue ComparisonValue(NameString);
 
-		return FNamePool::FindValue(ComparisonHashBuckets, ComparisonValue);
+		return FNamePool::FindValue(ComparisonHashBuckets, ComparisonValue, true);
 	}
-	FNameEntryId Store(std::string_view NameString)
+	void Store(std::string_view NameString, FNameEntryId& OutComparison, FNameEntryId& OutDisplay)
 	{
+		// Store Comparison
 		FNameComparisonValue ComparisonValue(NameString);
+		OutComparison = StoreValue(ComparisonHashBuckets, ComparisonValue, true);
 
-		FNameEntryId ExistingId = FNamePool::FindValue(ComparisonHashBuckets,ComparisonValue);
-		if (ExistingId.ToUnstableInt() != 0)
-		{
-			return ExistingId;
-		}
-
-		// Write Memory
-		uint32 NeededByte = sizeof(FNameEntryHeader) + NameString.length() + 1; // 1 : null terminator
-		FNameEntryHandle NewHandle = Entries.Allocate(NeededByte);
-
-		// Set header
-		FNameEntry& NewEntry = Entries.Resolve(NewHandle);
-		uint16* HeaderPtr = reinterpret_cast<uint16*>(&NewEntry);
-		*HeaderPtr = static_cast<uint16>(NameString.length()) << 1;
-		// Set string
-		char* DataPtr = const_cast<char*>(NewEntry.GetName());
-		std::memcpy(DataPtr, NameString.data(), NameString.length());
-		DataPtr[NameString.length()] = '\0'; // null terminator
-
-		uint32 CapacityMask = ComparisonHashBuckets.size() - 1;
-		uint32 SlotIndex = ComparisonValue.Hash.Hash & CapacityMask;
-
-		while (ComparisonHashBuckets[SlotIndex].Used())
-		{
-			SlotIndex = (SlotIndex + 1) & CapacityMask;
-		}
-		
-		ComparisonHashBuckets[SlotIndex] = FNameSlot(NewHandle, ComparisonValue.Hash.ProbeHash);
-
-		return NewHandle;
+		// Store Display
+		FNameDisplayValue DisplayValue(NameString);
+		OutDisplay = StoreValue(DisplayHashBuckets, DisplayValue, false);
 	}
 	const FNameEntry& Resolve(FNameEntryId Id) const
 	{
@@ -239,24 +223,10 @@ private:
 	void Initialize(uint32 InitialCapacity)
 	{
 		ComparisonHashBuckets.assign(InitialCapacity, FNameSlot());
+		DisplayHashBuckets.assign(InitialCapacity, FNameSlot());
 	}
 
-	// To Lower for Comparison
-	uint32 CalculateHash(std::string_view NameString) const
-	{
-		// Stack buffer
-		char LowerBuffer[NAME_SIZE];
-
-		size_t Len = std::min(NameString.length(), size_t(NAME_SIZE - 1));
-
-		for (size_t i = 0; i < Len; ++i)
-		{
-			LowerBuffer[i] = static_cast<char>(std::tolower(NameString[i]));
-		}
-
-		return CityHash32(LowerBuffer, Len);
-	}
-	FNameEntryId FindValue(const TArray<FNameSlot>& Buckets, const FNameValue& InValue) const
+	FNameEntryId FindValue(const TArray<FNameSlot>& Buckets, const FNameValue& InValue, bool bIsCaseSensitive) const
 	{
 		uint32 CapacityMask = Buckets.size() - 1;
 		uint32 SlotIndex = InValue.Hash.Hash & CapacityMask;
@@ -268,18 +238,19 @@ private:
 				FNameEntryId ExistingId = Buckets[SlotIndex].GetId();
 				const FNameEntry& Entry = Resolve(ExistingId);
 
-				std::string_view ExistingStr(Entry.GetName(), Entry.GetNameLength());
-				if (ExistingStr.length() == InValue.Name.length())
+				const char* ExistingStr = Entry.GetName();
+				if (Entry.GetNameLength() == InValue.Name.length())
 				{
-					bool bIsMatch = true;
-					for (size_t i = 0; i < ExistingStr.length(); ++i)
+					bool bIsMatch = true;					
+					if (bIsCaseSensitive)
 					{
-						if (std::tolower(ExistingStr[i]) != std::tolower(InValue.Name[i]))
-						{
-							bIsMatch = false;
-							break;
-						}
+						bIsMatch = (_strnicmp(ExistingStr, InValue.Name.data(), InValue.Name.length()) == 0);
 					}
+					else
+					{
+						bIsMatch = (std::memcmp(ExistingStr, InValue.Name.data(), InValue.Name.length()) == 0);
+					}
+
 					if (bIsMatch)
 					{
 						return ExistingId;
@@ -294,6 +265,40 @@ private:
 		return FNameEntryId();
 	}
 
+	FNameEntryId StoreValue(TArray<FNameSlot>& Buckets, const FNameValue& InValue, bool bIsCaseSensitive)
+	{
+		FNameEntryId ExistingId = FNamePool::FindValue(Buckets, InValue, bIsCaseSensitive);
+		if (ExistingId.ToUnstableInt() != 0)
+		{
+			return ExistingId;
+		}
+
+		// Write Memory
+		uint32 NeededByte = sizeof(FNameEntryHeader) + InValue.Name.length() + 1; // 1 : null terminator
+		FNameEntryHandle NewHandle = Entries.Allocate(NeededByte);
+
+		// Set header
+		FNameEntry& NewEntry = Entries.Resolve(NewHandle);
+		uint16* HeaderPtr = reinterpret_cast<uint16*>(&NewEntry);
+		*HeaderPtr = static_cast<uint16>(InValue.Name.length()) << 1;
+		// Set string
+		char* DataPtr = const_cast<char*>(NewEntry.GetName());
+		std::memcpy(DataPtr, InValue.Name.data(), InValue.Name.length());
+		DataPtr[InValue.Name.length()] = '\0'; // null terminator
+
+		uint32 CapacityMask = Buckets.size() - 1;
+		uint32 SlotIndex = InValue.Hash.Hash & CapacityMask;
+
+		while (Buckets[SlotIndex].Used())
+		{
+			SlotIndex = (SlotIndex + 1) & CapacityMask;
+		}
+
+		Buckets[SlotIndex] = FNameSlot(NewHandle, InValue.Hash.ProbeHash);
+
+		return NewHandle;
+	}
+
 	FNameEntryAllocator Entries;
 
 	TArray<FNameSlot> ComparisonHashBuckets;
@@ -304,7 +309,7 @@ FName::FName(const char* pStr)
 {
 	if (pStr)
 	{
-		ComparisonId = FNamePool::Get().Store(pStr);
+		FNamePool::Get().Store(pStr,ComparisonId, DisplayId);
 	}
 }
 
@@ -312,13 +317,13 @@ FName::FName(FString str)
 {
 	if (str.length() > 0)
 	{
-		ComparisonId = FNamePool::Get().Store(str);
+		FNamePool::Get().Store(str, ComparisonId, DisplayId);
 	}
 }
 
 int32 FName::Compare(const FName& Rhs) const
 {
-	return 0;
+	return this->ComparisonId.ToUnstableInt() - Rhs.ComparisonId.ToUnstableInt();
 }
 
 bool FName::operator==(const FName& Rhs) const
@@ -333,7 +338,7 @@ FString FName::ToString() const
 		return FString("");
 	}
 
-	const FNameEntry& Entry = FNamePool::Get().Resolve(ComparisonId);
+	const FNameEntry& Entry = FNamePool::Get().Resolve(DisplayId);
 
 	return FString(Entry.GetName(), Entry.GetNameLength());
 }
