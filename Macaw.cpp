@@ -58,8 +58,6 @@
 
 #include "Render/EditorView/EditorViewport.h"
 
-#include "FName.h"
-
 #define MAX_LOADSTRING 100
 
 
@@ -409,43 +407,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             EditorView.RenderSceneGuides(Renderer.GetDeviceContext(),Probe);
             Renderer.RenderGizmos(Probe);
             EditorView.RenderOrientationAxis(Renderer.GetDeviceContext(),Probe.MainCameraProbe);
-
-
-            // FName Test ImGui
-            ImGui::Begin("FName Test");
-
-            static char InputBufferA[128] = "player";
-            static char InputBufferB[128] = "Player";
-
-            ImGui::Text("Type string to test FName");
-            ImGui::Spacing();
-
-            ImGui::InputText("String A", InputBufferA, sizeof(InputBufferA));
-            ImGui::InputText("String B", InputBufferB, sizeof(InputBufferB));
-
-            ImGui::Separator();
-
-            FName NameA = FName(InputBufferA);
-            FName NameB = FName(InputBufferB);       
-
-            ImGui::Text("Display Text");
-            ImGui::Spacing();
-            ImGui::Text("NameA String : %s", NameA.ToString().c_str());
-            ImGui::Spacing();
-            ImGui::Text("NameB String : %s", NameB.ToString().c_str());
-
-            ImGui::Separator();
-            if (NameA == NameB)
-            {
-                ImGui::Text("Comparison Result : Eqaul");
-            }
-            else
-            {
-                ImGui::Text("Comparison Result : Not Eqaul");
-            }
-            ImGui::End();
-            // FName Test ImGui
-
 
             ImGui::Render();
             ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
