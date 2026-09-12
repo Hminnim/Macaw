@@ -37,5 +37,5 @@ private:
     bool bCollisionEnabled = true;
 
     bool RaycastBounds(const FRay& Ray, float& OutDistance) const;
-    bool RaycastMesh(const FRay& Ray, const UStaticMeshComponent& MeshComponent, float& OutDistance) const;
+    bool RaycastMesh(const FRay& Ray, const UStaticMeshComponent* MeshComponent, float& OutDistance) const;
 };

@@ -32,12 +32,10 @@ void UCollisionComponent::OnRegister()
     }
 }
 
-void UCollisionComponent::OnUnregister()
-{
+void UCollisionComponent::OnUnregister() {
     AActor* Owner = GetOwner();
 
-    if (Owner != nullptr && Owner->GetWorld() != nullptr)
-    {
+    if (Owner != nullptr && Owner->GetWorld() != nullptr) {
         Owner->GetWorld()->GetCollisionSubsystem().UnregisterComponent(this);
     }
 
@@ -48,15 +46,14 @@ void UCollisionComponent::SetBounds(const DirectX::BoundingBox& InBounds) {
 	DirectX::BoundingOrientedBox::CreateFromBoundingBox(OBB, InBounds);
 }
 
-bool UCollisionComponent::Raycast(const FRay& Ray, float& OutDistance) const
-{
+bool UCollisionComponent::Raycast(const FRay& Ray, float& OutDistance) const {
     if (!bCollisionEnabled)
         return false;
 
 	auto cast = RaycastBounds(Ray, OutDistance);
 
     if (cast) {
-		cast = RaycastMesh(Ray, *GetOwner()->GetComponent<UStaticMeshComponent>(), OutDistance);
+		cast = RaycastMesh(Ray, GetOwner()->GetComponent<UStaticMeshComponent>(), OutDistance);
     }
 
     return cast;
@@ -86,8 +83,8 @@ bool UCollisionComponent::RaycastBounds(const FRay& Ray, float& OutDistance) con
     return WorldBox.Intersects(Ray.position, Ray.direction, OutDistance);
 }
 
-bool UCollisionComponent::RaycastMesh(const FRay& Ray, const UStaticMeshComponent& MeshComponent, float& OutDistance) const {
-    AActor* Owner = MeshComponent.GetOwner();
+bool UCollisionComponent::RaycastMesh(const FRay& Ray, const UStaticMeshComponent* MeshComponent, float& OutDistance) const {
+    AActor* Owner = MeshComponent->GetOwner();
     if (Owner == nullptr || Owner->GetWorld() == nullptr)
         return false;
 
@@ -96,10 +93,9 @@ bool UCollisionComponent::RaycastMesh(const FRay& Ray, const UStaticMeshComponen
         return false;
 
     UMesh* Mesh = Registry->ResolveAsset<UMesh>(
-        MeshComponent.GetMeshHandle());
+        MeshComponent->GetMeshHandle());
 
-    if (Mesh == nullptr)
-    {
+    if (Mesh == nullptr) {
         return false;
     }
 
@@ -107,8 +103,7 @@ bool UCollisionComponent::RaycastMesh(const FRay& Ray, const UStaticMeshComponen
 
     const auto& Indices = Mesh->GetIndices();
 
-    if (Positions.empty() || Indices.size() < 3)
-    {
+    if (Positions.empty() || Indices.size() < 3) {
         return false;
     }
 
