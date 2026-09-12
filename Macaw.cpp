@@ -85,7 +85,7 @@ LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 HWND gHWND;
 FRenderer Renderer;
 
-//#define LOAD 
+#define LOAD 
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -101,6 +101,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     TypeRegistry::Register(UMesh::StaticTypeInfo());
     TypeRegistry::Register(UPipeline::StaticTypeInfo());
 	TypeRegistry::Register(UColorMaterial::StaticTypeInfo());
+	TypeRegistry::Register(UTexturedMaterial::StaticTypeInfo());
+	TypeRegistry::Register(UTexture::StaticTypeInfo());
     TypeRegistry::Register(AActor::StaticTypeInfo());
 
 	TypeRegistry::Register(UWorld::StaticTypeInfo());
@@ -294,7 +296,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     );
 	
 #ifdef LOAD
-	World.LoadScene("./scenes/NewScene1234.json", Renderer.GetDevice(), &AssetRegistry);
+	World.LoadScene("./scenes/test.json", Renderer.GetDevice(), &AssetRegistry);
 #else 
 	AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(), "BasePipeline", "./Content/Metadata/BasePipeline.meta");
 	AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(), "AlternatePipeline", "./Content/Metadata/AlternatePipeline.meta");
