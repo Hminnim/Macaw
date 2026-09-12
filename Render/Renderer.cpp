@@ -4,9 +4,12 @@
 #include "../ErrorHandler.h"
 
 #include "Pipeline/UPipeline.h"
+#include "../Core/Asset/UTexture.h"
 
 #include <ranges>
 #include <range/v3/view/chunk_by.hpp>
+
+
 
 FRenderer::~FRenderer() {
 
@@ -22,6 +25,7 @@ void FRenderer::Create(HWND WindowHandle, UINT width, UINT height) {
 	FRenderer::CreateDeviceAndSwapChain(WindowHandle);
 	FRenderer::CreateRTV();
 	FRenderer::CreateDSV();
+	FRenderer::CreateSamplerStates();
 
 	ModelContextArray.Initialize(Device.Get(), DeviceContext.Get(), 128);
 	RootConstants.Initialize(Device.Get());
@@ -40,51 +44,44 @@ void FRenderer::EndFrame() {
 	SwapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
 }
 
-void FRenderer::RenderScene(FRenderProbe& Probe)
-{
-	RenderActorList(
-		Probe.ActorProbes,
-		Probe.MainCameraProbe
-	);
+void FRenderer::RenderScene(FRenderProbe& Probe) {
+	RenderActorList(Probe.ActorProbes,Probe.MainCameraProbe);
 }
 
 
-void FRenderer::RenderGizmos(FRenderProbe& Probe)
-{
-	if (Probe.GizmoProbes.empty())
-	{
+void FRenderer::RenderGizmos(FRenderProbe& Probe) {
+	if (Probe.GizmoProbes.empty()) {
 		return;
 	}
 
 	// Preserve the scene color, but give gizmos a fresh depth buffer so they stay
 	// visible over the scene while still occluding one another correctly.
-	DeviceContext->ClearDepthStencilView(
-		DepthStencilView.Get(),
-		D3D11_CLEAR_DEPTH,
-		1.0f,
-		0
-	);
+	DeviceContext->ClearDepthStencilView(DepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0 );
 
-	RenderActorList(
-		Probe.GizmoProbes,
-		Probe.MainCameraProbe
-	);
+	RenderActorList(Probe.GizmoProbes,Probe.MainCameraProbe);
 }
 
 void FRenderer::RenderActorList(TArray<FActorProbe>& ActorProbes, const CameraProbe& MainCameraProbe) {
-	// 1. MeshHandle + PipelineHandle 로 정렬
-	// 2. 정렬한 뒤 MeshHandle + PipelineHandle 이 같은 것 끼리 Batch 생성 
-	// 3. Batch 순서대로 SRV Push Back  
-	// 4. Batch 순서대로 InstanceDraw 호출
-
 	if (ActorProbes.empty()) {
 		return;
 	}
 
-	std::ranges::sort(ActorProbes, {}, [](const FActorProbe& Data){ return TTuple{Data.MeshHandle.ID, Data.MeshHandle.Generation, Data.PipelineHandle.ID, Data.PipelineHandle.Generation}; });
+	auto GetRenderChunkKey = [this](const FActorProbe& Data) {
+		const FMaterialChunkSignature Signature = AssetRegistry->ResolveAsset<UMaterial>(Data.MaterialHandle)->BuildChunkSignature();
+		return TTuple{
+			Data.PipelineHandle.ID,
+			Data.PipelineHandle.Generation,
+			Signature.TextureFieldCount,
+			Signature.TextureHandles,
+			Data.MeshHandle.ID,
+			Data.MeshHandle.Generation
+			};
+		};
 
-	auto Groups = ActorProbes | ranges::views::chunk_by([](const FActorProbe& A, const FActorProbe& B) {
-		return A.MeshHandle == B.MeshHandle && A.PipelineHandle == B.PipelineHandle;
+	std::ranges::sort(ActorProbes, {}, GetRenderChunkKey);
+
+	auto Groups = ActorProbes | ranges::views::chunk_by([&GetRenderChunkKey](const FActorProbe& A, const FActorProbe& B) {
+		return GetRenderChunkKey(A) == GetRenderChunkKey(B);
 		});
 
 	ModelContextArray.Clear();
@@ -108,6 +105,12 @@ void FRenderer::RenderActorList(TArray<FActorProbe>& ActorProbes, const CameraPr
 	DeviceContext->VSSetShaderResources(1, 1, AssetRegistry->GetMaterialBuffer().GetSRV());
 	DeviceContext->PSSetShaderResources(1, 1, AssetRegistry->GetMaterialBuffer().GetSRV());
 
+	std::array<ID3D11SamplerState*, 6> RawSamplerStates{};
+	std::ranges::transform(SamplerStates, RawSamplerStates.begin(), [](const auto& Sampler) {
+		return Sampler.Get();
+		});
+	DeviceContext->PSSetSamplers(0, static_cast<UINT>(RawSamplerStates.size()), RawSamplerStates.data());
+
 	struct CameraData {
 		FMatrix View;
 		FMatrix Projection;
@@ -124,13 +127,32 @@ void FRenderer::RenderActorList(TArray<FActorProbe>& ActorProbes, const CameraPr
 	AssetRegistry->GetMaterialBuffer().Flush(DeviceContext.Get());
 
 	uint32 InstanceCount{ 0 };
+	FMaterialChunkSignature BoundTextureSet{};
+	bool bTextureSetBound{ false };
 
 	for (auto g : Groups) {
 		const FActorProbe& First = g.front();
+		const FMaterialChunkSignature Signature = AssetRegistry->ResolveAsset<UMaterial>(First.MaterialHandle)->BuildChunkSignature();
 		UPipeline* Pipeline = AssetRegistry->ResolveAsset<UPipeline>(First.PipelineHandle);
 		UMesh* Mesh = AssetRegistry->ResolveAsset<UMesh>(First.MeshHandle);
 		
 		Pipeline->Bind(DeviceContext.Get());
+
+		if (!bTextureSetBound || BoundTextureSet != Signature) {
+			std::array<ID3D11ShaderResourceView*, MAX_MATERIAL_TEXTURE_FIELDS> TextureSRVs{};
+
+			for (uint8 TextureFieldIndex = 0; TextureFieldIndex < Signature.TextureFieldCount; ++TextureFieldIndex) {
+				UTexture* Texture = AssetRegistry->ResolveAsset<UTexture>(Signature.GetTextureHandle(TextureFieldIndex));
+				TextureSRVs[TextureFieldIndex] = Texture != nullptr ? Texture->GetSRV() : nullptr;
+			}
+
+			if (Signature.TextureFieldCount > 0) {
+				DeviceContext->PSSetShaderResources(2, Signature.TextureFieldCount, TextureSRVs.data());
+			}
+
+			BoundTextureSet = Signature;
+			bTextureSetBound = true;
+		}
 
 		ID3D11Buffer* VertexBuffers[] = { 
 			Mesh->GetVertexBuffer(EVertexAttribute::Position),
@@ -275,4 +297,44 @@ void FRenderer::CreateDSV() {
 	ViewDesc.Texture2D.MipSlice = 0;
 
 	ErrorHandler::ReportHRESULT(Device->CreateDepthStencilView(DepthStencilBuffer.Get(), &ViewDesc, DepthStencilView.GetAddressOf()), "[ FRenderer ]", "Failed to create depth stencil view.", ErrorHandler::EErrorLevel::Critical);
+}
+
+void FRenderer::CreateSamplerStates() {
+	auto CreateSampler = [this](size_t Slot, const D3D11_SAMPLER_DESC& Description, const char* Name) {
+		ErrorHandler::ReportHRESULT(
+			Device->CreateSamplerState(&Description, SamplerStates[Slot].ReleaseAndGetAddressOf()),
+			"[ FRenderer ]",
+			std::string("Failed to create ") + Name + " sampler.",
+			ErrorHandler::EErrorLevel::Critical);
+		};
+
+	auto MakeDescription = [](D3D11_FILTER Filter, D3D11_TEXTURE_ADDRESS_MODE AddressMode) {
+		D3D11_SAMPLER_DESC Description{};
+		Description.Filter = Filter;
+		Description.AddressU = AddressMode;
+		Description.AddressV = AddressMode;
+		Description.AddressW = AddressMode;
+		Description.MipLODBias = 0.0f;
+		Description.MaxAnisotropy = Filter == D3D11_FILTER_ANISOTROPIC ? 8 : 1;
+		Description.ComparisonFunc = D3D11_COMPARISON_NEVER;
+		Description.MinLOD = 0.0f;
+		Description.MaxLOD = D3D11_FLOAT32_MAX;
+		return Description;
+		};
+
+	CreateSampler(0, MakeDescription(D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_WRAP), "LinearWrap");
+	CreateSampler(1, MakeDescription(D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_CLAMP), "LinearClamp");
+	CreateSampler(2, MakeDescription(D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_CLAMP), "PointClamp");
+	CreateSampler(3, MakeDescription(D3D11_FILTER_MIN_MAG_MIP_POINT, D3D11_TEXTURE_ADDRESS_WRAP), "PointWrap");
+	CreateSampler(4, MakeDescription(D3D11_FILTER_ANISOTROPIC, D3D11_TEXTURE_ADDRESS_WRAP), "AnisotropicWrap");
+
+	D3D11_SAMPLER_DESC ShadowDescription = MakeDescription(
+		D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT,
+		D3D11_TEXTURE_ADDRESS_BORDER);
+	ShadowDescription.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
+	ShadowDescription.BorderColor[0] = 1.0f;
+	ShadowDescription.BorderColor[1] = 1.0f;
+	ShadowDescription.BorderColor[2] = 1.0f;
+	ShadowDescription.BorderColor[3] = 1.0f;
+	CreateSampler(5, ShadowDescription, "ShadowCompare");
 }
