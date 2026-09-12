@@ -1,13 +1,18 @@
-#include "Core/Asset/UFont.h"
 #include "PCH.h"
+#include "Core/Asset/UFont.h"
 
-void UFont::BuildFixedGrid(uint32_t InAtlasWidth, uint32_t InAtlasHeight, uint32_t InCellWidth, uint32_t InCellHeight, uint8_t InFirstCharacter, uint8_t InLastCharacter)
+void UFont::BuildFixedGrid(FAssetHandle InAtlasTextureHandle, uint32_t InAtlasWidth, uint32_t InAtlasHeight, uint32_t InCellWidth, uint32_t InCellHeight, uint8_t InFirstCharacter, uint8_t InLastCharacter)
 {
-	if (InAtlasHeight == 0 || InAtlasWidth == 0)
+	if (InAtlasHeight == 0 || InAtlasWidth == 0 || InCellHeight == 0 || InCellWidth == 0)
+	{
+		return;
+	}
+	if (InFirstCharacter > InLastCharacter || InLastCharacter >= ASCIICharacterCount)
 	{
 		return;
 	}
 
+	AtlasTextureHandle = InAtlasTextureHandle;
 	AtlasHeight = InAtlasHeight;
 	AtlasWidth = InAtlasWidth;
 

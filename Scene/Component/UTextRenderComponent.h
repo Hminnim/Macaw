@@ -2,15 +2,10 @@
 #include <stdint.h>
 #include "UPrimitiveComponent.h"
 #include "../../Core/Asset/UFont.h"
+#include "../../Core/Asset/FAssetHandle.h"
 #include "../../STL.h"
 
-struct FTextVertex
-{
-	FVector3 Position{};
-	FVector2 UV{};
-};
-
-struct UTextRenderComponent : public UPrimitiveComponent
+class UTextRenderComponent : public UPrimitiveComponent
 {
 public:
 	UTextRenderComponent() = default;
@@ -18,19 +13,34 @@ public:
 
 	JG_DECLARE_DERIVED_TYPEINFO(UTextRenderComponent, UPrimitiveComponent);
 
-	void SetFont(UFont* Font);
-	void SetText(FString& Text);
-	void SetCharacterHeight(float CharacterHeight);
-	void SetLetterSpacing(float LetterSpacing);
-	void SetLineSpacing(float LineSpacing);
+	void SetFontHandle(FAssetHandle InFontHandle);
+	void SetPipelineHandle(FAssetHandle InPipelineHandle);
+
+	void SetText(const FString& InText);
+	void SetColor(const FVector4& InColor);
+
+	void SetCharacterHeight(float InCharacterHeight);
+	void SetLetterSpacing(float InLetterSpacing);
+	void SetLineSpacing(float InLineSpacing);
 	
+	const FAssetHandle GetFontHandle() const;
+	const FString& GetText() const;
+	const TArray<FTextVertex>& GetVertex() const;
+
+	void OnCreate() override;
+	void OnDestroy() override;
+
+	void RebuildTextGeometry();
+
+	bool MakeTextRender(FTextProbe& OutProbe) const;
 
 private:
-	UFont* Font;
+	FAssetHandle FontHandle{};
+	FAssetHandle PipelineHandle{};
 	FString Text = {};
-	uint16_t Size = 10.0f;
 	FVector4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	float CharacterHeight = 1.0f;
 	float LetterSpacing = 0.0f;
 	float LineSpacing = 0.0f;
+	TArray<FTextVertex> Vertices{};
 };

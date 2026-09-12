@@ -117,6 +117,9 @@ struct FPipelineDescription {
     FShaderDescription VertexShader{};
     FShaderDescription PixelShader{};
 
+    FShaderDescription GeometryShader{};
+    bool bHasGeometryShader = false;
+
     std::vector<FInputElementDescription> InputLayout{};
 
     EPrimitiveTopology PrimitiveTopology{ EPrimitiveTopology::TriangleList };

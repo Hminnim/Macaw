@@ -1,0 +1,84 @@
+{
+  "VertexShader": {
+    "Source": "./Content/Shader/Text.hlsl",
+    "EntryPoint": "mainVS",
+    "Profile": "vs_5_0"
+  },
+
+  "GeometryShader": {
+    "Source": "./Content/Shader/Text.hlsl",
+    "EntryPoint": "mainGS",
+    "Profile": "gs_5_0"
+  },
+
+  "PixelShader": {
+    "Source": "./Content/Shader/Text.hlsl",
+    "EntryPoint": "mainPS",
+    "Profile": "ps_5_0"
+  },
+
+  "InputLayout": [
+    {
+      "SemanticName": "POSITION",
+      "SemanticIndex": 0,
+      "Format": "Float2",
+      "InputSlot": 0,
+      "AlignedByteOffset": 0,
+      "InputClassification": "PerVertex",
+      "InstanceDataStepRate": 0
+    },
+    {
+      "SemanticName": "SIZE",
+      "SemanticIndex": 0,
+      "Format": "Float2",
+      "InputSlot": 0,
+      "AlignedByteOffset": 8,
+      "InputClassification": "PerVertex",
+      "InstanceDataStepRate": 0
+    },
+    {
+      "SemanticName": "TEXCOORD",
+      "SemanticIndex": 0,
+      "Format": "Float2",
+      "InputSlot": 0,
+      "AlignedByteOffset": 16,
+      "InputClassification": "PerVertex",
+      "InstanceDataStepRate": 0
+    },
+    {
+      "SemanticName": "TEXCOORD",
+      "SemanticIndex": 1,
+      "Format": "Float2",
+      "InputSlot": 0,
+      "AlignedByteOffset": 24,
+      "InputClassification": "PerVertex",
+      "InstanceDataStepRate": 0
+    }
+  ],
+
+  "PrimitiveTopology": "PointList",
+
+  "Rasterizer": {
+    "FillMode": "Solid",
+    "CullMode": "None",
+    "FrontCounterClockwise": false,
+    "DepthClipEnable": true,
+    "ScissorEnable": false
+  },
+
+  "DepthStencil": {
+    "DepthEnable": true,
+    "DepthWriteEnable": false,
+    "DepthFunc": "LessEqual"
+  },
+
+  "Blend": {
+    "BlendEnable": true,
+    "SrcBlend": "SrcAlpha",
+    "DestBlend": "InvSrcAlpha",
+    "BlendOp": "Add",
+    "SrcBlendAlpha": "One",
+    "DestBlendAlpha": "InvSrcAlpha",
+    "BlendOpAlpha": "Add"
+  }
+}

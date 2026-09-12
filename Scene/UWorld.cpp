@@ -8,6 +8,7 @@
 #include "Component/UCameraComponent.h"
 #include "Component/UStaticMeshComponent.h"
 #include "Component/UCollisionComponent.h"
+#include "Component/UTextRenderComponent.h"
 #include "FMouseCameraRotateRequestMessage.h"
 #include "FMousePickRequestMessage.h"
 #include "FWorldSelectionChangedMessage.h"
@@ -198,6 +199,7 @@ FRenderProbe& UWorld::BuildRenderProbe()
 {
 	Probe.ActorProbes.clear();
     Probe.GizmoProbes.clear();
+    Probe.TextProbes.clear();
 
     for (const UStaticMeshComponent* Component : RenderableComponents)
     {
@@ -211,6 +213,21 @@ FRenderProbe& UWorld::BuildRenderProbe()
 		}
 
 		Probe.ActorProbes.push_back(ActorProbe);
+    }
+
+    for (const UTextRenderComponent* Component : TextRenderableComponents)
+    {
+        if (Component == nullptr)
+        {
+            continue;
+        }
+
+        FTextProbe TextProbe{};
+
+        if (Component->MakeTextRender(TextProbe))
+        {
+            Probe.TextProbes.push_back(std::move(TextProbe));
+        }
     }
 
     if (Camera != nullptr)
@@ -874,4 +891,22 @@ void UWorld::PublishEditorCameraState()
             Camera->GetFOV()
         }
     );
+}
+
+void UWorld::RegisterTextRenderable(UTextRenderComponent* Component)
+{
+    if (Component == nullptr)
+    {
+        return;
+    }
+    if (std::ranges::find(TextRenderableComponents,Component) != TextRenderableComponents.end())
+    {
+        return;
+    }
+    TextRenderableComponents.push_back(Component);
+}
+
+void UWorld::UnregisterTextRenderable(UTextRenderComponent* Component)
+{
+    std::erase(TextRenderableComponents,Component);
 }

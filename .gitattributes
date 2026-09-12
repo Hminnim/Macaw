@@ -66,6 +66,8 @@
 # Keep Windows project text files on CRLF. Shader source keeps its own EOL.
 ###############################################################################
 * text eol=crlf
+*.lib binary
+*.LIB binary
 *.ico binary
 *.dds binary
 *.DDS binary

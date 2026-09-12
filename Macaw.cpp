@@ -58,6 +58,9 @@
 
 #include "Render/EditorView/EditorViewport.h"
 
+#include "Core/Asset/UFont.h"
+#include "Scene/Component/UTextRenderComponent.h"
+
 #define MAX_LOADSTRING 100
 
 
@@ -102,6 +105,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     TypeRegistry::Register(UPipeline::StaticTypeInfo());
 	TypeRegistry::Register(UColorMaterial::StaticTypeInfo());
     TypeRegistry::Register(AActor::StaticTypeInfo());
+    TypeRegistry::Register(UFont::StaticTypeInfo());
 
 	TypeRegistry::Register(UWorld::StaticTypeInfo());
 	TypeRegistry::Register(AActor::StaticTypeInfo());
@@ -111,6 +115,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	TypeRegistry::Register(UActorComponent::StaticTypeInfo());
 	TypeRegistry::Register(USceneComponent::StaticTypeInfo());
 	TypeRegistry::Register(UCollisionComponent::StaticTypeInfo());
+    TypeRegistry::Register(UTextRenderComponent::StaticTypeInfo());
 	
 
 
@@ -329,6 +334,29 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	AssetRegistry.EmplaceAsset<UTexture>(Renderer.GetDevice(), "PlankTexture", "./Content/Metadata/TexturedTestTexture.meta");
 	AssetRegistry.EmplaceAsset<UTexturedMaterial>(Renderer.GetDevice(), "TexturedMaterial", "./Content/Metadata/TexturedTestMaterial.meta");
 
+    FAssetHandle TextPipelineHandle = AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(),"TextPipeline", "./Content/Metadata/TextPipeline.meta");
+    FAssetHandle FontTextureHandle =AssetRegistry.EmplaceAsset<UTexture>( Renderer.GetDevice(), "AsciiFontTexture","./Content/Metadata/AsciiFontTexture.meta");
+    FAssetHandle FontHandle =AssetRegistry.EmplaceAsset<UFont>(Renderer.GetDevice(),"AsciiFont");
+
+    UFont* Font = AssetRegistry.ResolveAsset<UFont>(FontHandle);
+    if (Font != nullptr)
+    {
+        Font->BuildFixedGrid( FontTextureHandle, 256, 256, 16, 16, ' ', '~');
+    }
+    AActor* TextActor = World.AdoptActor<AActor>();
+
+    if (TextActor != nullptr)
+    {
+        UTextRenderComponent* TextComponent = TextActor->AddComponent<UTextRenderComponent>();
+        TextActor->SetRootComponent(TextComponent);
+        TextComponent->SetFontHandle(FontHandle);
+        TextComponent->SetPipelineHandle(TextPipelineHandle);
+        TextComponent->SetCharacterHeight(0.5f);
+        TextComponent->SetLetterSpacing(0.05f);
+        TextComponent->SetColor( FVector4{1.0f,1.0f,1.0f, 1.0f});
+        TextComponent->SetText(FString{ "ABC" });
+        TextComponent->GetTransform().SetPosition(FVector3{0.0f, 0.0f, 5.0f});
+    }
 
 	World.SpawnActor(AssetRegistry.GetAsset("SphereMesh"), AssetRegistry.GetAsset("TexturedPipeline"), AssetRegistry.GetAsset("TexturedMaterial"), FVector3{ 0.0f, 0.0f, 5.0f }, AssetRegistry.ResolveAsset<UMesh>(AssetRegistry.GetAsset("SphereMesh")), &AssetRegistry);
 

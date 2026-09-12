@@ -16,6 +16,8 @@
 #include "../Core/Channel/FStateChannel.h"
 #include "RenderWindowInfo.h"
 
+#include "FTextRenderer.h"
+
 class FRenderer {
 	struct ModelContext {
 		FMatrix World{};
@@ -80,6 +82,8 @@ private:
 
 	TGraphicsArray<ModelContext> ModelContextArray{};
 	TGraphicsRootConstants<64> RootConstants{};
+
+	FTextRenderer TextRenderer{};
 
 	const float ClearColor[4] = { 0.2f, 0.2f, 0.7f, 1.0f };
 };

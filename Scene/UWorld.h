@@ -15,11 +15,12 @@
 #include "Render/Panel/FEditorInfo.h"
 
 #include "../Render/RenderWindowInfo.h"
-#include "../Core/Channel/FStateChannel.h"
+
 
 class AActor;
 class UCameraComponent;
 class UStaticMeshComponent;
+class UTextRenderComponent;
 struct ID3D11Device;
 class FAssetRegistry;
 
@@ -116,6 +117,9 @@ public:
     std::optional<FStateChannel<FMessageEditorCameraState>::FWriter> EditorCameraWriter;
     std::optional<FStateChannel<FMessageEditorCameraState>::FReader> EditorCameraReader;
 
+    void RegisterTextRenderable(UTextRenderComponent* Component);
+    void UnregisterTextRenderable(UTextRenderComponent* Component);
+
 	void UpdateEditorCameraState();
     void SetAssetRegistry(FAssetRegistry* InAssetRegistry);
 	void SetWindowInfoReader(FStateChannel<RenderWindowInfo>::FReader InReader) { WindowInfoReader = InReader; }
@@ -137,6 +141,7 @@ private:
     TArray<AActor*> PendingDestroyActors;
     TArray<UStaticMeshComponent*> RenderableComponents;
     TArray<TObjectRef<UCollisionComponent>> CollisionComponents;
+    TArray<UTextRenderComponent*> TextRenderableComponents{};
 
 
 	TObjectRef<UCollisionComponent> SelectedCollider;

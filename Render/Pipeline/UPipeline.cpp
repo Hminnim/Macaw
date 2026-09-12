@@ -39,6 +39,14 @@ bool UPipeline::Make(ID3D11Device* Device, const FPipelineDescription& Descripti
         return false;
     }
 
+    if (Description.bHasGeometryShader)
+    {
+        if (!GeometryShader.Initialize(Device,Description.GeometryShader))
+        {
+            return false;
+        }
+    }
+
     std::vector<D3D11_INPUT_ELEMENT_DESC> NativeInputLayout;
     NativeInputLayout.reserve(Description.InputLayout.size());
 
@@ -131,7 +139,7 @@ void UPipeline::Bind(ID3D11DeviceContext* Context) const {
     Context->VSSetShader(VertexShader.GetVertexShader(), nullptr, 0);
     Context->PSSetShader(PixelShader.GetPixelShader(), nullptr, 0);
 
-    Context->GSSetShader(nullptr, nullptr, 0);
+    Context->GSSetShader(GeometryShader.GetGeometryShader(), nullptr, 0);
     Context->HSSetShader(nullptr, nullptr, 0);
     Context->DSSetShader(nullptr, nullptr, 0);
 
@@ -143,6 +151,7 @@ void UPipeline::Bind(ID3D11DeviceContext* Context) const {
 void UPipeline::Reset() {
     VertexShader.Reset();
     PixelShader.Reset();
+    GeometryShader.Reset();
 
     InputLayout.Reset();
     RasterizerState.Reset();
@@ -218,6 +227,31 @@ bool UPipeline::LoadPipelineDescription(const std::filesystem::path& Path, FPipe
     Description.PixelShader.EntryPoint = PSEntryPoint;
     Description.PixelShader.Profile = PSProfile;
     Description.PixelShader.Stage = EShaderStage::Pixel;
+
+    if (Root.HasMember("GeometryShader"))
+    {
+        const rapidjson::Value& GS = Root["GeometryShader"];
+
+        if (!GS.IsObject())
+        {
+            return false;
+        }
+
+        const char* GSSource = GetString(GS, "Source");
+        const char* GSEntryPoint = GetString(GS, "EntryPoint");
+        const char* GSProfile = GetString(GS, "Profile");
+
+        if (GSSource == nullptr || GSEntryPoint == nullptr || GSProfile == nullptr)
+        {
+            return false;
+        }
+
+        Description.GeometryShader.Source = GSSource;
+        Description.GeometryShader.EntryPoint = GSEntryPoint;
+        Description.GeometryShader.Profile = GSProfile;
+        Description.GeometryShader.Stage = EShaderStage::Geometry;
+        Description.bHasGeometryShader = true;
+    }
 
     const rapidjson::Value* InputLayout = GetArray(Root, "InputLayout");
 
