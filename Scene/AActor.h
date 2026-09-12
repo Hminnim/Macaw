@@ -35,6 +35,11 @@ public:
 
         if (World != nullptr) {
             ComponentPtr->RegisterComponent(World);
+
+            if (bHasBegunPlay) {
+                ComponentPtr->InitializeComponent();
+                ComponentPtr->BeginPlay();
+            }
         }
 
         return ComponentPtr;
@@ -62,13 +67,26 @@ public:
 
     void SetWorld(UWorld* InWorld);
     UWorld* GetWorld() const;
-    void SetRootComponent(USceneComponent* InRootComponent);
-    void Tick(float DeltaTime);
+    bool SetRootComponent(USceneComponent* InRootComponent);
+
+    FTransform GetActorTransform() const;
+    bool SetActorTransform(const FTransform& InTransform);
+    FVector3 GetActorLocation() const;
+    bool SetActorLocation(const FVector3& InLocation);
+
+    bool HasBegunPlay() const;
+    virtual void Tick(float DeltaTime);
 
     bool PreLoadComponents(FArchive& Archive);
     bool ResolveLoadedReferences();
 
 protected:
+    virtual void OnAddedToWorld();
+    virtual void InitializeComponents();
+    virtual void BeginPlay();
+    virtual void EndPlay();
+    virtual void OnRemovedFromWorld();
+
     void Serialize(FArchive& Archive) override;
 
 private:
@@ -77,4 +95,5 @@ private:
     FGuid PendingRootComponentGuid{};
 
     UWorld* World = nullptr;
+    bool bHasBegunPlay = false;
 };

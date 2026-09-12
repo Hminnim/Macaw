@@ -14,6 +14,18 @@ void UActorComponent::SetOwner(AActor* InOwner) {
 void UActorComponent::OnRegister() {
 }
 
+void UActorComponent::InitializeComponent() {
+    bInitialized = true;
+}
+
+void UActorComponent::BeginPlay() {
+    bHasBegunPlay = true;
+}
+
+void UActorComponent::EndPlay() {
+    bHasBegunPlay = false;
+}
+
 void UActorComponent::Tick(float /*DeltaTime*/) {
 }
 
@@ -32,6 +44,14 @@ bool UActorComponent::IsRegistered() const {
     return bRegistered;
 }
 
+bool UActorComponent::IsInitialized() const {
+    return bInitialized;
+}
+
+bool UActorComponent::HasBegunPlay() const {
+    return bHasBegunPlay;
+}
+
 UWorld* UActorComponent::GetBelongingWorld() const {
     return ParentWorld;
 }
@@ -48,9 +68,15 @@ void UActorComponent::RegisterComponent(UWorld* world) {
 }
 
 void UActorComponent::UnregisterComponent() {
+    if (not bRegistered) {
+        return;
+    }
+
     ErrorHandler::Report(Owner == nullptr or ParentWorld == nullptr, "[ UActorComponent ]", "Owner and ParentWorld must not be null.", ErrorHandler::EErrorLevel::Critical);
 
-    if (not bRegistered) return;
+    if (bHasBegunPlay) {
+        EndPlay();
+    }
 
     this->OnUnregister();
     bRegistered = false;

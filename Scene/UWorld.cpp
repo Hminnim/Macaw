@@ -82,6 +82,7 @@ UWorld::~UWorld()
 {
     for (const std::unique_ptr<AActor>& Actor : Actors)
     {
+        Actor->SetWorld(nullptr);
         UObjectSystem::Unregister (Actor.get(), Actor->GetHandle());
     }
 
@@ -160,9 +161,8 @@ void UWorld::FlushPendingDestroyActors()
             continue;
         }
 
-        UObjectSystem::Unregister(
-            Actor,
-            Actor->GetHandle());
+        Actor->SetWorld(nullptr);
+        UObjectSystem::Unregister(Actor, Actor->GetHandle());
 
         Actors.erase(It); 
     }
