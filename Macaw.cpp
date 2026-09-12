@@ -341,7 +341,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UFont* Font = AssetRegistry.ResolveAsset<UFont>(FontHandle);
     if (Font != nullptr)
     {
-        Font->BuildFixedGrid( FontTextureHandle, 256, 256, 16, 16, ' ', '~');
+        Font->BuildFixedGrid(FontTextureHandle, 512, 512, 32, 32, 0, 255, 6.0f);
     }
     AActor* TextActor = World.AdoptActor<AActor>();
 
@@ -353,9 +353,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         TextComponent->SetPipelineHandle(TextPipelineHandle);
         TextComponent->SetCharacterHeight(0.5f);
         TextComponent->SetLetterSpacing(0.05f);
+        TextComponent->SetLineSpacing(0.01f);
         TextComponent->SetColor( FVector4{1.0f,1.0f,1.0f, 1.0f});
-        TextComponent->SetText(FString{ "ABC" });
-        TextComponent->GetTransform().SetPosition(FVector3{0.0f, 0.0f, 5.0f});
+        TextComponent->SetText(FString{ "abcdefghijklmonpqrstuvwxyz\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n 0123456789[]"});
+        TextComponent->GetTransform().SetPosition(FVector3{0.0f, 0.0f, 0.0f});
     }
 
 	World.SpawnActor(AssetRegistry.GetAsset("SphereMesh"), AssetRegistry.GetAsset("TexturedPipeline"), AssetRegistry.GetAsset("TexturedMaterial"), FVector3{ 0.0f, 0.0f, 5.0f }, AssetRegistry.ResolveAsset<UMesh>(AssetRegistry.GetAsset("SphereMesh")), &AssetRegistry);

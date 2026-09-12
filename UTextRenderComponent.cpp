@@ -147,7 +147,9 @@ void UTextRenderComponent::RebuildTextGeometry()
 		{
 			continue;
 		}
-		const float CharacterWidth = CharacterHeight * static_cast<float>(FontCharacter->USize) / static_cast<float>(FontCharacter->VSize);
+		const float PixelToWorld = CharacterHeight / static_cast<float>(FontCharacter->VSize);
+		const float CharacterWidth = static_cast<float>(FontCharacter->USize) * PixelToWorld;
+		const float CharacterAdvance = FontCharacter->Advance * PixelToWorld;
 		if (Character != static_cast<std::uint8_t>(' '))
 		{
 			FFontUVRect UV = Font->GetUV(Character);
@@ -159,6 +161,6 @@ void UTextRenderComponent::RebuildTextGeometry()
 				}
 			);
 		}
-		PenX += CharacterWidth + LetterSpacing;
+		PenX += CharacterAdvance + LetterSpacing;
 	}
 }

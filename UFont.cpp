@@ -1,13 +1,17 @@
 #include "PCH.h"
 #include "Core/Asset/UFont.h"
 
-void UFont::BuildFixedGrid(FAssetHandle InAtlasTextureHandle, uint32_t InAtlasWidth, uint32_t InAtlasHeight, uint32_t InCellWidth, uint32_t InCellHeight, uint8_t InFirstCharacter, uint8_t InLastCharacter)
+void UFont::BuildFixedGrid(FAssetHandle InAtlasTextureHandle, uint32_t InAtlasWidth, uint32_t InAtlasHeight, uint32_t InCellWidth, uint32_t InCellHeight, uint8_t InFirstCharacter, uint8_t InLastCharacter, float InDefaultAdvance)
 {
 	if (InAtlasHeight == 0 || InAtlasWidth == 0 || InCellHeight == 0 || InCellWidth == 0)
 	{
 		return;
 	}
 	if (InFirstCharacter > InLastCharacter || InLastCharacter >= ASCIICharacterCount)
+	{
+		return;
+	}
+	if (InDefaultAdvance <= 0.0f)
 	{
 		return;
 	}
@@ -34,7 +38,8 @@ void UFont::BuildFixedGrid(FAssetHandle InAtlasTextureHandle, uint32_t InAtlasWi
 			.StartU = StartU,
 			.StartV = StartV,
 			.USize = InCellWidth,
-			.VSize = InCellHeight
+			.VSize = InCellHeight,
+			.Advance = InDefaultAdvance
 		};
 	}
 }
@@ -64,14 +69,10 @@ FFontUVRect UFont::GetUV(uint8_t Character)
 	{
 		return {};
 	}
-	FFontUVRect Result;
-	float UMin = FontCharacter->StartU / AtlasWidth;
-	float VMin = FontCharacter->StartV / AtlasHeight;
-	float UMax = UMin + FontCharacter->USize / AtlasWidth;
-	float VMax = VMin + FontCharacter->VSize / AtlasHeight;
-	Result.UVMax.x = UMax;
-	Result.UVMax.y = VMax;
-	Result.UVMin.x = UMin;
-	Result.UVMin.y = VMin;
+	FFontUVRect Result{};
+	Result.UVMin.x = (static_cast<float>(FontCharacter->StartU)) / static_cast<float>(AtlasWidth);
+	Result.UVMin.y = (static_cast<float>(FontCharacter->StartV)) / static_cast<float>(AtlasHeight);
+	Result.UVMax.x = (static_cast<float>(FontCharacter->StartU + FontCharacter->USize)) / static_cast<float>(AtlasWidth);
+	Result.UVMax.y = (static_cast<float>(FontCharacter->StartV + FontCharacter->VSize)) / static_cast<float>(AtlasHeight);
 	return Result;
 }

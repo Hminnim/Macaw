@@ -86,8 +86,8 @@ void mainGS(point VS_OUTPUT Input[1], inout TriangleStream<PS_INPUT> Stream) // 
 
 float4 mainPS(PS_INPUT Input) : SV_TARGET
 {
-    float4 AtlasColor = FontAtlas.Sample(PointClamp, Input.UV);
-    float Coverage = AtlasColor.a;
+    float4 AtlasColor = FontAtlas.SampleLevel(PointClamp, Input.UV, 0.0f);
+    float Coverage = AtlasColor.r;
     
     return float4(TextColor.rgb, TextColor.a * Coverage);
 }

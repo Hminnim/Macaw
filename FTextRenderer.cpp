@@ -101,7 +101,7 @@ void FTextRenderer::Render(ID3D11DeviceContext* Context, const TArray<FTextProbe
 		ID3D11Buffer* Buffer = VertexBuffer.GetBuffer();
 		UINT Stride = sizeof(FTextVertex);
 		UINT Offset = 0;
-
+		Context->IASetVertexBuffers(0,1,&Buffer,&Stride,&Offset);
 		Context->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0);
 		ID3D11ShaderResourceView* AtlasSRV = AtlasTexture->GetSRV();
 		Context->PSSetShaderResources(2, 1, &AtlasSRV);
@@ -111,7 +111,14 @@ void FTextRenderer::Render(ID3D11DeviceContext* Context, const TArray<FTextProbe
 			.CameraWorld = CameraWorld,
 			.Color = Probe.Color
 		};
-		TextConstants.Bind(Context, 0, EGraphicsShaderStage::Geometry | EGraphicsShaderStage::Pixel);
+		if (!TextConstants.SetGraphicsRoot32BitConstants(Constants, 0))
+		{
+			continue;
+		}
+		if (!TextConstants.Bind(Context, 0, EGraphicsShaderStage::Geometry | EGraphicsShaderStage::Pixel))
+		{
+			continue;
+		}
 		Context->Draw(VertexCount, 0);
 	}
 }

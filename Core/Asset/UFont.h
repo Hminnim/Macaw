@@ -12,6 +12,8 @@ struct FFontCharacter
 
 	uint32_t USize = 0;
 	uint32_t VSize = 0;
+
+	float Advance = 0.0f;
 };
 
 struct FFontUVRect
@@ -34,7 +36,7 @@ public:
 
 	JG_DECLARE_DERIVED_TYPEINFO(UFont, UAsset);
 
-	void BuildFixedGrid(FAssetHandle InAtlasTextureHandle, uint32_t InAtlasWidth, uint32_t InAtlasHeight, uint32_t InCellWidth, uint32_t InCellHeight, uint8_t InFirstCharacter, uint8_t InLastCharacter);
+	void BuildFixedGrid(FAssetHandle InAtlasTextureHandle, uint32_t InAtlasWidth, uint32_t InAtlasHeight, uint32_t InCellWidth, uint32_t InCellHeight, uint8_t InFirstCharacter, uint8_t InLastCharacter, float InDefaultAdvance);
 	FFontCharacter* FindCharacter(uint8_t Character);
 	FFontUVRect GetUV(uint8_t Character);
 	FAssetHandle GetAtlasTextureHandle(){ return AtlasTextureHandle; }
