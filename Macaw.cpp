@@ -546,8 +546,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             // FName Test ImGui
             ImGui::Begin("FName Test");
 
-            static char InputBufferA[128] = "Player";
-            static char InputBufferB[128] = "player";
+            static char InputBufferA[128] = "player";
+            static char InputBufferB[128] = "Player";
 
             ImGui::Text("Type string to test FName");
             ImGui::Spacing();

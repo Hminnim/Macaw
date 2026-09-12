@@ -106,8 +106,75 @@ private:
 	uint8* Blocks[FNameMaxBlocks] = {};
 };
 
-// FNamePool
+// FNameHash
+// Hash(uint32) and ProbeHash(uint32)
+struct FNameHash
+{
+	uint32 Hash;
+	uint32 ProbeHash;
 
+	static uint64 GenerateHash(const char* Str, size_t Len)
+	{
+		return CityHash64(Str, Len);
+	}
+
+	FNameHash(const char* Str, int32 Len)
+		: FNameHash(GenerateHash(Str, Len), Len)
+	{}
+
+	FNameHash()
+		: Hash(0), ProbeHash(0)
+	{}
+
+	FNameHash(uint64 InHash, int32 Len)
+	{
+		uint32 Hi = static_cast<uint32>(InHash >> 32);
+		uint32 Lo = static_cast<uint32>(InHash && 0xFFFFFFFF);
+
+		Hash = Lo;
+		ProbeHash = Hi & ProbeHashMask;
+	}
+};
+
+// FNameValue
+// Name(string_view), Hash(FNameHash)
+struct FNameValue
+{
+	FNameValue(std::string_view InName)
+		: Name(InName)
+	{}
+
+	FNameValue(std::string_view InName, FNameHash InHash)
+		: Name(InName), Hash(InHash)
+	{}
+
+	std::string_view Name;
+	FNameHash Hash;
+};
+
+// FNameComparisonValue
+// Only for using lower(Not display)
+struct FNameComparisonValue : public FNameValue
+{
+	FNameComparisonValue(std::string_view InName)
+		: FNameValue(InName)
+	{
+		// Stack buffer
+		char LowerBuffer[NAME_SIZE];
+
+		size_t Len = std::min(InName.length(), size_t(NAME_SIZE - 1));
+
+		for (size_t i = 0; i < Len; ++i)
+		{
+			LowerBuffer[i] = static_cast<char>(std::tolower(InName[i]));
+		}
+
+		Hash = FNameHash(LowerBuffer, Len);
+	}
+};
+
+// FNamePool
+// HashBuckets, Entries
 class FNamePool
 {
 public:
@@ -118,51 +185,23 @@ public:
 	}
 	FNameEntryId Find(std::string_view NameString) const
 	{
-		uint32 FullHash = CalculateHash(NameString);
-		uint32 CapacityMask = ComparisonHashBuckets.size() - 1;
-		uint32 SlotIndex = FullHash & CapacityMask;
-		uint32 ProbeHash = (FullHash << ProbeHashShift) & ProbeHashMask;
+		// Comparison
+		FNameComparisonValue ComparisonValue(NameString);
 
-		while (ComparisonHashBuckets[SlotIndex].Used())
-		{
-			if (ComparisonHashBuckets[SlotIndex].GetProbeHash() == ProbeHash)
-			{
-				FNameEntryId ExistingId = ComparisonHashBuckets[SlotIndex].GetId();
-				const FNameEntry& Entry = Resolve(ExistingId);
-
-				std::string_view ExistingStr(Entry.GetName(), Entry.GetNameLength());
-				if (ExistingStr.length() == NameString.length())
-				{
-					bool bIsMatch = true;
-					for (size_t i = 0; i < ExistingStr.length(); ++i)
-					{
-						if (std::tolower(ExistingStr[i]) != std::tolower(NameString[i]))
-						{
-							bIsMatch = false;
-							break;
-						}
-					}
-					if (bIsMatch)
-					{
-						return ExistingId;
-					}
-				}				
-			}
-			SlotIndex = (SlotIndex + 1) & CapacityMask;
-		}
-
-		return FNameEntryId();
+		return FNamePool::FindValue(ComparisonHashBuckets, ComparisonValue);
 	}
 	FNameEntryId Store(std::string_view NameString)
 	{
-		FNameEntryId ExistingId = FNamePool::Find(NameString);
+		FNameComparisonValue ComparisonValue(NameString);
+
+		FNameEntryId ExistingId = FNamePool::FindValue(ComparisonHashBuckets,ComparisonValue);
 		if (ExistingId.ToUnstableInt() != 0)
 		{
 			return ExistingId;
 		}
 
 		// Write Memory
-		uint32 NeededByte = sizeof(FNameEntryHeader) + NameString.length() + 1; // 1 : null
+		uint32 NeededByte = sizeof(FNameEntryHeader) + NameString.length() + 1; // 1 : null terminator
 		FNameEntryHandle NewHandle = Entries.Allocate(NeededByte);
 
 		// Set header
@@ -172,19 +211,17 @@ public:
 		// Set string
 		char* DataPtr = const_cast<char*>(NewEntry.GetName());
 		std::memcpy(DataPtr, NameString.data(), NameString.length());
-		DataPtr[NameString.length()] = '\0'; // null char
+		DataPtr[NameString.length()] = '\0'; // null terminator
 
-		uint32 FullHash = CalculateHash(NameString);
 		uint32 CapacityMask = ComparisonHashBuckets.size() - 1;
-		uint32 SlotIndex = FullHash & CapacityMask;
-		uint32 ProbeHash = (FullHash << ProbeHashShift) & ProbeHashMask;
+		uint32 SlotIndex = ComparisonValue.Hash.Hash & CapacityMask;
 
 		while (ComparisonHashBuckets[SlotIndex].Used())
 		{
 			SlotIndex = (SlotIndex + 1) & CapacityMask;
 		}
 		
-		ComparisonHashBuckets[SlotIndex] = FNameSlot(NewHandle, ProbeHash);
+		ComparisonHashBuckets[SlotIndex] = FNameSlot(NewHandle, ComparisonValue.Hash.ProbeHash);
 
 		return NewHandle;
 	}
@@ -218,6 +255,43 @@ private:
 		}
 
 		return CityHash32(LowerBuffer, Len);
+	}
+	FNameEntryId FindValue(const TArray<FNameSlot>& Buckets, const FNameValue& InValue) const
+	{
+		uint32 CapacityMask = Buckets.size() - 1;
+		uint32 SlotIndex = InValue.Hash.Hash & CapacityMask;
+
+		while (Buckets[SlotIndex].Used())
+		{
+			if (Buckets[SlotIndex].GetProbeHash() == InValue.Hash.ProbeHash)
+			{
+				FNameEntryId ExistingId = Buckets[SlotIndex].GetId();
+				const FNameEntry& Entry = Resolve(ExistingId);
+
+				std::string_view ExistingStr(Entry.GetName(), Entry.GetNameLength());
+				if (ExistingStr.length() == InValue.Name.length())
+				{
+					bool bIsMatch = true;
+					for (size_t i = 0; i < ExistingStr.length(); ++i)
+					{
+						if (std::tolower(ExistingStr[i]) != std::tolower(InValue.Name[i]))
+						{
+							bIsMatch = false;
+							break;
+						}
+					}
+					if (bIsMatch)
+					{
+						return ExistingId;
+					}
+				}
+			}
+
+			SlotIndex = (SlotIndex + 1) & CapacityMask;
+		}
+
+
+		return FNameEntryId();
 	}
 
 	FNameEntryAllocator Entries;
