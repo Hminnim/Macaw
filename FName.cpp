@@ -129,7 +129,7 @@ struct FNameHash
 	FNameHash(uint64 InHash, int32 Len)
 	{
 		uint32 Hi = static_cast<uint32>(InHash >> 32);
-		uint32 Lo = static_cast<uint32>(InHash && 0xFFFFFFFF);
+		uint32 Lo = static_cast<uint32>(InHash & 0xFFFFFFFF);
 
 		Hash = Lo;
 		ProbeHash = Hi & ProbeHashMask;
