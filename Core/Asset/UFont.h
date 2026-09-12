@@ -1,0 +1,36 @@
+#pragma once
+#include "../../Core/Base/UObject.h"
+#include "../../FVector.h"
+#include <array>
+#include <cstdint>
+
+struct FFontCharacter
+{
+	uint32_t StartU = 0;
+	uint32_t StartV = 0;
+
+	uint32_t USize = 0;
+	uint32_t VSize = 0;
+};
+
+struct FFontUVRect
+{
+	FVector2 UVMin{};
+	FVector2 UVMax{};
+};
+
+class UFont : public UObject
+{
+private:
+	float AtlasHeight = 0.0f;
+	float AtlasWidth = 0.0f;
+	static constexpr uint32_t ASCIICharacterCount = 256;
+	std::array<FFontCharacter, ASCIICharacterCount> Characters{};
+public:
+	UFont() = default;
+	~UFont() override = default;
+
+	void BuildFixedGrid(uint32_t InAtlasWidth, uint32_t InAtlasHeight, uint32_t InCellWidth, uint32_t InCellHeight, uint8_t InFirstCharacter, uint8_t InLastCharacter);
+	FFontCharacter* FindCharacter(uint8_t Character);
+	FFontUVRect GetUV(uint8_t Character);
+};

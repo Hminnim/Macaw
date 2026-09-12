@@ -103,7 +103,7 @@ private:
 	static constexpr float ShaftRadiusPixels = 6.0f;
 	static constexpr float ConeRadiusPixels = 13.0f;
 	static constexpr float PickRadiusPixels = 10.0f;
-	static constexpr float BoundsGapPixels = 2.0f;
+	static constexpr float BoundsGapPixels = 5.0f;
 
 	float CurrentRingRadius = 0.0f;
 	float CurrentRingPickHalfWidth = 0.0f;
