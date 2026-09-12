@@ -36,7 +36,7 @@ private:
 struct FNameEntryHeader
 {
 	uint16 bIsWide : 1;
-	uint16 Len = 15;
+	uint16 Len : 15;
 };
 
 struct FNameEntry
@@ -60,11 +60,13 @@ public:
 class FName
 {
 public:
-	FName(char* pStr);
+	FName(const char* pStr);
 	FName(FString str);
 
 	int32 Compare(const FName& Rhs) const;
 	bool operator==(const FName& Rhs) const;
+
+	FString ToString() const;
 
 private:
 	FNameEntryId DisplayId;
