@@ -3,7 +3,9 @@
 #include "URenderSubsystem.h"
 
 #include "Scene/AActor.h"
+#include "Scene/UWorld.h"
 #include "Scene/Component/UStaticMeshComponent.h"
+#include "Scene/FWorldEditorContext.h"
 
 void URenderSubsystem::RegisterComponent(UStaticMeshComponent* Component) {
     if (Component == nullptr || ContainsComponent(Component)) {
@@ -17,16 +19,18 @@ void URenderSubsystem::UnregisterComponent(UStaticMeshComponent* Component) {
     std::erase(Components, Component);
 }
 
-void URenderSubsystem::BuildRenderProbes(FRenderProbe& Probe, const AActor* HighlightedActor) const {
+void URenderSubsystem::BuildRenderProbes(FRenderProbe& Probe) const {
     Probe.ActorProbes.clear();
     Probe.GizmoProbes.clear();
 
+    const FWorldEditorContext* EditorContext = GetWorld()->GetEditorContext();
+    const AActor* SelectedActor = EditorContext != nullptr ? EditorContext->GetSelectedActor() : nullptr;
     for (const UStaticMeshComponent* Component : Components) {
         FActorProbe ActorProbe{};
         Component->MakeRender(ActorProbe);
 
-        if (HighlightedActor != nullptr && Component->GetOwner() == HighlightedActor) {
-            ActorProbe.Flags |= 0x0000'0001;
+        if (SelectedActor != nullptr && Component->GetOwner() == SelectedActor) {
+            ActorProbe.Flags |= static_cast<uint32>(ERenderObjectFlags::Selected);
         }
 
         Probe.ActorProbes.push_back(ActorProbe);

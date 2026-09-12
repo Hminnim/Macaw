@@ -39,6 +39,7 @@ public:
 	bool SetWorldLocationAndRotation(const FVector3& Location, const FRotator& Rotation);
 	bool SetWorldRotation(const FRotator& Rotation);
 	bool SetWorldScale3D(const FVector3& Scale);
+
 	FTransform GetComponentTransform() const;
 	FMatrix GetComponentToWorld() const;
 	FVector3 GetComponentLocation() const;

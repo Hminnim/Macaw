@@ -4,7 +4,6 @@
 
 #include "Core/Base/FRenderProbe.h"
 
-class AActor;
 class UStaticMeshComponent;
 
 /// <summary>Builds render probes from registered StaticMeshComponents.</summary>
@@ -17,7 +16,7 @@ public:
 
     void RegisterComponent(UStaticMeshComponent* Component);
     void UnregisterComponent(UStaticMeshComponent* Component);
-    void BuildRenderProbes(FRenderProbe& Probe, const AActor* HighlightedActor) const;
+    void BuildRenderProbes(FRenderProbe& Probe) const;
 
     bool ContainsComponent(const UStaticMeshComponent* Component) const;
     const TArray<UStaticMeshComponent*>& GetRegisteredComponents() const;

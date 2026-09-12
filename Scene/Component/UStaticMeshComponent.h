@@ -1,23 +1,18 @@
 ﻿#pragma once
 
-#include "UPrimitiveComponent.h"
-#include "Core/Asset/FAssetHandle.h"
+#include "UMeshComponent.h"
 #include "Serialize/FArchive.h"
 
-class UStaticMeshComponent : public UPrimitiveComponent
-{
+class UStaticMeshComponent : public UMeshComponent {
 public:
     UStaticMeshComponent() = default;
     ~UStaticMeshComponent() override = default;
 
-    JG_DECLARE_DERIVED_TYPEINFO(UStaticMeshComponent, UPrimitiveComponent)
+    JG_DECLARE_DERIVED_TYPEINFO(UStaticMeshComponent, UMeshComponent)
 
-
-    FAssetHandle GetMeshHandle() const;
     FAssetHandle GetMaterialHandle() const;
     FAssetHandle GetPipelineHandle() const;
 
-    void SetMeshHandle(FAssetHandle InHandle);
     void SetMaterialHandle(FAssetHandle InHandle);
     void SetPipelineHandle(FAssetHandle InHandle);
 
@@ -29,7 +24,6 @@ protected:
     void Serialize(FArchive& Archive) override;
 
 private:
-    FAssetHandle MeshHandle;
     FAssetHandle MaterialHandle;
     FAssetHandle PipelineHandle;
 };

@@ -7,13 +7,13 @@
 #include "AActor.h"
 #include "Component/UCameraComponent.h"
 #include "Component/UStaticMeshComponent.h"
-#include "Component/UCollisionComponent.h"
+#include "Component/UBoxColliderComponent.h"
 #include "Subsystem/UCameraSubsystem.h"
 #include "Subsystem/UCollisionSubsystem.h"
 #include "Subsystem/URenderSubsystem.h"
 #include "FMouseCameraRotateRequestMessage.h"
 #include "FMousePickRequestMessage.h"
-#include "FWorldSelectionChangedMessage.h"
+#include "FWorldEditorContext.h"
 #include "FKeyboardCameraMoveRequestMessage.h"
 #include "FTransformEditRequestMessage.h"
 #include "Render/Panel/FEditorInfo.h"
@@ -60,17 +60,13 @@ UWorld::~UWorld() {
 }
 
 bool UWorld::SpawnActor(const FAssetHandle& MeshHandle, const FAssetHandle& PipelineHandle, const FAssetHandle& MaterialHandle, 
-                        const FVector3& Position, UMesh *Mesh, FAssetRegistry* AssetRegistry)
+                        const FVector3& Position)
 {
     //std::unique_ptr<AActor> Actor;
     auto Actor = UWorld::AdoptActor<AActor>();
 
     UStaticMeshComponent* MeshComponent = Actor->AddComponent<UStaticMeshComponent>();
-    UCollisionComponent* CollisionComponent = Actor->AddComponent<UCollisionComponent>();
-
     Actor->SetRootComponent(MeshComponent);
-
-    CollisionComponent->AttachToComponent(MeshComponent);
 
     MeshComponent->SetMeshHandle(MeshHandle);
     MeshComponent->SetPipelineHandle(PipelineHandle);
@@ -83,7 +79,6 @@ bool UWorld::SpawnActor(const FAssetHandle& MeshHandle, const FAssetHandle& Pipe
             Position.z
         });
 
-    CollisionComponent->SetBounds(Mesh->GetLocalBoundingBox());
     FGuid Guid = Actor->GetGuid();
     
     //FUndoSystem::RecordObject(UObjectSystem::Resolve(UObjectSystem::FindHandleByGuid(Guid)), EUndoType::Spawn, AssetRegistry);
@@ -131,6 +126,9 @@ void UWorld::FlushPendingDestroyActors()
             continue;
         }
 
+        if (EditorContext != nullptr && EditorContext->GetSelectedActor() == Actor) {
+            EditorContext->ClearSelection();
+        }
         Actor->SetWorld(nullptr);
         UObjectSystem::Unregister(Actor, Actor->GetHandle());
 
@@ -167,10 +165,15 @@ void UWorld::DeinitializeSubsystems() {
     }
 }
 
-void UWorld::InitializeEditorEventSender(
-    FMessageChannel::FSender&& InSender)
-{
-    EditorEventSender.emplace(std::move(InSender));
+void UWorld::SetEditorContext(FWorldEditorContext* InEditorContext) {
+    EditorContext = InEditorContext;
+    if (EditorContext != nullptr) {
+        EditorContext->SetWorld(this);
+    }
+}
+
+FWorldEditorContext* UWorld::GetEditorContext() const noexcept {
+    return EditorContext;
 }
 
 void UWorld::InitializeEditorCameraState(
@@ -188,9 +191,7 @@ void UWorld::InitializeEditorCameraState(
 
 FRenderProbe& UWorld::BuildRenderProbe() 
 {
-    UCollisionComponent* SelectedCollision = SelectedCollider.Get();
-    const AActor* HighlightedActor = SelectedCollision != nullptr ? SelectedCollision->GetOwner() : nullptr;
-    GetRenderSubsystem().BuildRenderProbes(Probe, HighlightedActor);
+    GetRenderSubsystem().BuildRenderProbes(Probe);
 
     if (UCameraComponent* Camera = GetCameraSubsystem().GetMainCamera())
     {
@@ -213,7 +214,9 @@ void UWorld::Tick(float DeltaTime)
     }
 
     ApplyEditorCameraState();
-    PublishEditorSelectionState(); 
+    if (EditorContext != nullptr) {
+        EditorContext->RefreshSelectionState(TransformRevision);
+    }
 
     for (const std::unique_ptr<AActor>& Actor : Actors)
     {
@@ -434,7 +437,6 @@ bool UWorld::LoadScene(const std::filesystem::path& ScenePath, ID3D11Device* Dev
 }
 
 void UWorld::HandleMousePickRequest(const FMousePickRequestMessage& Message) {
-    FObjectHandle SelectedComponentHandle{};
     UCameraComponent* Camera = GetCameraSubsystem().GetMainCamera();
 
     if (Camera != nullptr &&
@@ -473,19 +475,12 @@ void UWorld::HandleMousePickRequest(const FMousePickRequestMessage& Message) {
 
             if (NearestCollision != nullptr)
             {
-				SelectedCollider.Set(NearestCollision);
-
-				if (AActor* Owner = NearestCollision->GetOwner())
-				{
-					if (USceneComponent* RootComponent = Owner->GetRootComponent())
-					{
-						SelectedComponentHandle = RootComponent->GetHandle();
-					}
-				}
+                if (EditorContext != nullptr) {
+                    EditorContext->SetSelectedCollider(NearestCollision, TransformRevision);
+                }
             }
-            else {
-				SelectedCollider.Reset();
-				EditorSelectionState.GetWriter().Clear();
+            else if (EditorContext != nullptr) {
+				EditorContext->ClearSelection();
             }
         }
 
@@ -493,17 +488,10 @@ void UWorld::HandleMousePickRequest(const FMousePickRequestMessage& Message) {
         
     }
 
-    if (EditorEventSender.has_value())
-    {
-        EditorEventSender->TryEmplace<FWorldSelectionChangedMessage>(
-            SelectedComponentHandle);
-    }
 }
 
 void UWorld::HandleMousePickReleaseRequest(const FMousePickReleaseRequestMessage& Message)
 {
-   // SelectedCollider.GetWriter().Emplace(nullptr);
-
 }
 
 void UWorld::HandleTransformEditRequest(const FTransformEditRequestMessage& Message) {
@@ -557,35 +545,6 @@ void UWorld::HandleTransformEditRequest(const FTransformEditRequestMessage& Mess
 		break;
 	}
 }
-
-void UWorld::PublishEditorSelectionState() {
-	UCollisionComponent* Collision = SelectedCollider.Get();
-	if (Collision == nullptr) {
-		SelectedCollider.Reset();
-		EditorSelectionState.GetWriter().Clear();
-		return;
-	}
-
-	AActor* Owner = Collision->GetOwner();
-	USceneComponent* Target = Owner != nullptr ? Owner->GetRootComponent() : nullptr;
-	if (Target == nullptr) {
-		SelectedCollider.Reset();
-		EditorSelectionState.GetWriter().Clear();
-		return;
-	}
-
-	EditorSelectionState.GetWriter().Emplace(FEditorSelectionState{
-		.TransformTargetHandle = Target->GetHandle(),
-		.PickedColliderHandle = Collision->GetHandle(),
-		.TargetWorld = Target->GetComponentToWorld(),
-		.ColliderWorld = Collision->GetComponentToWorld(),
-		.BoundsCenter = Collision->GetBoundsCenter(),
-		.BoundsExtent = Collision->GetExtent(),
-		.BoundsOrientation = Collision->GetBoundsOrientation(),
-		.TransformRevision = TransformRevision
-	});
-}
-
 
 void UWorld::HandleMouseCameraRotateRequest(const FMouseCameraRotateRequestMessage& Message)
 {
@@ -720,9 +679,7 @@ void UWorld::HandleSpawnPrimitive(
 
     const FAssetHandle MaterialHandle = Materials[r(RandomEngine)];
 
-    UMesh* Mesh = AssetRegistry.ResolveAsset<UMesh>(MeshHandle);
-
-    if (Mesh == nullptr)
+    if (AssetRegistry.ResolveAsset<UMesh>(MeshHandle) == nullptr)
     {
         return;
     }
@@ -737,7 +694,7 @@ void UWorld::HandleSpawnPrimitive(
     for (uint32 Index = 0; Index < Message.SpawnCount;  ++Index)
     {
         SpawnActor(MeshHandle, PipelineHandle, MaterialHandle,
-            FVector3{ SpawnCenter.x + RandomX(RandomEngine),SpawnCenter.y + RandomY(RandomEngine), SpawnCenter.z + RandomZ(RandomEngine) }, Mesh, &AssetRegistry);
+            FVector3{ SpawnCenter.x + RandomX(RandomEngine),SpawnCenter.y + RandomY(RandomEngine), SpawnCenter.z + RandomZ(RandomEngine) });
     }
 }
 

@@ -8,19 +8,16 @@
 
 #include "AActor.h"
 #include "Component/UCameraComponent.h"
-#include "Component/UCollisionComponent.h"
 #include "Component/UStaticMeshComponent.h"
 #include "Core/Asset/FAssetRegistry.h"
 #include "Core/Asset/UMesh.h"
 #include "Core/Base/TObjectRef.h"
-#include "Core/Channel/FMessageChannel.h"
 #include "Core/Channel/FStateChannel.h"
 
 #include "Common.h"
 #include "Core/Base/UObject.h"
 #include "Core/Base/UObjectSystem.h"
 #include "Core/Base/FRenderProbe.h"
-#include "FEditorSelectionState.h"
 #include "FKeyboardCameraMoveRequestMessage.h"
 #include "FMouseCameraRotateRequestMessage.h"
 #include "FMousePickRequestMessage.h"
@@ -32,6 +29,7 @@
 class UCameraSubsystem;
 class UCollisionSubsystem;
 class URenderSubsystem;
+class FWorldEditorContext;
 
 class UWorld : public UObject
 {
@@ -56,16 +54,15 @@ public:
     }
 
     bool SpawnActor(const FAssetHandle& MeshHandle, const FAssetHandle& PipelineHandle, const FAssetHandle& MaterialHandle,
-        const FVector3& Position, UMesh* Mesh, FAssetRegistry* AssetRegistry);
+        const FVector3& Position);
     bool DestroyActor(AActor* Actor);
     void FlushPendingDestroyActors();
 
     const TArray<std::unique_ptr<AActor>>& GetActors() const;
     FRenderProbe& BuildRenderProbe();
     
-    FStateChannel<FEditorSelectionState>::FReader GetEditorSelectionStateReader() const noexcept {
-		return EditorSelectionState.GetReader();
-    }
+    void SetEditorContext(FWorldEditorContext* InEditorContext);
+    FWorldEditorContext* GetEditorContext() const noexcept;
 
     void Tick(float DeltaTime);
 
@@ -81,7 +78,6 @@ public:
 
 	JG_DECLARE_DERIVED_TYPEINFO(UWorld, UObject);
 
-    void InitializeEditorEventSender(FMessageChannel::FSender&& InSender);
     void InitializeEditorCameraState(
         FStateChannel<FMessageEditorCameraState>::FWriter InWriter,
         FStateChannel<FMessageEditorCameraState>::FReader InReader);
@@ -120,7 +116,6 @@ private:
 		FMatrix OriginalWorld{ FMatrix::Identity };
 	};
 
-	void PublishEditorSelectionState();
 	void InitializeSubsystems();
 	void DeinitializeSubsystems();
 
@@ -128,14 +123,12 @@ private:
     TArray<AActor*> PendingDestroyActors;
 
 
-	TObjectRef<UCollisionComponent> SelectedCollider;
-	FStateChannel<FEditorSelectionState> EditorSelectionState;
 	FStateChannel<RenderWindowInfo>::FReader WindowInfoReader;
 
 	std::optional<FActiveTransformEdit> ActiveTransformEdit;
 	std::uint64_t TransformRevision = 1;
 
-    std::optional<FMessageChannel::FSender> EditorEventSender;
+    FWorldEditorContext* EditorContext = nullptr;
 
     FAssetRegistry* AssetRegistry = nullptr;
 

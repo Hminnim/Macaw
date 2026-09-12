@@ -3,8 +3,7 @@
 #include "USceneComponent.h"
 #include "Serialize/FArchive.h"
 
-class UCameraComponent : public USceneComponent
-{
+class UCameraComponent : public USceneComponent {
 public:
     UCameraComponent();
     ~UCameraComponent() override = default;

@@ -27,7 +27,8 @@
 #include "Scene/AActor.h"
 #include "Scene/Component/UCameraComponent.h"
 #include "Scene/Component/UStaticMeshComponent.h"
-#include "Scene/Component/UCollisionComponent.h"
+#include "Scene/Component/UBoxColliderComponent.h"
+#include "Scene/FWorldEditorContext.h"
 
 #include "Core/Base/TypeRegistry.h"
 
@@ -39,11 +40,9 @@
 
 #include "FMousePickRequestMessage.h"
 #include "FMouseCameraRotateRequestMessage.h"
-#include "FWorldSelectionChangedMessage.h"
 #include "FTransformEditRequestMessage.h"
 #include "FKeyboardInput.h"
 #include "FKeyboardCameraMoveRequestMessage.h"
-#include "Render/Panel/FEditorSelection.h"
 
 #include "Core/Base/UndoSystem/FUndoSystem.h"
 #include "Core/Base/UndoSystem/FUndoMessages.h"
@@ -86,8 +85,8 @@ HWND gHWND;
 FRenderer Renderer;
 
 namespace {
-    constexpr bool bLoadTestScene = false;
-    constexpr bool bEnableSceneSave = false;
+    constexpr bool bLoadTestScene = true;
+    constexpr bool bEnableSceneSave = true;
 
     void ConfigureTestStaticMesh(UStaticMeshComponent* MeshComponent, const FAssetHandle& MeshHandle, const FAssetHandle& PipelineHandle, const FAssetHandle& MaterialHandle, const FVector3& Location) {
         MeshComponent->SetMeshHandle(MeshHandle);
@@ -104,15 +103,12 @@ namespace {
         return MeshComponent;
     }
 
-    void AddTestCollider(AActor* Actor, USceneComponent* Parent, const UMesh* Mesh) {
-        UCollisionComponent* Collider = Actor->AddComponent<UCollisionComponent>();
+    void AddTestCollider(AActor* Actor, USceneComponent* Parent, UMeshComponent* MeshComponent) {
+        UBoxColliderComponent* Collider = Actor->AddComponent<UBoxColliderComponent>();
         if (Collider == nullptr || !Collider->AttachToComponent(Parent)) {
             return;
         }
-
-        if (Mesh != nullptr) {
-            Collider->SetBounds(Mesh->GetLocalBoundingBox());
-        }
+        Collider->SetMeshComponent(MeshComponent);
     }
 
     void CreateComponentHierarchyTest(UWorld& World, const FAssetHandle& MeshHandle, const FAssetHandle& PipelineHandle, const FAssetHandle& MaterialHandle, const UMesh* Mesh) {
@@ -131,7 +127,7 @@ namespace {
             Parent = Child;
         }
 
-        AddTestCollider(Actor, Root, Mesh);
+        AddTestCollider(Actor, Root, Root);
     }
 
     void CreateActorHierarchyTest(UWorld& World, const FAssetHandle& MeshHandle, const FAssetHandle& PipelineHandle, const FAssetHandle& MaterialHandle, const UMesh* Mesh) {
@@ -140,7 +136,7 @@ namespace {
         if (ParentRoot == nullptr || !ParentActor->SetRootComponent(ParentRoot)) {
             return;
         }
-        AddTestCollider(ParentActor, ParentRoot, Mesh);
+        AddTestCollider(ParentActor, ParentRoot, ParentRoot);
 
         AActor* ChildActor = World.AdoptActor<AActor>();
         UStaticMeshComponent* ChildRoot = AddTestStaticMesh(ChildActor, MeshHandle, PipelineHandle, MaterialHandle, { 0.0f, 0.0f, 3.0f });
@@ -152,7 +148,7 @@ namespace {
             return;
         }
 
-        AddTestCollider(ChildActor, ChildRoot, Mesh);
+        AddTestCollider(ChildActor, ChildRoot, ChildRoot);
     }
 
     void CreateHierarchyTests(UWorld& World, const FAssetHandle& MeshHandle, const FAssetHandle& PipelineHandle, const FAssetHandle& MaterialHandle, const UMesh* Mesh) {
@@ -184,9 +180,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	TypeRegistry::Register(UCameraComponent::StaticTypeInfo());
 	TypeRegistry::Register(UStaticMeshComponent::StaticTypeInfo());
     TypeRegistry::Register(UCollisionComponent::StaticTypeInfo());
+    TypeRegistry::Register(UBoxColliderComponent::StaticTypeInfo());
 	TypeRegistry::Register(UActorComponent::StaticTypeInfo());
 	TypeRegistry::Register(USceneComponent::StaticTypeInfo());
-	TypeRegistry::Register(UCollisionComponent::StaticTypeInfo());
 	
 
 
@@ -220,6 +216,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     // test
     UWorld World{};
+    FWorldEditorContext EditorContext{};
+    World.SetEditorContext(&EditorContext);
 
     Renderer.Create(gHWND, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
 
@@ -230,8 +228,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 
     FMessageChannel WorldCommandChannel{ 64 };
-    FMessageChannel EditorEventChannel{ 64 };
-    FEditorSelection EditorSelection;
 
     FStateChannel<FMessageEditorCameraState> EditorCameraStateChannel;
 
@@ -248,13 +244,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             World.HandleSpawnPrimitive(Message, AssetRegistry);
         }
     );
+
     SpawnCommandChannel.TryBind<FMessageDeletePrimitive>(
-        [&World](const FMessageDeletePrimitive& Message)
+        [&World, &EditorContext](const FMessageDeletePrimitive& Message)
         {
-            if (World.GetEditorSelectionStateReader().HasValue())
+            if (EditorContext.GetSelectionStateReader().HasValue())
             {
-                UCollisionComponent* SelectedActor = static_cast<UCollisionComponent*>(UObjectSystem::Resolve(World.GetEditorSelectionStateReader().Read().PickedColliderHandle));
-                World.DestroyActor(SelectedActor->GetOwner());
+                if (UCollisionComponent* SelectedCollider = EditorContext.GetSelectedCollider()) {
+                    World.DestroyActor(SelectedCollider->GetOwner());
+                }
                 World.FlushPendingDestroyActors();
             }
 
@@ -264,7 +262,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     
 
     EditorViewport EditorView{};
-    EditorView.Initialize(Renderer.GetDevice(), AssetRegistry, Renderer.GetWindowInfoReader(), World.GetEditorSelectionStateReader(), WorldCommandChannel.GetSender());
+    EditorView.Initialize(Renderer.GetDevice(), AssetRegistry, Renderer.GetWindowInfoReader(), EditorContext.GetSelectionStateReader(), WorldCommandChannel.GetSender());
 
     FEditorUIManager EditorUIManager;
 
@@ -276,7 +274,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
         gHWND,
 
-        World.GetEditorSelectionStateReader(),
+        EditorContext.GetSelectionStateReader(),
         WorldCommandChannel.GetSender(),
 
         SpawnCommandChannel.GetSender(),
@@ -291,26 +289,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     GMouseInput.InitializeWorldCommandSender(WorldCommandChannel.GetSender());
     GKeyboardInput.InitializeWorldCommandSender(WorldCommandChannel.GetSender());
-    World.InitializeEditorEventSender(EditorEventChannel.GetSender());
 	World.SetWindowInfoReader(Renderer.GetWindowInfoReader());
 	World.SetAssetRegistry(&AssetRegistry);
-
-    WorldCommandChannel.TryBind<FMousePickRequestMessage>(
-        [&World](const FMousePickRequestMessage& Message)
-        {
-            World.HandleMousePickRequest(Message);
-        });
+    EditorContext.BindEditorCommands(WorldCommandChannel);
 
     WorldCommandChannel.TryBind<FMouseCameraRotateRequestMessage>(
         [&World](const FMouseCameraRotateRequestMessage& Message)
         {
             World.HandleMouseCameraRotateRequest(Message);
-        });
-
-    EditorEventChannel.TryBind<FWorldSelectionChangedMessage>(
-        [&EditorSelection](const FWorldSelectionChangedMessage& Message)
-        {
-            EditorSelection.HandleSelectionChanged(Message);
         });
 
     WorldCommandChannel.TryBind<
@@ -416,8 +402,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     AActor* CameraActor = World.AdoptActor<AActor>();
     UCameraComponent* Camera = CameraActor->AddComponent<UCameraComponent>();
 
-    UCollisionComponent* TestCollision = nullptr;
-
     CameraActor->SetRootComponent(Camera);
 
     }
@@ -472,8 +456,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
             WorldCommandChannel.Dispatch();
             World.Tick(DeltaTime);
-
-            EditorEventChannel.Dispatch();
 
             SpawnCommandChannel.Dispatch();
             SceneCommandChannel.Dispatch();
