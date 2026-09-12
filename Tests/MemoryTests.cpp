@@ -1,4 +1,5 @@
-#include "../doctest/doctest.h"
+#include "PCH.h"
+#include "doctest.h"
 
 #include <cstddef>
 #include <cstdint>

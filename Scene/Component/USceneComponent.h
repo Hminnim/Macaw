@@ -2,16 +2,16 @@
 
 #include "Core/Base/FTransform.h"
 #include "Core/Base/TObjectRef.h"
+#include "Serialize/FArchive.h"
 #include "UActorComponent.h"
 
-class FArchive;
 class USceneComponent : public UActorComponent
 {
 public:
 	USceneComponent() = default;
 	~USceneComponent() override = default;
 
-	virtual void OnDestroy() override;
+	virtual void OnUnregister() override;
 	void RemoveChild(USceneComponent* InChild);
 
 	JG_DECLARE_DERIVED_TYPEINFO(USceneComponent, UActorComponent)

@@ -28,7 +28,7 @@ void UStaticMeshComponent::SetPipelineHandle(FAssetHandle InHandle)
     PipelineHandle = InHandle;
 }
 
-void UStaticMeshComponent::OnCreate()
+void UStaticMeshComponent::OnRegister()
 {
     AActor* Owner = GetOwner();
 
@@ -38,7 +38,7 @@ void UStaticMeshComponent::OnCreate()
     }
 }
 
-void UStaticMeshComponent::OnDestroy()
+void UStaticMeshComponent::OnUnregister()
 {
     AActor* Owner = GetOwner();
 
@@ -47,7 +47,7 @@ void UStaticMeshComponent::OnDestroy()
         Owner->GetWorld()->UnregisterRenderable(this);
     }
 
-    UPrimitiveComponent::OnDestroy();
+    UPrimitiveComponent::OnUnregister();
 }
 
 void UStaticMeshComponent::MakeRender(FActorProbe& OutProbe) const

@@ -1,11 +1,12 @@
 ﻿#pragma once
 
 #include "Core/Base/UObject.h"
+#include "Serialize/FArchive.h"
 
 class AActor;
-class FArchive;
-class UActorComponent : public UObject
-{
+class UWorld;
+
+class UActorComponent : public UObject {
 public:
     UActorComponent() = default;
     ~UActorComponent() override = default;
@@ -14,13 +15,20 @@ public:
 
     AActor* GetOwner() const;
 
-    virtual void OnCreate();
+    virtual void OnRegister();
     virtual void Tick(float DeltaTime);
-    virtual void OnDestroy();
+    virtual void OnUnregister();
 
     bool IsActive() const;
     void SetActive(bool bInActive);
 
+	bool IsRegistered() const;
+	UWorld* GetBelongingWorld() const;
+
+    void RegisterComponent(UWorld* world);
+	void UnregisterComponent();
+
+    virtual bool ResolveLoadedReferences();
 protected:
     void Serialize(FArchive& Archive) override;
 
@@ -30,6 +38,9 @@ private:
     void SetOwner(AActor* InOwner);
 
 private:
-    AActor* Owner = nullptr;
-    bool bActive = true;
+	AActor* Owner{ nullptr };
+	UWorld* ParentWorld{ nullptr };
+
+	bool bActive{ true };
+	bool bRegistered{ false };
 };

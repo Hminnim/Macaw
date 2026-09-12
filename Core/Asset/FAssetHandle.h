@@ -1,6 +1,6 @@
 ﻿#pragma once 
 
-class FArchive;
+#include "Serialize/FArchive.h"
 
 struct FAssetHandle {
 	uint32 ID { std::numeric_limits<uint32>::max() };

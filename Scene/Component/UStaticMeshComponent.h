@@ -2,8 +2,8 @@
 
 #include "UPrimitiveComponent.h"
 #include "Core/Asset/FAssetHandle.h"
+#include "Serialize/FArchive.h"
 
-class FArchive;
 class UStaticMeshComponent : public UPrimitiveComponent
 {
 public:
@@ -11,6 +11,7 @@ public:
     ~UStaticMeshComponent() override = default;
 
     JG_DECLARE_DERIVED_TYPEINFO(UStaticMeshComponent, UPrimitiveComponent)
+
 
     FAssetHandle GetMeshHandle() const;
     FAssetHandle GetMaterialHandle() const;
@@ -20,8 +21,8 @@ public:
     void SetMaterialHandle(FAssetHandle InHandle);
     void SetPipelineHandle(FAssetHandle InHandle);
 
-    void OnCreate() override;
-    void OnDestroy() override;
+    void OnRegister() override;
+    void OnUnregister() override;
     virtual void MakeRender(FActorProbe& OutProbe) const override;
 
 protected:

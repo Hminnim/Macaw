@@ -1,10 +1,9 @@
 ﻿#pragma once
 
 #include "UPrimitiveComponent.h"
+#include "UStaticMeshComponent.h"
 #include "Core/Base/TypeInfo.h"
 #include "Serialize/FArchive.h"
-
-class UStaticMeshComponent;
 
 class UCollisionComponent : public UPrimitiveComponent
 {
@@ -12,8 +11,8 @@ public:
     UCollisionComponent() = default;
     ~UCollisionComponent() override = default;
 
-    void OnCreate() override;
-    void OnDestroy() override;
+    void OnRegister() override;
+    void OnUnregister() override;
 
     bool IsCollisionEnabled() const;
     void SetCollisionEnabled(bool bEnabled);
@@ -29,6 +28,7 @@ public:
     JG_DECLARE_DERIVED_TYPEINFO(UCollisionComponent, UPrimitiveComponent);
 
     void SetBounds(const DirectX::BoundingBox& InBounds);
+    bool ResolveLoadedReferences() override;
 
 protected:
     void Serialize(FArchive& Archive) override;
@@ -36,6 +36,7 @@ protected:
 private:
     DirectX::BoundingOrientedBox OBB{}; 
     bool bCollisionEnabled = true;
+    FGuid PendingParentGuid{};
 
     bool RaycastBounds(const FRay& Ray, float& OutDistance) const;
     bool RaycastMesh(const FRay& Ray, const UStaticMeshComponent& MeshComponent, float& OutDistance) const;

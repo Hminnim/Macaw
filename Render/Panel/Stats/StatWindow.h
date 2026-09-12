@@ -1,5 +1,5 @@
 #pragma once
 
-class UWorld;
+#include "Scene/UWorld.h"
 
 void DrawStatWindow(const UWorld& World);

@@ -21,7 +21,7 @@ void UCollisionComponent::SetCollisionEnabled(bool bEnabled)
     bCollisionEnabled = bEnabled;
 }
 
-void UCollisionComponent::OnCreate()
+void UCollisionComponent::OnRegister()
 {
     AActor* Owner = GetOwner();
 
@@ -31,7 +31,7 @@ void UCollisionComponent::OnCreate()
     }
 }
 
-void UCollisionComponent::OnDestroy()
+void UCollisionComponent::OnUnregister()
 {
     AActor* Owner = GetOwner();
 
@@ -40,7 +40,7 @@ void UCollisionComponent::OnDestroy()
         Owner->GetWorld()->UnregisterCollision(this);
     }
 
-    UPrimitiveComponent::OnDestroy();
+    UPrimitiveComponent::OnUnregister();
 }
 
 void UCollisionComponent::SetBounds(const DirectX::BoundingBox& InBounds) {
@@ -174,15 +174,13 @@ void UCollisionComponent::MakeRender(FActorProbe& Probe) const
 {
 }
 
-void UCollisionComponent::Serialize(FArchive& Archive) 
-{
+void UCollisionComponent::Serialize(FArchive& Archive) {
     UPrimitiveComponent::Serialize(Archive);
 
     FGuid GuidParent{};
-    if (Archive.IsSaving()) {
-        GuidParent = GetParent()->GetGuid(); 
+    if (Archive.IsSaving() && GetParent() != nullptr) {
+        GuidParent = GetParent()->GetGuid();
     }
-
 
     Archive.Serialize("Parent", GuidParent);
     FVector3 center(OBB.Center), extent(OBB.Extents);
@@ -195,14 +193,30 @@ void UCollisionComponent::Serialize(FArchive& Archive)
         OBB.Center = center.ToSimpleMath();
         OBB.Extents = extent.ToSimpleMath();
         OBB.Orientation = orientation.ToSimpleMath();
+        PendingParentGuid = GuidParent;
     }
     Archive.Serialize("bCollisionEnabled", bCollisionEnabled);
+}
 
-    if (Archive.IsLoading() && GuidParent.IsValid())
-    {
-        FGuid Guid;
-        Guid.Parse(GuidParent.ToString());
-		UObjectSystem::FindHandleByGuid(Guid);
-        AttachTo(static_cast<USceneComponent*>(UObjectSystem::Resolve(UObjectSystem::FindHandleByGuid(Guid)))); 
+bool UCollisionComponent::ResolveLoadedReferences() {
+    if (!UPrimitiveComponent::ResolveLoadedReferences()) {
+        return false;
     }
+
+    if (!PendingParentGuid.IsValid()) {
+        return true;
+    }
+
+    UObject* ResolvedObject = UObjectSystem::Resolve(
+        UObjectSystem::FindHandleByGuid(PendingParentGuid)
+    );
+
+    if (ResolvedObject == nullptr ||
+        !ResolvedObject->GetTypeInfo()->IsA(USceneComponent::StaticTypeInfo())) {
+        return false;
+    }
+
+    USceneComponent* ParentComponent = static_cast<USceneComponent*>(ResolvedObject);
+    AttachTo(ParentComponent);
+    return GetParent() == ParentComponent;
 }

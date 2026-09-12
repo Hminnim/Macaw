@@ -328,11 +328,11 @@ bool UWorld::SaveScene(const FString& SceneName, FAssetRegistry* AssetRegistry)
     return true;
 }
 
-bool UWorld::LoadScene(const std::filesystem::path& ScenePath, ID3D11Device* Device, FAssetRegistry* AssetRegistry)
-{
+bool UWorld::LoadScene(const std::filesystem::path& ScenePath, ID3D11Device* Device, FAssetRegistry* AssetRegistry) {
     std::ifstream InputFileStream(ScenePath);
-    if (!InputFileStream.is_open())
+    if (!InputFileStream.is_open()) {
         return false;
+    }
 
     std::stringstream Buffer;
     Buffer << InputFileStream.rdbuf();
@@ -342,79 +342,125 @@ bool UWorld::LoadScene(const std::filesystem::path& ScenePath, ID3D11Device* Dev
     rapidjson::Document LoadDocument;
     LoadDocument.Parse(LoadedJsonString.c_str());
 
-    if (LoadDocument.HasParseError())
+    if (LoadDocument.HasParseError() ||
+        !LoadDocument.IsObject() ||
+        !LoadDocument.HasMember("Assets") ||
+        !LoadDocument["Assets"].IsArray() ||
+        !LoadDocument.HasMember("Actors") ||
+        !LoadDocument["Actors"].IsArray()) {
         return false;
+    }
 
+    if (AssetRegistry == nullptr) {
+        return false;
+    }
+
+    SetAssetRegistry(AssetRegistry);
     ResetWorld(AssetRegistry, Device);
 
-    if (LoadDocument.HasMember("Assets") && LoadDocument["Assets"].IsArray())
-    {
-        for (const auto& AssetJson : LoadDocument["Assets"].GetArray())
-        {
-            FGuid AssetGuid;
-            AssetGuid.Parse(AssetJson["Guid"].GetString());
-            FString TypeName = AssetJson["TypeName"].GetString();
+    const auto FailLoad = [this, AssetRegistry, Device]() {
+        ResetWorld(AssetRegistry, Device);
+        return false;
+    };
 
-            FString AssetName = AssetJson["AssetName"].GetString();
-            FString MetadataPath = AssetJson["AssetMetaDataPath"].GetString();
+    // assets
+    for (const rapidjson::Value& AssetJson : LoadDocument["Assets"].GetArray()) {
+        if (!AssetJson.IsObject() ||
+            !AssetJson.HasMember("Guid") || !AssetJson["Guid"].IsString() ||
+            !AssetJson.HasMember("TypeName") || !AssetJson["TypeName"].IsString() ||
+            !AssetJson.HasMember("AssetName") || !AssetJson["AssetName"].IsString() ||
+            !AssetJson.HasMember("AssetMetaDataPath") || !AssetJson["AssetMetaDataPath"].IsString()) {
+            return FailLoad();
+        }
 
-            auto EmptyAsset = TypeRegistry::Find(TypeName)->Creator();
+        FGuid AssetGuid;
+        if (!AssetGuid.Parse(AssetJson["Guid"].GetString())) {
+            return FailLoad();
+        }
 
-            AssetRegistry->AdoptAsset(Device, AssetGuid, AssetName, MetadataPath, std::move(EmptyAsset));
+        FString TypeName = AssetJson["TypeName"].GetString();
+        const FTypeInfo* Type = TypeRegistry::Find(TypeName);
+        if (Type == nullptr || Type->Creator == nullptr) {
+            return FailLoad();
+        }
+
+        FString AssetName = AssetJson["AssetName"].GetString();
+        FString MetadataPath = AssetJson["AssetMetaDataPath"].GetString();
+        std::unique_ptr<UObject> EmptyAsset = Type->Creator();
+
+        if (!AssetRegistry->AdoptAsset(
+            Device,
+            AssetGuid,
+            AssetName,
+            MetadataPath,
+            std::move(EmptyAsset))) {
+            return FailLoad();
         }
     }
-    else
-        return false;
 
-    AssetRegistry->Finalize(); 
+    AssetRegistry->Finalize();
 
-    if (LoadDocument.HasMember("Actors") && LoadDocument["Actors"].IsArray())
-    {
-        // ==================================================================
-        // 모든 AActor 껍데기 생성 및 GUID 등록, World 설정
-        // 이후 모든 액터 내부의 "컴포넌트 껍데기" 생성 및 GUID 등록
-        // ==================================================================
-        size_t ActorIndex = 0;
-
-        for (auto& ActorJson : LoadDocument["Actors"].GetArray())
-        {
-            FGuid ActorGuid;
-            ActorGuid.Parse(ActorJson["Guid"].GetString());
-            FString TypeName = ActorJson["TypeName"].GetString();
-
-            std::unique_ptr<UObject> CreatedObject = TypeRegistry::Find(TypeName)->Creator();
-			std::unique_ptr<AActor> ActorPtr(static_cast<AActor*>(CreatedObject.release()));
-            UObjectSystem::RegisterWithGuid(ActorPtr.get(), ActorGuid);
-
-            FArchiveJson ArchiveLoad(static_cast<rapidjson::Value&>(ActorJson));
-            ActorPtr->PreLoadComponents(ArchiveLoad);
-            ActorPtr->SetWorld(this);
-
-            Actors.emplace_back(std::move(ActorPtr));
-            ++ActorIndex;
+    // actor and component shells
+    for (rapidjson::Value& ActorJson : LoadDocument["Actors"].GetArray()) {
+        if (!ActorJson.IsObject() ||
+            !ActorJson.HasMember("Guid") || !ActorJson["Guid"].IsString() ||
+            !ActorJson.HasMember("TypeName") || !ActorJson["TypeName"].IsString()) {
+            return FailLoad();
         }
 
-        // ==================================================================
-        // 진짜 직렬화
-        // ==================================================================
-        ActorIndex = 0; 
-        for (auto& ActorJson : LoadDocument["Actors"].GetArray())
-        {
-            FArchiveJson ArchiveLoad(static_cast<rapidjson::Value&>(ActorJson));
-            ArchiveLoad.SetAssetRegistry(AssetRegistry);
-            Actors[ActorIndex]->Load(ArchiveLoad); 
-            ++ActorIndex;
+        FGuid ActorGuid;
+        if (!ActorGuid.Parse(ActorJson["Guid"].GetString())) {
+            return FailLoad();
+        }
+
+        FString TypeName = ActorJson["TypeName"].GetString();
+        const FTypeInfo* Type = TypeRegistry::Find(TypeName);
+        if (Type == nullptr || Type->Creator == nullptr) {
+            return FailLoad();
+        }
+
+        std::unique_ptr<UObject> CreatedObject = Type->Creator();
+        if (CreatedObject == nullptr ||
+            !CreatedObject->GetTypeInfo()->IsA(AActor::StaticTypeInfo())) {
+            return FailLoad();
+        }
+
+        std::unique_ptr<AActor> ActorPtr(static_cast<AActor*>(CreatedObject.release()));
+        UObjectSystem::RegisterWithGuid(ActorPtr.get(), ActorGuid);
+
+        FArchiveJson ArchiveLoad(ActorJson);
+        if (!ActorPtr->PreLoadComponents(ArchiveLoad)) {
+            UObjectSystem::Unregister(ActorPtr.get(), ActorPtr->GetHandle());
+            return FailLoad();
+        }
+
+        Actors.emplace_back(std::move(ActorPtr));
+    }
+
+    // serialized data
+    for (size_t ActorIndex = 0; ActorIndex < Actors.size(); ++ActorIndex) {
+        rapidjson::Value& ActorJson = LoadDocument["Actors"][static_cast<rapidjson::SizeType>(ActorIndex)];
+        FArchiveJson ArchiveLoad(ActorJson);
+        ArchiveLoad.SetAssetRegistry(AssetRegistry);
+        Actors[ActorIndex]->Load(ArchiveLoad);
+    }
+
+    // object references
+    for (const std::unique_ptr<AActor>& Actor : Actors) {
+        if (!Actor->ResolveLoadedReferences()) {
+            return FailLoad();
         }
     }
-    else
-        return false;
+
+    // component registration
+    for (const std::unique_ptr<AActor>& Actor : Actors) {
+        Actor->SetWorld(this);
+    }
 
     return true;
 }
 
-void UWorld::HandleMousePickRequest(
-    const FMousePickRequestMessage& Message)
-{
+void UWorld::HandleMousePickRequest(const FMousePickRequestMessage& Message) {
     FObjectHandle SelectedComponentHandle{};
 
     if (Camera != nullptr &&

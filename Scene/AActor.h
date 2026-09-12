@@ -8,18 +8,23 @@
 
 class UWorld;
 
-class AActor : public UObject
-{
+class AActor : public UObject {
 public:
     AActor() = default;
     ~AActor() override;
 
+	AActor(const AActor&) = delete;
+	AActor& operator=(const AActor&) = delete;
+
+	AActor(AActor&&) = default;
+	AActor& operator=(AActor&&) = default;
+
+public:
     JG_DECLARE_DERIVED_TYPEINFO(AActor, UObject)
 
     template<typename T>
     requires std::is_base_of_v<UActorComponent, T>
-    T* AddComponent()
-    {
+    T* AddComponent() {
         std::unique_ptr<T> NewComponent = std::make_unique<T>();
         T* ComponentPtr = NewComponent.get();
 
@@ -28,9 +33,8 @@ public:
 
         Components.push_back(std::move(NewComponent));
 
-        if (World != nullptr)
-        {
-            ComponentPtr->OnCreate();
+        if (World != nullptr) {
+            ComponentPtr->RegisterComponent(World);
         }
 
         return ComponentPtr;
@@ -38,8 +42,7 @@ public:
 
     template<typename T>
     requires std::is_base_of_v<UActorComponent, T>
-    T* GetComponent()
-    {
+    T* GetComponent() {
         for (const auto& Component : Components)
         {
             if (Component->GetTypeInfo()->IsA(T::StaticTypeInfo()))
@@ -52,7 +55,6 @@ public:
     }
 
     bool DestroyComponent(UActorComponent* component);
-
     const std::vector<std::unique_ptr<UActorComponent>>& GetComponents() const;
 
     USceneComponent* GetRootComponent();
@@ -63,7 +65,8 @@ public:
     void SetRootComponent(USceneComponent* InRootComponent);
     void Tick(float DeltaTime);
 
-    void PreLoadComponents(FArchive& Archive);
+    bool PreLoadComponents(FArchive& Archive);
+    bool ResolveLoadedReferences();
 
 protected:
     void Serialize(FArchive& Archive) override;
@@ -71,6 +74,7 @@ protected:
 private:
     std::vector<std::unique_ptr<UActorComponent>> Components{};
     USceneComponent* RootComponent = nullptr;
+    FGuid PendingRootComponentGuid{};
 
     UWorld* World = nullptr;
 };

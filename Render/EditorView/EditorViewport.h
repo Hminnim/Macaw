@@ -7,12 +7,11 @@
 #include "../../Core/Channel/FMessageChannel.h"
 #include "../../Core/Channel/FStateChannel.h"
 #include "../../FEditorSelectionState.h"
+#include "../../FMouseInput.h"
 #include "../RenderWindowInfo.h"
 
 #include "FLineRenderer.h"
 #include "FTransformGizmo.h"
-
-class FMouseInput;
 
 class EditorViewport {
 	constexpr static float OrientationAxisSize = 200.0f;

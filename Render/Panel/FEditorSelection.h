@@ -1,9 +1,8 @@
 #pragma once
 
 #include "Core/Base/TObjectRef.h"
-
-class USceneComponent;
-struct FWorldSelectionChangedMessage;
+#include "FWorldSelectionChangedMessage.h"
+#include "Scene/Component/USceneComponent.h"
 
 class FEditorSelection
 {

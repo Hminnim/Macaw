@@ -3,17 +3,9 @@
 
 struct FQuat;
 struct FMatrix;
-struct FVector;
-struct FVector2;
-struct FVector4;
 
 using FPlane = DirectX::SimpleMath::Plane;
 using FRay = DirectX::SimpleMath::Ray;
-using FVector3 = FVector;
-using FRotator = FVector;
-using FVector2D = FVector2;
-using FColor4 = FVector4;
-
 struct FVector2
 {
 	float x = 0.0f;
@@ -229,6 +221,11 @@ struct FVector4
 		return *this;
 	}
 };
+
+using FVector3 = FVector;
+using FRotator = FVector;
+using FVector2D = FVector2;
+using FColor4 = FVector4;
 
 struct FMatrix
 {

@@ -3,6 +3,14 @@
 #include <filesystem>
 #include <optional>
 
+#include <d3d11.h>
+
+#include "AActor.h"
+#include "Component/UCameraComponent.h"
+#include "Component/UCollisionComponent.h"
+#include "Component/UStaticMeshComponent.h"
+#include "Core/Asset/FAssetRegistry.h"
+#include "Core/Asset/UMesh.h"
 #include "Core/Base/TObjectRef.h"
 #include "Core/Channel/FMessageChannel.h"
 #include "Core/Channel/FStateChannel.h"
@@ -12,33 +20,13 @@
 #include "Core/Base/UObjectSystem.h"
 #include "Core/Base/FRenderProbe.h"
 #include "FEditorSelectionState.h"
+#include "FKeyboardCameraMoveRequestMessage.h"
+#include "FMouseCameraRotateRequestMessage.h"
+#include "FMousePickRequestMessage.h"
+#include "FTransformEditRequestMessage.h"
 #include "Render/Panel/FEditorInfo.h"
 
 #include "../Render/RenderWindowInfo.h"
-#include "../Core/Channel/FStateChannel.h"
-
-class AActor;
-class UCameraComponent;
-class UStaticMeshComponent;
-struct ID3D11Device;
-class FAssetRegistry;
-
-class UCollisionComponent;
-class FAssetRegistry;
-class UMesh;
-
-
-struct FMousePickRequestMessage;
-struct FMouseCameraRotateRequestMessage;
-struct FKeyboardCameraMoveRequestMessage;
-struct FMousePickReleaseRequestMessage;
-struct FTransformEditRequestMessage;
-
-struct FMessageSpawnPrimitive;
-struct FMessageNewScene;
-struct FMessageSaveScene;
-struct FMessageLoadScene;
-struct FMessageChangeGizmoMode;
 
 
 class UWorld : public UObject
@@ -51,14 +39,12 @@ public:
 
     template<typename T>
     requires std::is_base_of_v<AActor, T>
-    T* AdoptActor()
-    {
+    T* AdoptActor() {
         std::unique_ptr<T> NewActor = std::make_unique<T>();
 
         T* ActorPtr = NewActor.get();
 
-        if (AddActor(std::move(NewActor)) == nullptr)
-        {
+        if (AddActor(std::move(NewActor)) == nullptr) {
             return nullptr;
         }
 

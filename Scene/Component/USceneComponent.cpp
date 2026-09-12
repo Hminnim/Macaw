@@ -20,7 +20,7 @@ void USceneComponent::Serialize(FArchive& Archive)
 }
 
 
-void USceneComponent::OnDestroy()
+void USceneComponent::OnUnregister()
 {
     for (TObjectRef<USceneComponent>& ChildRef : Children)
     {
@@ -37,7 +37,7 @@ void USceneComponent::OnDestroy()
     }
     Parent.Reset();
 
-    UActorComponent::OnDestroy();
+    UActorComponent::OnUnregister();
 }
 
 void USceneComponent::RemoveChild(USceneComponent* InChild)
