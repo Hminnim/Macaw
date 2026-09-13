@@ -22,7 +22,6 @@
 #include "FKeyboardCameraMoveRequestMessage.h"
 #include "FMouseCameraRotateRequestMessage.h"
 #include "FMousePickRequestMessage.h"
-#include "FTransformEditRequestMessage.h"
 #include "Render/Panel/FEditorInfo.h"
 
 #include "../Render/RenderWindowInfo.h"
@@ -80,8 +79,6 @@ public:
 
     void HandleMousePickRequest(const FMousePickRequestMessage& Message);
 
-	void HandleTransformEditRequest(const FTransformEditRequestMessage& Message);
-
     void HandleMouseCameraRotateRequest(const FMouseCameraRotateRequestMessage& Message);
 
     void HandleKeyboardCameraMoveRequest(const FKeyboardCameraMoveRequestMessage& Message);
@@ -96,34 +93,23 @@ public:
     void ResetWorld(FAssetRegistry* AssetRegistry, ID3D11Device* Device);
 
 private:
-	struct FActiveTransformEdit {
-		std::uint64_t SessionId = 0;
-		FObjectHandle TargetHandle{};
-		FMatrix OriginalWorld{ FMatrix::Identity };
-	};
-
 	void InitializeSubsystems();
 	void DeinitializeSubsystems();
 
+    void ApplyEditorCameraState();
+    void PublishEditorCameraState();
+private:
     TArray<std::unique_ptr<AActor>> Actors;
     TArray<AActor*> PendingDestroyActors;
 
-
 	FStateChannel<RenderWindowInfo>::FReader WindowInfoReader;
 
-	std::optional<FActiveTransformEdit> ActiveTransformEdit;
-	std::uint64_t TransformRevision = 1;
-
-    FWorldEditorContext* EditorContext = nullptr;
-
-    FAssetRegistry* AssetRegistry = nullptr;
+    FWorldEditorContext* EditorContext{ nullptr };
+    FAssetRegistry* AssetRegistry{ nullptr };
 
     std::unique_ptr<URenderSubsystem> RenderSubsystem;
     std::unique_ptr<UCollisionSubsystem> CollisionSubsystem;
     std::unique_ptr<UCameraSubsystem> CameraSubsystem;
+
     FRenderProbe Probe{};
-
-    void ApplyEditorCameraState();
-    void PublishEditorCameraState();
-
 };

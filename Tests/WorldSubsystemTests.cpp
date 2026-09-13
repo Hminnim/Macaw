@@ -115,12 +115,9 @@ TEST_SUITE("CH6 World Subsystems") {
         SelectedActor->SetRootComponent(SelectedMesh);
         OtherActor->SetRootComponent(OtherMesh);
 
-        Context.SetSelectedCollider(Collider, 11);
-        const FEditorSelectionState* Selection = Context.GetSelectionState();
-        REQUIRE(Selection != nullptr);
+        Context.SetSelectedCollider(Collider);
         CHECK_EQ(Context.GetSelectedActor(), SelectedActor);
-        CHECK_EQ(Selection->PickedColliderHandle, Collider->GetHandle());
-        CHECK_EQ(Selection->TransformRevision, 11);
+        CHECK_EQ(Context.GetSelectedTransformTarget(), SelectedMesh);
 
         FRenderProbe Probe;
         World.GetRenderSubsystem().BuildRenderProbes(Probe);
@@ -130,7 +127,7 @@ TEST_SUITE("CH6 World Subsystems") {
 
         REQUIRE(World.DestroyActor(SelectedActor));
         World.FlushPendingDestroyActors();
-        CHECK_EQ(Context.GetSelectionState(), nullptr);
+        CHECK_EQ(Context.GetSelectedActor(), nullptr);
     }
 
     TEST_CASE("Box colliders build mesh bounds and require connected mesh narrow phase") {

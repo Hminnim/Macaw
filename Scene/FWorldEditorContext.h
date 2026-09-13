@@ -6,16 +6,15 @@
 #include "Core/Base/TObjectRef.h"
 #include "Core/Channel/FMessageChannel.h"
 #include "Core/Channel/FStateChannel.h"
-#include "FEditorSelectionState.h"
 #include "Render/Panel/FEditorInfo.h"
 
 class AActor;
 class FAssetRegistry;
 class UCollisionComponent;
+class USceneComponent;
 class UWorld;
 
 struct FWorldEditorSharedState {
-    std::optional<FEditorSelectionState> Selection;
     std::optional<FMessageEditorCameraState> Camera;
 };
 
@@ -28,20 +27,17 @@ public:
     FMessageChannel::FSender GetEditorToWorldSender();
     FMessageChannel::FSender GetWorldToEditorSender();
 
-    const FEditorSelectionState* GetSelectionState() const noexcept;
     const FMessageEditorCameraState* GetCameraState() const noexcept;
     void SetCameraState(const FMessageEditorCameraState& State);
 
-    void SetSelectedCollider(UCollisionComponent* Collider, std::uint64_t TransformRevision);
+    void SetSelectedCollider(UCollisionComponent* Collider);
     void ClearSelection();
-    void RefreshSelectionState(std::uint64_t TransformRevision);
 
     AActor* GetSelectedActor() const noexcept;
     UCollisionComponent* GetSelectedCollider() const noexcept;
+    USceneComponent* GetSelectedTransformTarget() const noexcept;
 
 private:
-    void PublishSelectionState(std::uint64_t TransformRevision);
-
     UWorld* World = nullptr;
     TObjectRef<AActor> SelectedActor;
     TObjectRef<UCollisionComponent> SelectedCollider;

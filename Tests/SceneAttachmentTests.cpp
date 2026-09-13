@@ -127,6 +127,43 @@ TEST_SUITE("CH4 Scene Attachment") {
         CHECK_EQ(Actor->GetActorLocation(), FVector3(10.0f, 20.0f, 30.0f));
     }
 
+    TEST_CASE("Attached transforms compose quaternion rotation and scale without shear") {
+        UWorld World;
+        AActor* Actor = World.AdoptActor<AActor>();
+        REQUIRE(Actor != nullptr);
+
+        USceneComponent* Parent = Actor->AddComponent<USceneComponent>();
+        USceneComponent* Child = Actor->AddComponent<USceneComponent>();
+        REQUIRE(Parent != nullptr);
+        REQUIRE(Child != nullptr);
+
+        Parent->SetRelativeTransform({
+            { 10.0f, 20.0f, 30.0f }, { 0.25f, -0.5f, 0.75f }, { 2.0f, 3.0f, 4.0f }
+        });
+        Child->SetRelativeTransform({
+            { 5.0f, -2.0f, 1.0f }, { -0.4f, 0.3f, -0.2f }, { 5.0f, 6.0f, 7.0f }
+        });
+        REQUIRE(Child->AttachToComponent(Parent));
+
+        const FTransform Expected = Child->GetRelativeTransform().Compose(Parent->GetRelativeTransform());
+        const FTransform Actual = Child->GetComponentTransform();
+        CHECK(Actual.GetLocation().x == doctest::Approx(Expected.GetLocation().x).epsilon(0.0001f));
+        CHECK(Actual.GetLocation().y == doctest::Approx(Expected.GetLocation().y).epsilon(0.0001f));
+        CHECK(Actual.GetLocation().z == doctest::Approx(Expected.GetLocation().z).epsilon(0.0001f));
+        CHECK_EQ(Actual.GetScale(), FVector3(10.0f, 18.0f, 28.0f));
+
+        const FMatrix WorldMatrix = Child->GetComponentToWorld();
+        FVector3 Right = WorldMatrix.Right();
+        FVector3 Up = WorldMatrix.Up();
+        FVector3 Forward = WorldMatrix.Forward();
+        Right.Normalize();
+        Up.Normalize();
+        Forward.Normalize();
+        CHECK(Right.Dot(Up) == doctest::Approx(0.0f).epsilon(0.0001f));
+        CHECK(Right.Dot(Forward) == doctest::Approx(0.0f).epsilon(0.0001f));
+        CHECK(Up.Dot(Forward) == doctest::Approx(0.0f).epsilon(0.0001f));
+    }
+
     TEST_CASE("Scene component parent references survive serialization and resolve") {
         RegisterSceneAttachmentTypes();
         rapidjson::Document Document;

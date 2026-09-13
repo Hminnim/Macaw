@@ -1,25 +1,15 @@
 ﻿#pragma once
 
-#include <optional>
-
 #include "PCH.h"
 #include "ImGui/imgui.h"
 #include "IEditorPanel.h"
 #include "FEditorInfo.h"
 #include "Core/Channel/FMessageChannel.h"
 #include "Core/Channel/FStateChannel.h"
-#include "../../FEditorSelectionState.h"
-#include "../../FTransformEditRequestMessage.h"
 #include "../../Scene/FWorldEditorContext.h"
+#include "../../Scene/Component/USceneComponent.h"
 
 class FPropertyPanel : public IEditorPanel {
-	struct FTransformEditSession {
-		std::uint64_t SessionId = 0;
-		FObjectHandle TargetHandle{};
-		FMatrix InitialWorld{ FMatrix::Identity };
-		std::uint64_t InitialTransformRevision = 0;
-	};
-
 public:
 	FPropertyPanel(
 		FWorldEditorContext& InEditorContext,
@@ -29,23 +19,24 @@ public:
 	}
 
 	void DrawPanel() override {
-		if (EditorContext == nullptr || EditorContext->GetSelectionState() == nullptr) {
-			CancelTransformEdit();
+		if (EditorContext == nullptr) {
 			return;
 		}
 
-		const FEditorSelectionState& Selection = *EditorContext->GetSelectionState();
-		if (!Selection.TransformTargetHandle.IsValid()) {
-			CancelTransformEdit();
+		USceneComponent* Target = EditorContext->GetSelectedTransformTarget();
+		if (Target == nullptr) {
+			bEditingTransform = false;
+			EditingTransformTarget = nullptr;
 			return;
 		}
 
-		if (ActiveTransformEdit.has_value() && ActiveTransformEdit->TargetHandle != Selection.TransformTargetHandle) {
-			CancelTransformEdit();
+		if (bEditingTransform && EditingTransformTarget != Target) {
+			bEditingTransform = false;
+			EditingTransformTarget = nullptr;
 		}
 
-		if (!ActiveTransformEdit.has_value() && !UpdateTransformFields(Selection.TargetWorld)) {
-			return;
+		if (!bEditingTransform) {
+			UpdateTransformFields(Target->GetRelativeTransform());
 		}
 
 		ImGui::Begin("Property Window");
@@ -67,7 +58,7 @@ public:
 		}
 		ImGui::Separator();
 
-		ImGui::Text("Transform");
+		ImGui::Text("Relative Transform");
 
 		const bool bPositionModified = ImGui::DragFloat3("Position", &EditPosition.x, 0.1f);
 		const bool bPositionActivated = ImGui::IsItemActivated();
@@ -85,115 +76,42 @@ public:
 		const bool bTransformModified = bPositionModified || bRotationModified || bScaleModified;
 		const bool bTransformDeactivated = bPositionDeactivated || bRotationDeactivated || bScaleDeactivated;
 
-		if (bTransformActivated && !ActiveTransformEdit.has_value()) {
-			BeginTransformEdit(Selection);
+		if (bTransformActivated) {
+			bEditingTransform = true;
+			EditingTransformTarget = Target;
 		}
 
-		if (bTransformModified && ActiveTransformEdit.has_value()) {
-			UpdateTransformEdit();
+		if (bTransformModified && bEditingTransform && EditingTransformTarget == Target) {
+			Target->SetRelativeTransform(BuildDesiredTransform());
 		}
 
-		if (bTransformDeactivated && ActiveTransformEdit.has_value()) {
-			CommitTransformEdit();
+		if (bTransformDeactivated) {
+			bEditingTransform = false;
+			EditingTransformTarget = nullptr;
 		}
 
 		ImGui::End();
 	}
 
 private:
-	bool UpdateTransformFields(FMatrix WorldTransform) {
-		FQuat Rotation{};
-		if (!WorldTransform.Decompose(EditScale, Rotation, EditPosition)) {
-			return false;
-		}
-
-		auto euler = Rotation.ToEuler();
-		EditRotation = FVector3(euler.x, euler.y, euler.z);
-		return true;
+	void UpdateTransformFields(const FTransform& Transform) {
+		EditPosition = Transform.GetPosition();
+		EditRotation = Transform.GetRotation();
+		EditScale = Transform.GetScale();
 	}
 
-	FMatrix BuildDesiredWorld() const {
-		return FMatrix::CreateScale(EditScale)
-			* FMatrix::CreateFromYawPitchRoll(EditRotation.y, EditRotation.x, EditRotation.z)
-			* FMatrix::CreateTranslation(EditPosition);
-	}
-
-	bool SendTransformEdit(
-		std::uint64_t SessionId,
-		ETransformEditPhase Phase,
-		FObjectHandle TargetHandle,
-		const FMatrix& DesiredWorld,
-		std::uint64_t ExpectedTransformRevision) {
-		return EditorContext->GetEditorToWorldSender().TryEmplace<FTransformEditRequestMessage>(
-			SessionId,
-			Phase,
-			TargetHandle,
-			DesiredWorld,
-			ExpectedTransformRevision);
-	}
-
-	void BeginTransformEdit(const FEditorSelectionState& Selection) {
-		const std::uint64_t SessionId = AcquireTransformEditSessionId();
-		if (!SendTransformEdit(
-			SessionId,
-			ETransformEditPhase::Begin,
-			Selection.TransformTargetHandle,
-			Selection.TargetWorld,
-			Selection.TransformRevision)) {
-			return;
-		}
-
-		ActiveTransformEdit = FTransformEditSession{
-			.SessionId = SessionId,
-			.TargetHandle = Selection.TransformTargetHandle,
-			.InitialWorld = Selection.TargetWorld,
-			.InitialTransformRevision = Selection.TransformRevision
-		};
-	}
-
-	void UpdateTransformEdit() {
-		const FTransformEditSession& Session = *ActiveTransformEdit;
-		SendTransformEdit(
-			Session.SessionId,
-			ETransformEditPhase::Update,
-			Session.TargetHandle,
-			BuildDesiredWorld(),
-			Session.InitialTransformRevision);
-	}
-
-	void CommitTransformEdit() {
-		const FTransformEditSession& Session = *ActiveTransformEdit;
-		SendTransformEdit(
-			Session.SessionId,
-			ETransformEditPhase::Commit,
-			Session.TargetHandle,
-			BuildDesiredWorld(),
-			Session.InitialTransformRevision);
-		ActiveTransformEdit.reset();
-	}
-
-	void CancelTransformEdit() {
-		if (!ActiveTransformEdit.has_value()) {
-			return;
-		}
-
-		const FTransformEditSession& Session = *ActiveTransformEdit;
-		SendTransformEdit(
-			Session.SessionId,
-			ETransformEditPhase::Cancel,
-			Session.TargetHandle,
-			Session.InitialWorld,
-			Session.InitialTransformRevision);
-		ActiveTransformEdit.reset();
+	FTransform BuildDesiredTransform() const {
+		return FTransform{ EditPosition, EditRotation, EditScale };
 	}
 
 private:
 	FWorldEditorContext* EditorContext = nullptr;
 	FStateChannel<uint8>::FReadWriter GizmoMode;
 
-	std::optional<FTransformEditSession> ActiveTransformEdit;
+	USceneComponent* EditingTransformTarget = nullptr;
+	bool bEditingTransform = false;
 	FVector3 EditPosition{};
-	FVector3 EditRotation{};
+	FRotator EditRotation{};
 	FVector3 EditScale{ 1.0f, 1.0f, 1.0f };
 	EGizmoMode CurrentGizmoMode = EGizmoMode::Translate;
 };

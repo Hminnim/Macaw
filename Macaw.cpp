@@ -40,7 +40,6 @@
 
 #include "FMousePickRequestMessage.h"
 #include "FMouseCameraRotateRequestMessage.h"
-#include "FTransformEditRequestMessage.h"
 #include "FKeyboardInput.h"
 #include "FKeyboardCameraMoveRequestMessage.h"
 
@@ -268,13 +267,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             {
                 World.HandleKeyboardCameraMoveRequest(Message);
             });
-
-	WorldCommandChannel.TryBind<FTransformEditRequestMessage>(
-		[&World](const FTransformEditRequestMessage& Message) {
-			World.HandleTransformEditRequest(Message);
-		});
-
-
 
   
 	

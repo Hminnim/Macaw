@@ -38,7 +38,7 @@ namespace {
 
         FTransform& Transform = Component.GetRelativeTransform();
         Transform.SetPosition(Translation);
-        Transform.SetRotation(FVector3(Rotation.ToEuler()));
+        Transform.SetRotation(Rotation);
         Transform.SetScale(Scale);
         return true;
     }
@@ -141,7 +141,7 @@ bool USceneComponent::AttachToComponent(USceneComponent* ParentComponent, EAttac
         }
     }
 
-    const FMatrix PreviousWorldMatrix = GetComponentToWorld();
+    const FTransform PreviousWorldTransform = GetComponentTransform();
 
     if (USceneComponent* PreviousParent = Parent.Get()) {
         PreviousParent->RemoveChild(this);
@@ -154,7 +154,7 @@ bool USceneComponent::AttachToComponent(USceneComponent* ParentComponent, EAttac
     }
 
     if (Rule == EAttachmentTransformRule::KeepWorldTransform) {
-        return SetWorldTransform(PreviousWorldMatrix);
+        return SetWorldTransform(PreviousWorldTransform);
     }
 
     return true;
@@ -165,7 +165,18 @@ bool USceneComponent::DetachFromComponent(EAttachmentTransformRule Rule) {
 }
 
 bool USceneComponent::SetWorldTransform(const FTransform& WorldTransform) {
-    return SetWorldTransform(WorldTransform.ToMatrixWithScale());
+    if (USceneComponent* ParentComponent = Parent.Get()) {
+        FTransform RelativeTransform;
+        if (!WorldTransform.MakeRelativeTo(ParentComponent->GetComponentTransform(), RelativeTransform)) {
+            return false;
+        }
+
+        Transform = RelativeTransform;
+        return true;
+    }
+
+    Transform = WorldTransform;
+    return true;
 }
 
 bool USceneComponent::SetWorldTransform(const FMatrix& WorldTransform) {
@@ -206,29 +217,19 @@ const std::vector<TObjectRef<USceneComponent>>& USceneComponent::GetChildren() c
 }
 
 FTransform USceneComponent::GetComponentTransform() const {
-    FVector3 Scale{};
-    FQuat Rotation{};
-    FVector3 Translation{};
-    if (!DecomposeWorldTransform(GetComponentToWorld(), Scale, Rotation, Translation)) {
-        return {};
+    if (USceneComponent* ParentComponent = Parent.Get()) {
+        return Transform.Compose(ParentComponent->GetComponentTransform());
     }
 
-    return { Translation, FVector3(Rotation.ToEuler()), Scale };
+    return Transform;
 }
 
 FMatrix USceneComponent::GetComponentToWorld() const {
-    FMatrix LocalMatrix = Transform.ToMatrixWithScale();
-
-    USceneComponent* ParentComponent = Parent.Get();
-    if (ParentComponent == nullptr) {
-        return LocalMatrix;
-    }
-
-    return LocalMatrix * ParentComponent->GetComponentToWorld();
+    return GetComponentTransform().ToMatrixWithScale();
 }
 
 FVector3 USceneComponent::GetComponentLocation() const {
-    return GetComponentToWorld().Translation();
+    return GetComponentTransform().GetPosition();
 }
 
 FRotator USceneComponent::GetComponentRotation() const {
