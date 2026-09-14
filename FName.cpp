@@ -197,17 +197,17 @@ public:
 		// Comparison
 		FNameComparisonValue ComparisonValue(NameString);
 
-		return FNamePool::FindValue(ComparisonHashBuckets, ComparisonValue, true);
+		return FNamePool::FindValue(ComparisonHashBuckets, ComparisonValue, false);
 	}
 	void Store(std::string_view NameString, FNameEntryId& OutComparison, FNameEntryId& OutDisplay)
 	{
 		// Store Comparison
 		FNameComparisonValue ComparisonValue(NameString);
-		OutComparison = StoreValue(ComparisonHashBuckets, ComparisonValue, true);
+		OutComparison = StoreValue(ComparisonHashBuckets, ComparisonValue, false);
 
 		// Store Display
 		FNameDisplayValue DisplayValue(NameString);
-		OutDisplay = StoreValue(DisplayHashBuckets, DisplayValue, false);
+		OutDisplay = StoreValue(DisplayHashBuckets, DisplayValue, true);
 	}
 	const FNameEntry& Resolve(FNameEntryId Id) const
 	{
@@ -244,11 +244,11 @@ private:
 					bool bIsMatch = true;					
 					if (bIsCaseSensitive)
 					{
-						bIsMatch = (_strnicmp(ExistingStr, InValue.Name.data(), InValue.Name.length()) == 0);
+						bIsMatch = (std::memcmp(ExistingStr, InValue.Name.data(), InValue.Name.length()) == 0);
 					}
 					else
 					{
-						bIsMatch = (std::memcmp(ExistingStr, InValue.Name.data(), InValue.Name.length()) == 0);
+						bIsMatch = (_strnicmp(ExistingStr, InValue.Name.data(), InValue.Name.length()) == 0);						
 					}
 
 					if (bIsMatch)
