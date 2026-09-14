@@ -197,17 +197,17 @@ public:
 		// Comparison
 		FNameComparisonValue ComparisonValue(NameString);
 
-		return FNamePool::FindValue(ComparisonHashBuckets, ComparisonValue, true);
+		return FNamePool::FindValue(ComparisonHashBuckets, ComparisonValue, false);
 	}
 	void Store(std::string_view NameString, FNameEntryId& OutComparison, FNameEntryId& OutDisplay)
 	{
 		// Store Comparison
 		FNameComparisonValue ComparisonValue(NameString);
-		OutComparison = StoreValue(ComparisonHashBuckets, ComparisonValue, true);
+		OutComparison = StoreValue(ComparisonHashBuckets, ComparisonValue, false);
 
 		// Store Display
 		FNameDisplayValue DisplayValue(NameString);
-		OutDisplay = StoreValue(DisplayHashBuckets, DisplayValue, false);
+		OutDisplay = StoreValue(DisplayHashBuckets, DisplayValue, true);
 	}
 	const FNameEntry& Resolve(FNameEntryId Id) const
 	{
@@ -217,7 +217,7 @@ public:
 private:
 	FNamePool()
 	{
-		Initialize(8192);
+		Initialize(1 << 20);
 	}
 
 	void Initialize(uint32 InitialCapacity)
@@ -244,11 +244,11 @@ private:
 					bool bIsMatch = true;					
 					if (bIsCaseSensitive)
 					{
-						bIsMatch = (_strnicmp(ExistingStr, InValue.Name.data(), InValue.Name.length()) == 0);
+						bIsMatch = (std::memcmp(ExistingStr, InValue.Name.data(), InValue.Name.length()) == 0);
 					}
 					else
 					{
-						bIsMatch = (std::memcmp(ExistingStr, InValue.Name.data(), InValue.Name.length()) == 0);
+						bIsMatch = (_strnicmp(ExistingStr, InValue.Name.data(), InValue.Name.length()) == 0);						
 					}
 
 					if (bIsMatch)
@@ -288,9 +288,17 @@ private:
 
 		uint32 CapacityMask = static_cast<uint32>(Buckets.size() - 1);
 		uint32 SlotIndex = InValue.Hash.Hash & CapacityMask;
+		uint32 Probes = 0;
+		const uint32 MaxProbes = static_cast<uint32>(Buckets.size());
 
 		while (Buckets[SlotIndex].Used())
 		{
+			if (++Probes >= MaxProbes)
+			{
+				assert(false && "FNamePool out of memory!");
+				std::abort();
+			}
+
 			SlotIndex = (SlotIndex + 1) & CapacityMask;
 		}
 
