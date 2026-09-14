@@ -26,6 +26,13 @@
 
 #include "../Render/RenderWindowInfo.h"
 
+
+class AActor;
+class UCameraComponent;
+class UStaticMeshComponent;
+class UTextRenderComponent;
+struct ID3D11Device;
+class FAssetRegistry;
 class UCameraSubsystem;
 class UCollisionSubsystem;
 class URenderSubsystem;
@@ -85,6 +92,10 @@ public:
 
     void HandleSpawnPrimitive(const FMessageSpawnPrimitive& Message, FAssetRegistry& AssetRegistry);
 
+    void RegisterTextRenderable(UTextRenderComponent* Component);
+    void UnregisterTextRenderable(UTextRenderComponent* Component);
+
+	void UpdateEditorCameraState();
     void SetAssetRegistry(FAssetRegistry* InAssetRegistry);
 	void SetWindowInfoReader(FStateChannel<RenderWindowInfo>::FReader InReader) { WindowInfoReader = InReader; }
 
@@ -101,6 +112,10 @@ private:
 private:
     TArray<std::unique_ptr<AActor>> Actors;
     TArray<AActor*> PendingDestroyActors;
+    TArray<UStaticMeshComponent*> RenderableComponents;
+    TArray<TObjectRef<UCollisionComponent>> CollisionComponents;
+    TArray<UTextRenderComponent*> TextRenderableComponents{};
+
 
 	FStateChannel<RenderWindowInfo>::FReader WindowInfoReader;
 

@@ -10,6 +10,8 @@
 #include "Subsystem/UCameraSubsystem.h"
 #include "Subsystem/UCollisionSubsystem.h"
 #include "Subsystem/URenderSubsystem.h"
+#include "Component/UCollisionComponent.h"
+#include "Component/UTextRenderComponent.h"
 #include "FMouseCameraRotateRequestMessage.h"
 #include "FMousePickRequestMessage.h"
 #include "FWorldEditorContext.h"
@@ -147,28 +149,51 @@ void UWorld::DeinitializeSubsystems() {
 	}
 }
 
-void UWorld::SetEditorContext(FWorldEditorContext* InEditorContext) {
-	EditorContext = InEditorContext;
-	if (EditorContext != nullptr) {
-		EditorContext->SetWorld(this);
-	}
-}
-
-FWorldEditorContext* UWorld::GetEditorContext() const noexcept {
-	return EditorContext;
-}
-
 FRenderProbe& UWorld::BuildRenderProbe() 
 {
-	GetRenderSubsystem().BuildRenderProbes(Probe);
+	Probe.ActorProbes.clear();
+    Probe.GizmoProbes.clear();
+    Probe.TextProbes.clear();
 
-	if (UCameraComponent* Camera = GetCameraSubsystem().GetMainCamera())
-	{
-		Probe.MainCameraProbe.View =
-			Camera->GetViewMatrix();
+    for (const UStaticMeshComponent* Component : RenderableComponents)
+    {
+		FActorProbe ActorProbe{};
+		Component->MakeRender(ActorProbe);
 
-		Probe.MainCameraProbe.Projection =
-			Camera->GetProjectionMatrix();
+		
+		UCollisionComponent* SelectedCollision = SelectedCollider.Get();
+		if (SelectedCollision != nullptr && Component->GetOwner() == SelectedCollision->GetOwner()) {
+			ActorProbe.Flags |= 0x0000'0001; 
+		}
+
+        if (Component->MakeTextRender(TextProbe))
+        {
+            Probe.TextProbes.push_back(std::move(TextProbe));
+        }
+    }
+
+    for (const UTextRenderComponent* Component : TextRenderableComponents)
+    {
+        if (Component == nullptr)
+        {
+            continue;
+        }
+
+        FTextProbe TextProbe{};
+
+        if (Component->MakeTextRender(TextProbe))
+        {
+            Probe.TextProbes.push_back(std::move(TextProbe));
+        }
+    }
+
+    if (Camera != nullptr)
+    {
+        Probe.MainCameraProbe.View =
+            Camera->GetViewMatrix();
+
+        Probe.MainCameraProbe.Projection =
+            Camera->GetProjectionMatrix();
 
 		Probe.MainCameraProbe.ViewProjection =
 			Camera->GetViewProjectionMatrix();
@@ -190,7 +215,7 @@ void UWorld::Tick(float DeltaTime) {
 		Actor->Tick(DeltaTime);
 	}
 
-	 FlushPendingDestroyActors();
+    // FlushPendingDestroyActors();
 }
 
 URenderSubsystem& UWorld::GetRenderSubsystem() {
@@ -657,4 +682,22 @@ void UWorld::PublishEditorCameraState()
 		CameraTransform.GetRotation(),
 		Camera->GetFOV()
 	});
+}
+
+void UWorld::RegisterTextRenderable(UTextRenderComponent* Component)
+{
+    if (Component == nullptr)
+    {
+        return;
+    }
+    if (std::ranges::find(TextRenderableComponents,Component) != TextRenderableComponents.end())
+    {
+        return;
+    }
+    TextRenderableComponents.push_back(Component);
+}
+
+void UWorld::UnregisterTextRenderable(UTextRenderComponent* Component)
+{
+    std::erase(TextRenderableComponents,Component);
 }

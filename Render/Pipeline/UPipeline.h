@@ -45,6 +45,7 @@ private:
     
     FShader VertexShader{};
     FShader PixelShader{};
+    FShader GeometryShader{};
 
     Microsoft::WRL::ComPtr<ID3D11InputLayout> InputLayout;
     Microsoft::WRL::ComPtr<ID3D11RasterizerState> RasterizerState;

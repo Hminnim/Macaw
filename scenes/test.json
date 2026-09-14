@@ -203,6 +203,30 @@
             "TypeName": "UTexturedMaterial",
             "AssetName": "TexturedMaterial",
             "AssetMetaDataPath": "./Content/Metadata/TexturedTestMaterial.meta"
+        },
+        {
+            "Guid": "2E942419-4C01-17FA-7060-01BD8C0A7618",
+            "TypeName": "UPipeline",
+            "AssetName": "TextPipeline",
+            "AssetMetaDataPath": "./Content/Metadata/TextPipeline.meta"
+        },
+        {
+            "Guid": "5A6EC269-426E-EE9A-B3EC-D4BA2B4BA03A",
+            "TypeName": "UTexture",
+            "AssetName": "AsciiFontTexture",
+            "AssetMetaDataPath": "./Content/Metadata/AsciiFontTexture.meta"
+        },
+        {
+            "Guid": "2E082C1D-4F64-E596-F1BD-8AAD2BA6A212",
+            "TypeName": "UFont",
+            "AssetName": "AsciiFont",
+            "AssetMetaDataPath": ""
+        },
+        {
+            "Guid": "2A65E4D0-4C16-1CB3-5A48-02A5015B390C",
+            "TypeName": "UKFont",
+            "AssetName": "KoreanFont",
+            "AssetMetaDataPath": "./Content/Metadata/NotoSansKR.meta"
         }
     ],
     "Actors": [
@@ -453,8 +477,8 @@
                             0.0
                         ],
                         "Rotation": [
-                            0.0,
-                            0.0,
+                            0.4979998767375946,
+                            -2.7270023822784424,
                             0.0
                         ],
                         "Scale": [
@@ -503,6 +527,36 @@
                             -0.0039770095609128475,
                             3.8457274436950684,
                             22.4127254486084
+                        ],
+                        "Rotation": [
+                            0.806291937828064,
+                            0.6491844654083252,
+                            -2.6669132709503174
+                        ],
+                        "Scale": [
+                            2.7120909690856934,
+                            1.0,
+                            1.0
+                        ],
+                        "bAbsoluteLocation": false,
+                        "bAbsoluteRotation": false,
+                        "bAbsoluteScale": true
+                    },
+                    "Parent": "D4E1710A-4D22-DFA4-250B-858B23FD4D94",
+                    "bVisible": true,
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "D9749B35-4A40-9116-416B-439FADDE4FAA",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
+                },
+                {
+                    "Guid": "8561D6AA-4480-93FF-0C5D-69BEF50A6886",
+                    "TypeName": "UBoxColliderComponent",
+                    "bActive": true,
+                    "Transform": {
+                        "Position": [
+                            0.0,
+                            0.0,
+                            0.0
                         ],
                         "Rotation": [
                             0.806291937828064,

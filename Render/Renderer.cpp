@@ -29,6 +29,7 @@ void FRenderer::Create(HWND WindowHandle, UINT width, UINT height) {
 
 	ModelContextArray.Initialize(Device.Get(), DeviceContext.Get(), 128);
 	RootConstants.Initialize(Device.Get());
+	TextRenderer.Initialize(Device.Get(),256);
 }
 
 void FRenderer::BeginFrame() {
@@ -38,6 +39,12 @@ void FRenderer::BeginFrame() {
 	DeviceContext->OMSetRenderTargets(1, RenderTargetView.GetAddressOf(), DepthStencilView.Get());
 	
 	DeviceContext->RSSetViewports(1, &WindowInfoReader.Read().Viewport);
+
+	std::array<ID3D11SamplerState*, 6> RawSamplerStates{};
+	std::ranges::transform(SamplerStates, RawSamplerStates.begin(), [](const auto& Sampler) {
+		return Sampler.Get();
+		});
+	DeviceContext->PSSetSamplers(0, static_cast<UINT>(RawSamplerStates.size()), RawSamplerStates.data());
 }
 
 void FRenderer::EndFrame() {
@@ -46,6 +53,11 @@ void FRenderer::EndFrame() {
 
 void FRenderer::RenderScene(FRenderProbe& Probe) {
 	RenderActorList(Probe.ActorProbes,Probe.MainCameraProbe);
+
+	if (AssetRegistry != nullptr)
+	{
+		TextRenderer.Render(DeviceContext.Get(),Probe.TextProbes,Probe.MainCameraProbe, AssetRegistry);
+	}
 }
 
 
@@ -104,12 +116,6 @@ void FRenderer::RenderActorList(TArray<FActorProbe>& ActorProbes, const CameraPr
 
 	DeviceContext->VSSetShaderResources(1, 1, AssetRegistry->GetMaterialBuffer().GetSRV());
 	DeviceContext->PSSetShaderResources(1, 1, AssetRegistry->GetMaterialBuffer().GetSRV());
-
-	std::array<ID3D11SamplerState*, 6> RawSamplerStates{};
-	std::ranges::transform(SamplerStates, RawSamplerStates.begin(), [](const auto& Sampler) {
-		return Sampler.Get();
-		});
-	DeviceContext->PSSetSamplers(0, static_cast<UINT>(RawSamplerStates.size()), RawSamplerStates.data());
 
 	struct CameraData {
 		FMatrix View;
