@@ -343,6 +343,7 @@ private:
 
 		return NewHandle;
 	}
+
 	FNameEntryId StoreComparisonValue(const FNameValue& InValue, bool& bOutAdded)
 	{
 		FNameEntryId ExistingId = FNamePool::FindValue(ComparisonHashBuckets, InValue, false);
@@ -400,6 +401,7 @@ private:
 
 		return NewHandle;
 	}
+
 	void InsertSlot(TArray<FNameSlot>& Buckets, const FNameValue& InValue, FNameEntryId InEntryId)
 	{
 		uint32 CapacityMask = static_cast<uint32>(Buckets.size() - 1);
@@ -427,20 +429,65 @@ private:
 	TArray<FNameSlot> DisplayHashBuckets;
 };
 
-FName::FName(const char* pStr)
+void SplitNameAndNumber(std::string_view InString, std::string_view& OutString, int32& OutNumber)
 {
-	if (pStr)
+	if (InString.empty())
 	{
-		DisplayId = FNamePool::Get().Store(pStr);
+		return;
+	}
+
+	OutString = InString;
+	OutNumber = 0;
+
+	const size_t Sep = InString.rfind('_');
+	if (Sep == std::string_view::npos || Sep == 0 || Sep + 1 == InString.length())
+	{
+		return;
+	}
+
+	int32 Num = 0;
+	for (size_t i = Sep + 1; i < InString.length(); ++i)
+	{
+		if (!std::isdigit(static_cast<unsigned char>(InString[i])))
+		{
+			return;
+		}
+
+		Num = Num * 10 + (InString[i] - '0');
+	}
+
+	OutString = InString.substr(0, Sep);
+	OutNumber = Num + 1;
+}
+
+FName::FName(std::string_view str)
+{
+	if (str.length() > 0)
+	{
+		std::string_view BaseStr;
+		SplitNameAndNumber(str, BaseStr, Number);
+
+		DisplayId = FNamePool::Get().Store(BaseStr);
 		ComparisonId = FNamePool::Get().Resolve(DisplayId).GetComparisonId();
 	}
 }
 
+FName::FName(const char* pStr)
+	: FName(pStr ? FName(std::string_view(pStr)) : FName())
+{	
+}
+
 FName::FName(FString str)
+	: FName(std::string_view(str))
+{	
+}
+
+FName::FName(std::string_view BaseName, int32 InNumber)
 {
-	if (str.length() > 0)
+	if (!BaseName.empty())
 	{
-		DisplayId = FNamePool::Get().Store(str);
+		Number = (InNumber >= 0) ? (InNumber + 1) : 0;
+		DisplayId = FNamePool::Get().Store(BaseName);
 		ComparisonId = FNamePool::Get().Resolve(DisplayId).GetComparisonId();
 	}
 }
@@ -452,7 +499,7 @@ int32 FName::Compare(const FName& Rhs) const
 
 bool FName::operator==(const FName& Rhs) const
 {
-	return this->ComparisonId == Rhs.ComparisonId;
+	return this->ComparisonId == Rhs.ComparisonId && this->Number == Rhs.Number;
 }
 
 bool FName::operator<(const FName& Rhs) const
@@ -469,5 +516,12 @@ FString FName::ToString() const
 
 	const FNameEntry& Entry = FNamePool::Get().Resolve(DisplayId);
 
-	return FString(Entry.GetName(), Entry.GetNameLength());
+	FString Result = FString(Entry.GetName(), Entry.GetNameLength());
+
+	if (Number > 0)
+	{
+		Result += "_" + std::to_string(Number - 1);
+	}
+
+	return Result;
 }

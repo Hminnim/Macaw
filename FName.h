@@ -64,14 +64,20 @@ class FName
 {
 public:
 	constexpr FName() = default;
+	FName(std::string_view str);
 	FName(const char* pStr);
 	FName(FString str);
+	FName(std::string_view BaseName, int32 InNumber);
 
 	int32 Compare(const FName& Rhs) const;
 	bool operator==(const FName& Rhs) const;
 	bool operator<(const FName& Rhs) const;
 
 	FString ToString() const;
+	
+	FNameEntryId GetDisplayId() const { return DisplayId; }
+	FNameEntryId GetComparisonId() const { return ComparisonId; }
+	int32 GetNumber() const { return Number; }
 
 private:
 	FNameEntryId DisplayId;
