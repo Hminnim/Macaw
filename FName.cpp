@@ -217,7 +217,7 @@ public:
 private:
 	FNamePool()
 	{
-		Initialize(8192);
+		Initialize(1 << 20);
 	}
 
 	void Initialize(uint32 InitialCapacity)
@@ -288,9 +288,17 @@ private:
 
 		uint32 CapacityMask = static_cast<uint32>(Buckets.size() - 1);
 		uint32 SlotIndex = InValue.Hash.Hash & CapacityMask;
+		uint32 Probes = 0;
+		const uint32 MaxProbes = static_cast<uint32>(Buckets.size());
 
 		while (Buckets[SlotIndex].Used())
 		{
+			if (++Probes >= MaxProbes)
+			{
+				assert(false && "FNamePool out of memory!");
+				std::abort();
+			}
+
 			SlotIndex = (SlotIndex + 1) & CapacityMask;
 		}
 
