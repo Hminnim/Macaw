@@ -9,8 +9,6 @@
 #include "../../Channel/FMessageChannel.h"
 #include "../../Channel/FMessage.h"
 
-class UObject;
-
 namespace
 {
     template<uint32 Capacity = 64>

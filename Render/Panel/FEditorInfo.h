@@ -45,11 +45,6 @@ struct FMessageDeletePrimitive
     JG_DECLARE_EDITOR_MESSAGE(FMessageDeletePrimitive);
 };
 
-struct FMessageNewScene
-{
-    JG_DECLARE_EDITOR_MESSAGE(FMessageNewScene);
-};
-
 struct FMessageSaveScene
 {
     FString SceneName;
@@ -81,13 +76,8 @@ enum class EGizmoMode : uint8
     Scale
 };
 
-struct FMessageChangeGizmoMode
+enum class EGizmoCoordinateSpace : uint8
 {
-    EGizmoMode Mode;
-
-    JG_DECLARE_EDITOR_MESSAGE(FMessageChangeGizmoMode);
-    FMessageChangeGizmoMode(EGizmoMode InputMode) noexcept
-        : Mode(InputMode)
-    {
-    }
+    World,
+    Local
 };

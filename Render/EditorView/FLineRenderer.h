@@ -1,22 +1,8 @@
 ﻿#pragma once
 
-#include <d3d11.h>
+#include "ILineRenderer.h"
 
-#include "../../Core/Buffer/FGraphicsBuffer.h"
-#include "../../Core/Buffer/TGraphicsRootConstants.h"
-#include "../Pipeline/UPipeline.h"
-
-enum class ELineDepthMode : uint8 {
-	DepthTested,
-	Overlay
-};
-
-struct FLineViewData {
-	FMatrix ViewProjection{};
-	FVector2D ViewportSize{};
-};
-
-class FLineRenderer {
+class FLineRenderer : public ILineRenderer {
 private:
 	struct FQuadVertex {
 		FVector2D Corner{};
@@ -52,7 +38,7 @@ public:
 	FLineRenderer& operator=(FLineRenderer&&) noexcept = default;
 
 public:
-	void Initialize(ID3D11Device* Device, uint32 InitialLineCapacity = 1024);
+	void Initialize(ID3D11Device* InDevice, uint32 InitialLineCapacity = 1024);
 	void Reset();
 
 	void AddLine(const FVector3& Start, const FVector3& End, const FVector4& Color, float WidthPixels = 1.0f, ELineDepthMode DepthMode = ELineDepthMode::DepthTested);

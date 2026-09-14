@@ -8,11 +8,11 @@
 void FControlPanel::DrawPanel()  
 {
     // 1. 상태 채널에서 카메라 정보 읽기 (Engine -> UI)
-    if (auto Result = CamReader.ReadIfChanged(); Result.Changed && Result.Value != nullptr)
+    if (EditorContext != nullptr && EditorContext->GetCameraState() != nullptr)
     {
-        CachedCamPos = Result.Value->Position;
-        CachedCamRot = Result.Value->Rotation;
-        CachedFOV = Result.Value->FOV;
+        CachedCamPos = EditorContext->GetCameraState()->Position;
+        CachedCamRot = EditorContext->GetCameraState()->Rotation;
+        CachedFOV = EditorContext->GetCameraState()->FOV;
     }
 
     ImGui::Begin("Control Panel");
@@ -52,14 +52,14 @@ void FControlPanel::DrawPanel()
 
     if (ImGui::Button("Spawn Object(s)"))
     {
-        SpawnSender.TryEmplace<FMessageSpawnPrimitive>(
+        EditorToWorldSender.TryEmplace<FMessageSpawnPrimitive>(
             FString(PrimitiveTypes[SelectedPrimitiveIndex]),
             static_cast<uint32>(SpawnCountToRequest));
     }
 
     if (ImGui::Button("Delete Object"))
     {
-        SpawnSender.TryEmplace<FMessageDeletePrimitive>();
+        EditorToWorldSender.TryEmplace<FMessageDeletePrimitive>();
     }
 
     ImGui::Separator();
@@ -77,7 +77,7 @@ void FControlPanel::DrawPanel()
 
     if (ImGui::Button("Save Scene"))
     {
-        SceneSender.TryEmplace<FMessageSaveScene>(
+        EditorToWorldSender.TryEmplace<FMessageSaveScene>(
             FString(SceneNameBuffer));
     }
 
@@ -87,11 +87,10 @@ void FControlPanel::DrawPanel()
     {
         const FString FilePath =
             OpenFileDialog();
-            //GetFilePathFromExplorer();
 
         if (!FilePath.empty())
         {
-            SceneSender.TryEmplace<FMessageLoadScene>(
+            EditorToWorldSender.TryEmplace<FMessageLoadScene>(
                 FString(FilePath));
         }
         
@@ -148,35 +147,8 @@ void FControlPanel::DrawPanel()
 
     if (bCameraChanged)
     {
-        CamWriter.Write(
-            FMessageEditorCameraState
-            {
-                CachedCamPos,
-                CachedCamRot,
-                CachedFOV
-            });
+        EditorContext->SetCameraState(FMessageEditorCameraState{ CachedCamPos, CachedCamRot, CachedFOV });
     }
-
-    /*
-    if (ImGui::Button("Undo"))
-    {
-        // Undo
-        WorldCommandSender.TryEmplace<FMessageUndoApply>(true);
-    }
-    ImGui::SameLine();
-
-    if (ImGui::Button("Redo"))
-    {
-        // Redo
-        WorldCommandSender.TryEmplace<FMessageUndoApply>(false);
-    }
-    ImGui::SameLine();
-
-    //if (ImGui::BeginCombo("##History", current_transaction_name)) {
-    //    // 트랜잭션 목록 렌더링
-    //    ImGui::EndCombo();
-    //}
-    */
 
     ImGui::End();
 }

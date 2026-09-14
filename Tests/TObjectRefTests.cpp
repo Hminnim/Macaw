@@ -1,5 +1,5 @@
 #include "PCH.h"
-#include "../doctest/doctest.h"
+#include "doctest.h"
 
 #include "../Core/Base/TObjectRef.h"
 

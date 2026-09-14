@@ -4,39 +4,33 @@
 #include "Core/Base/TypeInfo.h"
 #include "Serialize/FArchive.h"
 
-class UStaticMeshComponent;
-
-class UCollisionComponent : public UPrimitiveComponent
-{
+class UCollisionComponent : public UPrimitiveComponent {
 public:
     UCollisionComponent() = default;
     ~UCollisionComponent() override = default;
 
-    void OnCreate() override;
-    void OnDestroy() override;
+    void OnRegister() override;
+    void OnUnregister() override;
 
     bool IsCollisionEnabled() const;
     void SetCollisionEnabled(bool bEnabled);
 
     bool Raycast(const FRay& Ray, float& OutDistance) const;
 
-    const FVector3 GetBoundsCenter() const;
-    const FVector3 GetExtent() const;
-    const FQuat GetBoundsOrientation() const;
-    void SetExtent(const FVector3& InExtent);
     void MakeRender(FActorProbe& OutProbe) const override;
 
-    JG_DECLARE_DERIVED_TYPEINFO(UCollisionComponent, UPrimitiveComponent);
+    JG_DECLARE_ABSTRACT_DERIVED_TYPEINFO(UCollisionComponent, UPrimitiveComponent)
 
-    void SetBounds(const DirectX::BoundingBox& InBounds);
+    virtual bool RaycastBounds(const FRay& Ray, float& OutDistance) const = 0;
+    virtual class UMeshComponent* GetMeshComponent() const { return nullptr; }
+    virtual FVector3 GetBoundsCenter() const = 0;
+    virtual FVector3 GetExtent() const = 0;
+    virtual FQuat GetBoundsOrientation() const = 0;
+    virtual void SetExtent(const FVector3& InExtent) = 0;
 
 protected:
     void Serialize(FArchive& Archive) override;
 
 private:
-    DirectX::BoundingOrientedBox OBB{}; 
     bool bCollisionEnabled = true;
-
-    bool RaycastBounds(const FRay& Ray, float& OutDistance) const;
-    bool RaycastMesh(const FRay& Ray, const UStaticMeshComponent& MeshComponent, float& OutDistance) const;
 };

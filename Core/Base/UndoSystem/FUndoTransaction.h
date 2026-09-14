@@ -1,8 +1,7 @@
 ﻿#pragma once
 #include "../../../STL.h" 
-
-class IUndoContext;
-class IUndoRecord;
+#include "IUndoContext.h"
+#include "IUndoRecord.h"
 class FUndoTransaction
 {
 public:

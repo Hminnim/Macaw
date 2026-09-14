@@ -119,9 +119,7 @@ public:
 
 		Indices.assign(InIndices.begin(), InIndices.end());
 
-		CalculateBounds();
-
-		return true;
+        return true;
 	}
 
 	ID3D11Buffer* GetVertexBuffer(EVertexAttribute Attribute) const;
@@ -153,12 +151,6 @@ public:
 	const TArray<uint32>& GetIndices() const {
 		return Indices;
 	}
-
-	const DirectX::BoundingBox& GetLocalBoundingBox() const {
-		return LocalBoundingBox;
-	}
-
-	void CalculateBounds();
 
 protected:
 	virtual void Serialize(FArchive& Ar) override;
@@ -236,6 +228,5 @@ private:
 
 	TArray<uint32> Indices{};
 
-	DirectX::BoundingBox LocalBoundingBox{}; 
 };
 

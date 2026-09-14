@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-class UObject;
+#include "UObject.h"
 
 struct FObjectItem
 {
