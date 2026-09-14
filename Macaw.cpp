@@ -364,8 +364,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     auto LastTickTime = std::chrono::steady_clock::now();
 
-    char BufferA[256] = "Player";
-    char BufferB[256] = "player";
+    //char BufferA[256] = "Player";
+    //char BufferB[256] = "player";
 
     while (true) {
         if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
