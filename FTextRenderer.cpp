@@ -77,10 +77,16 @@ void FTextRenderer::Render(ID3D11DeviceContext* Context, const TArray<FTextProbe
 		{
 			continue;
 		}
-		UTexture* AtlasTexture = AssetRegistry->ResolveAsset<UTexture>(Font->GetAtlasTextureHandle());
-		if (AtlasTexture == nullptr)
+		Font->FlushAtlas(Context);
+		ID3D11ShaderResourceView* AtlasSRV = Font->GetRuntimeAtlasSRV();
+		if (AtlasSRV == nullptr)
 		{
-			continue;
+			UTexture* AtlasTexture =AssetRegistry->ResolveAsset<UTexture>(Font->GetAtlasTextureHandle());
+			if (AtlasTexture == nullptr)
+			{
+				continue;
+			}
+			AtlasSRV = AtlasTexture->GetSRV();
 		}
 		UPipeline* PipeLine = AssetRegistry->ResolveAsset<UPipeline>(Probe.PipelineHandle);
 		if (PipeLine == nullptr)
@@ -103,7 +109,6 @@ void FTextRenderer::Render(ID3D11DeviceContext* Context, const TArray<FTextProbe
 		UINT Offset = 0;
 		Context->IASetVertexBuffers(0,1,&Buffer,&Stride,&Offset);
 		Context->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0);
-		ID3D11ShaderResourceView* AtlasSRV = AtlasTexture->GetSRV();
 		Context->PSSetShaderResources(2, 1, &AtlasSRV);
 		FTextConstants Constants{
 			.World = Probe.World,

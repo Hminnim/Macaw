@@ -40,4 +40,7 @@ public:
 	FFontCharacter* FindCharacter(uint8_t Character);
 	FFontUVRect GetUV(uint8_t Character);
 	FAssetHandle GetAtlasTextureHandle(){ return AtlasTextureHandle; }
+	virtual void FlushAtlas(ID3D11DeviceContext* Context) { }
+	virtual ID3D11ShaderResourceView* GetRuntimeAtlasSRV() const { return nullptr; }
+	FAssetHandle GetAtlasTextureHandle() const { return AtlasTextureHandle; }
 };

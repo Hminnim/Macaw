@@ -51,12 +51,18 @@ project "Macaw"
         "Macaw.rc",
     }
 
+    buildoptions {
+    "/utf-8",
+    }
+
     -- 파일은 보존하되 생성되는 Macaw 프로젝트에는 포함하지 않는다.
     removefiles {
         "Tests/**",
         "doctest/**",
         "range_v_3/**",
         "rapidjson/**",
+        ".tools/**",
+        "vcpkg_installed/**",
     }
 
     pchheader "PCH.h"

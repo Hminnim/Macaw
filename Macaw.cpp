@@ -59,7 +59,9 @@
 #include "Render/EditorView/EditorViewport.h"
 
 #include "Core/Asset/UFont.h"
+#include "UKFont.h"
 #include "Scene/Component/UTextRenderComponent.h"
+#include "Scene/Component/UKTextRenderComponent.h"
 
 #define MAX_LOADSTRING 100
 
@@ -106,6 +108,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	TypeRegistry::Register(UColorMaterial::StaticTypeInfo());
     TypeRegistry::Register(AActor::StaticTypeInfo());
     TypeRegistry::Register(UFont::StaticTypeInfo());
+    TypeRegistry::Register(UKFont::StaticTypeInfo());
+
 
 	TypeRegistry::Register(UWorld::StaticTypeInfo());
 	TypeRegistry::Register(AActor::StaticTypeInfo());
@@ -116,6 +120,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	TypeRegistry::Register(USceneComponent::StaticTypeInfo());
 	TypeRegistry::Register(UCollisionComponent::StaticTypeInfo());
     TypeRegistry::Register(UTextRenderComponent::StaticTypeInfo());
+    TypeRegistry::Register(UKTextRenderComponent::StaticTypeInfo());
 	
 
 
@@ -337,25 +342,22 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     FAssetHandle TextPipelineHandle = AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(),"TextPipeline", "./Content/Metadata/TextPipeline.meta");
     FAssetHandle FontTextureHandle =AssetRegistry.EmplaceAsset<UTexture>( Renderer.GetDevice(), "AsciiFontTexture","./Content/Metadata/AsciiFontTexture.meta");
     FAssetHandle FontHandle =AssetRegistry.EmplaceAsset<UFont>(Renderer.GetDevice(),"AsciiFont");
+    FAssetHandle KFontHandle = AssetRegistry.EmplaceAsset<UKFont>( Renderer.GetDevice(),"KoreanFont","./Content/Metadata/NotoSansKR.meta");
 
-    UFont* Font = AssetRegistry.ResolveAsset<UFont>(FontHandle);
-    if (Font != nullptr)
-    {
-        Font->BuildFixedGrid(FontTextureHandle, 512, 512, 32, 32, 0, 255, 6.0f);
-    }
+    UFont* Font = AssetRegistry.ResolveAsset<UFont>(KFontHandle);
     AActor* TextActor = World.AdoptActor<AActor>();
 
     if (TextActor != nullptr)
     {
-        UTextRenderComponent* TextComponent = TextActor->AddComponent<UTextRenderComponent>();
+        UKTextRenderComponent* TextComponent = TextActor->AddComponent<UKTextRenderComponent>();
         TextActor->SetRootComponent(TextComponent);
-        TextComponent->SetFontHandle(FontHandle);
+        TextComponent->SetFontHandle(KFontHandle);
         TextComponent->SetPipelineHandle(TextPipelineHandle);
         TextComponent->SetCharacterHeight(0.5f);
         TextComponent->SetLetterSpacing(0.05f);
         TextComponent->SetLineSpacing(0.01f);
         TextComponent->SetColor( FVector4{1.0f,1.0f,1.0f, 1.0f});
-        TextComponent->SetText(FString{ "abcdefghijklmonpqrstuvwxyzA\ndjaklsjdflkds"});
+        TextComponent->SetText(FString{ "크래프톤 정글\nKraftonJungle\n크래프톤 정글\n1234567890\n껣깷꺢꺟힣"});
         TextComponent->GetTransform().SetPosition(FVector3{5.0f, 5.0f, 5.0f});
     }
 

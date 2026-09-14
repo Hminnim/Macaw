@@ -30,11 +30,11 @@ public:
 	void OnCreate() override;
 	void OnDestroy() override;
 
-	void RebuildTextGeometry();
+	virtual void RebuildTextGeometry();
 
 	bool MakeTextRender(FTextProbe& OutProbe) const;
 
-private:
+protected:
 	FAssetHandle FontHandle{};
 	FAssetHandle PipelineHandle{};
 	FString Text = {};
