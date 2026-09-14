@@ -85,6 +85,9 @@ void EditorViewport::RenderBounds(ELineDepthMode DepthMode)
 	DirectX::BoundingOrientedBox LocalBounds{};
 	LocalBounds.Center = Collider->GetBoundsCenter().ToSimpleMath();
 	LocalBounds.Extents = Collider->GetExtent().ToSimpleMath();
+	float temp = LocalBounds.Extents.y;
+	LocalBounds.Extents.y = LocalBounds.Extents.z;
+	LocalBounds.Extents.z = temp;
 	const FQuat BoundsOrientation = Collider->GetBoundsOrientation();
 	std::array<DirectX::XMFLOAT3, DirectX::BoundingOrientedBox::CORNER_COUNT> Corners{};
 	DirectX::BoundingOrientedBox WorldBox;
