@@ -1,5 +1,6 @@
 #include "PCH.h"
 #include "Scene/Component/UTextRenderComponent.h"
+#include "Scene/Subsystem/UTextSubsystem.h"
 
 #include "Scene/AActor.h"
 #include "Scene/UWorld.h"
@@ -64,7 +65,7 @@ void UTextRenderComponent::OnRegister()
 
 	if (Owner != nullptr && Owner->GetWorld() != nullptr)
 	{
-		Owner->GetWorld()->RegisterTextRenderable(this);
+		Owner->GetWorld()->GetTextSubsystem().RegisterComponent(this);
 	}
 
 	RebuildTextGeometry();
@@ -75,7 +76,7 @@ void UTextRenderComponent::OnUnregister()
 
 	if (Owner != nullptr && Owner->GetWorld() != nullptr)
 	{
-		Owner->GetWorld()->UnregisterTextRenderable(this);
+		Owner->GetWorld()->GetTextSubsystem().UnregisterComponent(this);
 	}
 
 	UPrimitiveComponent::OnUnregister();

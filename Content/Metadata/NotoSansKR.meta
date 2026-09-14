@@ -1,6 +1,6 @@
 {
     "FilePath": "./Font/NotoSansKR-Medium.ttf",
-    "BakePixelHeight": 32,
+    "BakePixelHeight": 64,
     "AtlasWidth": 4096,
     "AtlasHeight": 4096
 }

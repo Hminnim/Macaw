@@ -10,6 +10,7 @@
 #include "Subsystem/UCameraSubsystem.h"
 #include "Subsystem/UCollisionSubsystem.h"
 #include "Subsystem/URenderSubsystem.h"
+#include "Subsystem/UTextSubsystem.h"
 #include "Component/UCollisionComponent.h"
 #include "Component/UTextRenderComponent.h"
 #include "FMouseCameraRotateRequestMessage.h"
@@ -131,10 +132,12 @@ void UWorld::InitializeSubsystems() {
 	RenderSubsystem = std::make_unique<URenderSubsystem>();
 	CollisionSubsystem = std::make_unique<UCollisionSubsystem>();
 	CameraSubsystem = std::make_unique<UCameraSubsystem>();
+	TextSubsystem = std::make_unique<UTextSubsystem>();
 
 	RenderSubsystem->Initialize(this);
 	CollisionSubsystem->Initialize(this);
 	CameraSubsystem->Initialize(this);
+	TextSubsystem->Initialize(this);
 }
 
 void UWorld::DeinitializeSubsystems() {
@@ -146,6 +149,9 @@ void UWorld::DeinitializeSubsystems() {
 	}
 	if (RenderSubsystem != nullptr) {
 		RenderSubsystem->Deinitialize();
+	}
+	if (TextSubsystem != nullptr){
+		TextSubsystem->Deinitialize();
 	}
 }
 
@@ -167,22 +173,7 @@ FRenderProbe& UWorld::BuildRenderProbe()
 	}*/
 
 	RenderSubsystem->BuildRenderProbes(AssetRegistry, Probe);
-
-    for (const UTextRenderComponent* Component : TextRenderableComponents)
-    {
-        if (Component == nullptr)
-        {
-            continue;
-        }
-
-        FTextProbe TextProbe{};
-
-        if (Component->MakeTextRender(TextProbe))
-        {
-            Probe.TextProbes.push_back(std::move(TextProbe));
-        }
-    }
-
+	TextSubsystem->BuildRenderProbes(Probe);
 	
     if (CameraSubsystem->GetMainCamera() != nullptr)
     {
@@ -251,6 +242,13 @@ UCameraSubsystem& UWorld::GetCameraSubsystem() {
 
 const UCameraSubsystem& UWorld::GetCameraSubsystem() const {
 	return *CameraSubsystem;
+}
+UTextSubsystem& UWorld::GetTextSubsystem() {
+	return *TextSubsystem;
+}
+
+const UTextSubsystem& UWorld::GetTextSubsystem() const {
+	return *TextSubsystem;
 }
 
 

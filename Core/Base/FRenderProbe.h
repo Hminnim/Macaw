@@ -54,7 +54,6 @@ struct CameraProbe {
 struct FRenderProbe {
 	TArray<FActorProbe> ActorProbes{};
 	TArray<FActorProbe> GizmoProbes{};
-
     TArray<FTextProbe> TextProbes{};
 
 	CameraProbe MainCameraProbe{}; 

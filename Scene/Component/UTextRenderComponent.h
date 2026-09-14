@@ -35,6 +35,7 @@ public:
 	bool MakeTextRender(FTextProbe& OutProbe) const;
 
 protected:
+
 	FAssetHandle FontHandle{};
 	FAssetHandle PipelineHandle{};
 	FString Text = {};
