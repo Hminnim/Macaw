@@ -337,7 +337,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         TextComponent->SetLineSpacing(0.0f);
         TextComponent->SetColor( FVector4{1.0f,1.0f,1.0f, 1.0f});
         TextComponent->SetText(FString{ "크래프톤 정글3주차"});
-        TextComponent->GetTransform().SetPosition(FVector3{0.0f, 0.0f, 0.0f});
+        TextComponent->GetComponentTransform().SetPosition(FVector3{0.0f, 0.0f, 0.0f});
     }
 
     const FAssetHandle MeshHandle = AssetRegistry.GetAsset("CubeMesh");

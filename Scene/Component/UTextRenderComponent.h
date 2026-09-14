@@ -28,7 +28,7 @@ public:
 	const TArray<FTextVertex>& GetVertex() const;
 
 	void OnRegister() override;
-	void OnDeRegister() override;
+	void OnUnregister() override;
 
 	virtual void RebuildTextGeometry();
 

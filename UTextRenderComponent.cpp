@@ -56,9 +56,9 @@ const TArray<FTextVertex>& UTextRenderComponent::GetVertex() const
 {
 	return Vertices;
 }
-void UTextRenderComponent::OnCreate()
+void UTextRenderComponent::OnRegister()
 {
-	UPrimitiveComponent::OnCreate();
+	UPrimitiveComponent::OnRegister();
 
 	AActor* Owner = GetOwner();
 
@@ -69,7 +69,7 @@ void UTextRenderComponent::OnCreate()
 
 	RebuildTextGeometry();
 }
-void UTextRenderComponent::OnDestroy()
+void UTextRenderComponent::OnUnregister()
 {
 	AActor* Owner = GetOwner();
 
@@ -78,7 +78,7 @@ void UTextRenderComponent::OnDestroy()
 		Owner->GetWorld()->UnregisterTextRenderable(this);
 	}
 
-	UPrimitiveComponent::OnDestroy();
+	UPrimitiveComponent::OnUnregister();
 }
 bool UTextRenderComponent::MakeTextRender(FTextProbe& OutProbe) const
 {
@@ -87,7 +87,7 @@ bool UTextRenderComponent::MakeTextRender(FTextProbe& OutProbe) const
 		return false;
 	}
 
-	OutProbe.World = GetWorldMatrix();
+	OutProbe.World = GetComponentToWorld();
 	OutProbe.FontHandle = FontHandle;
 	OutProbe.PipelineHandle = PipelineHandle;
 	OutProbe.Color = Color;
