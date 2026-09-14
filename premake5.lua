@@ -48,6 +48,7 @@ project "Macaw"
     files {
         "**.h",
         "**.cpp",
+	"**.cc",
         "Macaw.rc",
     }
 

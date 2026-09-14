@@ -47,7 +47,7 @@ private:
 private:
 	FStateChannel<RenderWindowInfo>::FReader WindowInfoReader{};
 
-	std::unique_ptr<ILineRenderer> LineRenderer = std::make_unique<FLineRenderer>();
+	std::unique_ptr<ILineRenderer> LineRenderer = std::make_unique<FBatchLineRenderer>();
 	FTransformGizmo TransformGizmo{};
 
 	D3D11_VIEWPORT OrientationAxisViewport{ 5.0f, 5.0f, OrientationAxisSize, OrientationAxisSize, 0.0f, 1.0f };

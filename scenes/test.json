@@ -1,205 +1,205 @@
 {
     "Assets": [
         {
-            "Guid": "BE44140D-4315-1A37-2881-3D8611F2D084",
+            "Guid": "665FFE26-4874-E5B7-879D-1C8720317C70",
             "TypeName": "UMesh",
             "AssetName": "CylinderMesh",
             "AssetMetaDataPath": "./Content/Metadata/CylinderMesh.meta"
         },
         {
-            "Guid": "4DEB79C4-449A-BC85-A880-F182FAD7112F",
+            "Guid": "E56CC3E6-4344-22A1-4380-9C9420F79253",
             "TypeName": "UMesh",
             "AssetName": "ConeMesh",
             "AssetMetaDataPath": "./Content/Metadata/ConeMesh.meta"
         },
         {
-            "Guid": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
+            "Guid": "B84CE156-49A4-612F-15C9-2FB68E16612B",
             "TypeName": "UMesh",
             "AssetName": "CubeMesh",
             "AssetMetaDataPath": "./Content/Metadata/CubeMesh.meta"
         },
         {
-            "Guid": "9B2F7A51-41EC-FBB6-1411-8FA8E85BBD1B",
+            "Guid": "74DE1A40-4F94-D497-B549-5594D37E37A0",
             "TypeName": "UMesh",
             "AssetName": "GizmoTorusMesh",
             "AssetMetaDataPath": "./Content/Metadata/GizmoTorusMesh.meta"
         },
         {
-            "Guid": "DD27C591-4D3C-094C-CC11-3D84C2C59348",
+            "Guid": "B6C217BA-4B2E-CD05-A9C6-80AE28C6DE54",
             "TypeName": "UColorMaterial",
             "AssetName": "Red",
             "AssetMetaDataPath": "./Content/Metadata/RedMaterial.meta"
         },
         {
-            "Guid": "1E53D31A-4483-A49A-43B2-F59CF2A841AF",
+            "Guid": "7C0FFBB6-448E-5106-1461-ECB7E3F7EF14",
             "TypeName": "UColorMaterial",
             "AssetName": "Green",
             "AssetMetaDataPath": "./Content/Metadata/GreenMaterial.meta"
         },
         {
-            "Guid": "35923728-4D51-4C86-3F22-89A8163F4397",
+            "Guid": "53134D55-4F6D-64D5-EB00-46963559FCED",
             "TypeName": "UColorMaterial",
             "AssetName": "Blue",
             "AssetMetaDataPath": "./Content/Metadata/BlueMaterial.meta"
         },
         {
-            "Guid": "34D9A7BC-4B19-93E0-741C-1DBEE0424242",
+            "Guid": "A3B94A51-41D9-5A8E-0C53-62B67EFF556A",
             "TypeName": "UPipeline",
             "AssetName": "GizmoPipeline",
             "AssetMetaDataPath": "./Content/Metadata/GizmoPipeline.meta"
         },
         {
-            "Guid": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C",
+            "Guid": "33B5A52B-403E-48ED-5142-7B9BEA828A4F",
             "TypeName": "UPipeline",
             "AssetName": "BasePipeline",
             "AssetMetaDataPath": "./Content/Metadata/BasePipeline.meta"
         },
         {
-            "Guid": "4FE48612-44F9-6144-1649-0F8513CE46F5",
+            "Guid": "DB2A0405-4C27-CC6B-DD8D-F89993A84819",
             "TypeName": "UPipeline",
             "AssetName": "AlternatePipeline",
             "AssetMetaDataPath": "./Content/Metadata/AlternatePipeline.meta"
         },
         {
-            "Guid": "7B605CAF-4F2D-B6E9-1908-D79B46D6DA2B",
+            "Guid": "7C473DD0-487E-F979-9F27-6F998B02AE85",
             "TypeName": "UMesh",
             "AssetName": "SphereMesh",
             "AssetMetaDataPath": "./Content/Metadata/SphereMesh.meta"
         },
         {
-            "Guid": "6E797C99-485C-324D-3539-C09191E78B8A",
+            "Guid": "744F1E89-400E-80C1-303A-12A82C2B84F8",
             "TypeName": "UMesh",
             "AssetName": "PlaneMesh",
             "AssetMetaDataPath": "./Content/Metadata/PlaneMesh.meta"
         },
         {
-            "Guid": "DF7538AE-40EC-A88C-09FD-52A42D47416A",
+            "Guid": "3BD36AE6-4F13-1F6F-BECE-D5AE267FF9F6",
             "TypeName": "UMesh",
             "AssetName": "TorusMesh",
             "AssetMetaDataPath": "./Content/Metadata/TorusMesh.meta"
         },
         {
-            "Guid": "31DB421F-4828-981F-7560-F9998AF4C37D",
+            "Guid": "B735BF78-4CDC-9541-A720-5788BE60669D",
             "TypeName": "UMesh",
             "AssetName": "CapsuleMesh",
             "AssetMetaDataPath": "./Content/Metadata/CapsuleMesh.meta"
         },
         {
-            "Guid": "B874840C-4F7C-4F2B-F60A-1BA0894D1B5F",
+            "Guid": "20C6DBE6-417F-1DF2-8F77-E5AFB922F703",
             "TypeName": "UMesh",
             "AssetName": "PyrimidMesh",
             "AssetMetaDataPath": "./Content/Metadata/PyramidMesh.meta"
         },
         {
-            "Guid": "2825AD61-4171-03AA-AFE3-16A059E87286",
+            "Guid": "D9749B35-4A40-9116-416B-439FADDE4FAA",
             "TypeName": "UColorMaterial",
             "AssetName": "GreyMaterial",
             "AssetMetaDataPath": "./Content/Metadata/GreyMaterial.meta"
         },
         {
-            "Guid": "BC626F15-4BCC-5145-F336-8A84CCA42FB9",
+            "Guid": "3F2DA144-4A69-FC8F-B6B8-70998D765774",
             "TypeName": "UColorMaterial",
             "AssetName": "RedMaterial",
             "AssetMetaDataPath": "./Content/Metadata/RedMaterial.meta"
         },
         {
-            "Guid": "E4CC3DF2-4226-4E1B-09A0-5A85025AA20B",
+            "Guid": "7960978B-4E91-EBCB-B72B-58B3ACED7D5C",
             "TypeName": "UColorMaterial",
             "AssetName": "GreenMaterial",
             "AssetMetaDataPath": "./Content/Metadata/GreenMaterial.meta"
         },
         {
-            "Guid": "5E4E70B1-4E40-7256-2B19-279CB8A0263E",
+            "Guid": "A47C6532-47DE-5DC0-2C33-60824FD82E83",
             "TypeName": "UColorMaterial",
             "AssetName": "BlueMaterial",
             "AssetMetaDataPath": "./Content/Metadata/BlueMaterial.meta"
         },
         {
-            "Guid": "C9E814D2-45CF-F6A6-F2C3-049902FED4D2",
+            "Guid": "07B9310C-4769-275F-3611-668709D93FF1",
             "TypeName": "UColorMaterial",
             "AssetName": "YellowMaterial",
             "AssetMetaDataPath": "./Content/Metadata/YellowMaterial.meta"
         },
         {
-            "Guid": "A4E57947-46CB-CE27-6F55-1C9CB6E2FA07",
+            "Guid": "40F67CDA-4CB5-0EF6-3CD7-C7B824DDCE52",
             "TypeName": "UColorMaterial",
             "AssetName": "AmberMaterial",
             "AssetMetaDataPath": "./Content/Metadata/AmberMaterial.meta"
         },
         {
-            "Guid": "92BF467F-47A0-5B8E-FBB9-1D855CE3990B",
+            "Guid": "737EFB29-4402-B238-20DA-10B33EB012D2",
             "TypeName": "UColorMaterial",
             "AssetName": "BrownMaterial",
             "AssetMetaDataPath": "./Content/Metadata/BrownMaterial.meta"
         },
         {
-            "Guid": "92FF640C-4D2F-2D95-84AF-1FAE3B42D479",
+            "Guid": "4D4A845C-498F-7794-FD3F-F39590E19653",
             "TypeName": "UColorMaterial",
             "AssetName": "CyanMaterial",
             "AssetMetaDataPath": "./Content/Metadata/CyanMaterial.meta"
         },
         {
-            "Guid": "E81825BA-49CA-63F9-ED37-0D819D3C7C6F",
+            "Guid": "2CF60039-4F00-8374-C1B7-E5A2C5BF0950",
             "TypeName": "UColorMaterial",
             "AssetName": "LimeMaterial",
             "AssetMetaDataPath": "./Content/Metadata/LimeMaterial.meta"
         },
         {
-            "Guid": "243B7F76-47BC-2BE9-8141-DB9955EC9AAA",
+            "Guid": "1D2CB943-4B9F-B890-DEB2-7C925C6C8D69",
             "TypeName": "UColorMaterial",
             "AssetName": "MagentaMaterial",
             "AssetMetaDataPath": "./Content/Metadata/MagentaMaterial.meta"
         },
         {
-            "Guid": "CEAFAB2A-41E3-4778-E3C0-ACA290D53A27",
+            "Guid": "9302C273-4EF7-B4BA-35EA-1BA4D2A86037",
             "TypeName": "UColorMaterial",
             "AssetName": "NavyMaterial",
             "AssetMetaDataPath": "./Content/Metadata/NavyMaterial.meta"
         },
         {
-            "Guid": "1A75C621-4D1F-643B-FB9E-008E8FA22B5F",
+            "Guid": "A0CA0D26-4B2F-1CF7-FBBA-78AFCB9111BC",
             "TypeName": "UColorMaterial",
             "AssetName": "OrangeMaterial",
             "AssetMetaDataPath": "./Content/Metadata/OrangeMaterial.meta"
         },
         {
-            "Guid": "A50977A1-4CB5-8981-3F08-48B3743D1E0F",
+            "Guid": "ADDD1DB2-418A-7CD6-E7B5-EDA3CDAE78F9",
             "TypeName": "UColorMaterial",
             "AssetName": "PinkMaterial",
             "AssetMetaDataPath": "./Content/Metadata/PinkMaterial.meta"
         },
         {
-            "Guid": "956DFB09-4CD7-C358-F370-D5BBCC7859AF",
+            "Guid": "EB4D1AF0-4806-4CFE-E5EA-2C9BE4C34F93",
             "TypeName": "UColorMaterial",
             "AssetName": "PurpleMaterial",
             "AssetMetaDataPath": "./Content/Metadata/PurpleMaterial.meta"
         },
         {
-            "Guid": "8100AA26-4521-DF3E-E2A9-6A96E018F866",
+            "Guid": "631FDE29-4879-EE56-90D0-E4A5CC5EC247",
             "TypeName": "UColorMaterial",
             "AssetName": "TealMaterial",
             "AssetMetaDataPath": "./Content/Metadata/TealMaterial.meta"
         },
         {
-            "Guid": "E5CE8C2E-4DC8-3198-0687-828C73ED01D2",
+            "Guid": "E6816E6B-4A2F-D2A1-0151-1EB028E5D51E",
             "TypeName": "UColorMaterial",
             "AssetName": "WhiteMaterial",
             "AssetMetaDataPath": "./Content/Metadata/WhiteMaterial.meta"
         },
         {
-            "Guid": "9A320C8F-4FF8-5D0D-BFE8-928EBA2FA0FC",
+            "Guid": "27860EAC-416B-4540-E217-FF9209E39DD7",
             "TypeName": "UPipeline",
             "AssetName": "TexturedPipeline",
             "AssetMetaDataPath": "./Content/Metadata/TexturedTestPipeline.meta"
         },
         {
-            "Guid": "1387210D-4B71-0551-2D1B-2294BDB7D16D",
+            "Guid": "A982B90D-40ED-D603-30C3-0B854072EC43",
             "TypeName": "UTexture",
             "AssetName": "PlankTexture",
             "AssetMetaDataPath": "./Content/Metadata/TexturedTestTexture.meta"
         },
         {
-            "Guid": "149A0C25-4BCC-1640-1648-FD9C7E70968E",
+            "Guid": "557E6E77-445D-0FA5-8E4B-AB9031A148F6",
             "TypeName": "UTexturedMaterial",
             "AssetName": "TexturedMaterial",
             "AssetMetaDataPath": "./Content/Metadata/TexturedTestMaterial.meta"
@@ -216,14 +216,14 @@
                     "bActive": true,
                     "Transform": {
                         "Position": [
-                            -21.631589889526367,
-                            9.340487480163574,
+                            9.17380142211914,
+                            -14.853721618652344,
                             16.97941017150879
                         ],
                         "Rotation": [
-                            -0.4977382719516754,
-                            2.945873260498047,
-                            -1.8631415367126465
+                            -0.939591109752655,
+                            -0.583232581615448,
+                            -1.7113306522369385
                         ],
                         "Scale": [
                             1.0,
@@ -236,9 +236,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "2825AD61-4171-03AA-AFE3-16A059E87286",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "D9749B35-4A40-9116-416B-439FADDE4FAA",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 },
                 {
                     "Guid": "B2B05C39-4676-6F78-8005-BA9862B874D0",
@@ -266,9 +266,9 @@
                     },
                     "Parent": "057FF986-48ED-08F0-E618-E9873008AF41",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "2825AD61-4171-03AA-AFE3-16A059E87286",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "D9749B35-4A40-9116-416B-439FADDE4FAA",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 },
                 {
                     "Guid": "13DFCFCF-4134-27CB-DBBE-E39FD67F0939",
@@ -296,9 +296,9 @@
                     },
                     "Parent": "B2B05C39-4676-6F78-8005-BA9862B874D0",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "2825AD61-4171-03AA-AFE3-16A059E87286",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "D9749B35-4A40-9116-416B-439FADDE4FAA",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 },
                 {
                     "Guid": "1F3DD9AA-41AB-FBD6-6A93-1D9460567246",
@@ -326,9 +326,9 @@
                     },
                     "Parent": "13DFCFCF-4134-27CB-DBBE-E39FD67F0939",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "2825AD61-4171-03AA-AFE3-16A059E87286",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "D9749B35-4A40-9116-416B-439FADDE4FAA",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 },
                 {
                     "Guid": "1E037277-433C-34D4-1CD4-75AEB7D6A561",
@@ -356,9 +356,9 @@
                     },
                     "Parent": "1F3DD9AA-41AB-FBD6-6A93-1D9460567246",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "2825AD61-4171-03AA-AFE3-16A059E87286",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "D9749B35-4A40-9116-416B-439FADDE4FAA",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 },
                 {
                     "Guid": "F12711A1-4326-6EDB-B82B-6AB3DF1B21E1",
@@ -418,19 +418,19 @@
                     "bActive": true,
                     "Transform": {
                         "Position": [
-                            2.5753676891326904,
-                            2.7938456535339355,
-                            1.1269433498382568
+                            -11.486066818237305,
+                            25.066356658935547,
+                            11.436367988586426
                         ],
                         "Rotation": [
-                            0.2278214991092682,
-                            1.2548539638519287,
-                            -0.5023630261421204
+                            1.2914321422576904,
+                            -2.5682051181793213,
+                            -2.395693778991699
                         ],
                         "Scale": [
-                            9.177123069763184,
-                            1.5075032711029053,
-                            1.0
+                            3.839567184448242,
+                            1.5786700248718262,
+                            0.36389675736427307
                         ],
                         "bAbsoluteLocation": false,
                         "bAbsoluteRotation": false,
@@ -438,9 +438,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "2825AD61-4171-03AA-AFE3-16A059E87286",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "D9749B35-4A40-9116-416B-439FADDE4FAA",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 },
                 {
                     "Guid": "7B6C34D9-43A0-FD46-74FD-E6AC052E5928",
@@ -500,29 +500,29 @@
                     "bActive": true,
                     "Transform": {
                         "Position": [
-                            0.04374564439058304,
-                            -2.491492509841919,
-                            1.3835129737854004
+                            -0.0039770095609128475,
+                            3.8457274436950684,
+                            22.4127254486084
                         ],
                         "Rotation": [
-                            0.5603624582290649,
-                            -3.058368682861328,
-                            -3.002255916595459
+                            0.806291937828064,
+                            0.6491844654083252,
+                            -2.6669132709503174
                         ],
                         "Scale": [
                             2.7120909690856934,
                             1.0,
                             1.0
                         ],
-                        "bAbsoluteLocation": true,
-                        "bAbsoluteRotation": true,
+                        "bAbsoluteLocation": false,
+                        "bAbsoluteRotation": false,
                         "bAbsoluteScale": true
                     },
                     "Parent": "D4E1710A-4D22-DFA4-250B-858B23FD4D94",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "2825AD61-4171-03AA-AFE3-16A059E87286",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "D9749B35-4A40-9116-416B-439FADDE4FAA",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 },
                 {
                     "Guid": "8561D6AA-4480-93FF-0C5D-69BEF50A6886",
@@ -582,13 +582,13 @@
                     "bActive": true,
                     "Transform": {
                         "Position": [
-                            14.34804916381836,
-                            3.562020778656006,
-                            12.530869483947754
+                            -13.822821617126465,
+                            -3.1477036476135254,
+                            17.240947723388672
                         ],
                         "Rotation": [
-                            0.8069857954978943,
-                            4.848012924194336,
+                            0.6149846911430359,
+                            8.126836776733398,
                             0.0
                         ],
                         "Scale": [
@@ -639,9 +639,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "2825AD61-4171-03AA-AFE3-16A059E87286",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "D9749B35-4A40-9116-416B-439FADDE4FAA",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "A9B1F405-4A1D-EA29-0386-4A942031BF22"
@@ -676,9 +676,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "8100AA26-4521-DF3E-E2A9-6A96E018F866",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "631FDE29-4879-EE56-90D0-E4A5CC5EC247",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "B0B6F781-4FCA-29B0-0F1E-AFA07ABD2E17"
@@ -713,9 +713,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "1A75C621-4D1F-643B-FB9E-008E8FA22B5F",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "A0CA0D26-4B2F-1CF7-FBBA-78AFCB9111BC",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "7706EA1F-499F-EB23-05CF-DE96061D9345"
@@ -750,9 +750,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "E5CE8C2E-4DC8-3198-0687-828C73ED01D2",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "E6816E6B-4A2F-D2A1-0151-1EB028E5D51E",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "7B93DA44-44D8-A2A4-3856-C3AB5349A648"
@@ -787,9 +787,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "92BF467F-47A0-5B8E-FBB9-1D855CE3990B",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "737EFB29-4402-B238-20DA-10B33EB012D2",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "B104E181-4ABB-E6EB-40BD-E9BD5D6DA851"
@@ -824,9 +824,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "1A75C621-4D1F-643B-FB9E-008E8FA22B5F",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "A0CA0D26-4B2F-1CF7-FBBA-78AFCB9111BC",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "F4CBE71A-4527-E938-9B23-6D99490C33E6"
@@ -861,9 +861,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "2825AD61-4171-03AA-AFE3-16A059E87286",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "D9749B35-4A40-9116-416B-439FADDE4FAA",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "008E26A6-43AF-FD45-E776-C9AA177F54E1"
@@ -898,9 +898,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "C9E814D2-45CF-F6A6-F2C3-049902FED4D2",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "07B9310C-4769-275F-3611-668709D93FF1",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "E24E9036-4F69-5CA8-124C-74A3A4F8F549"
@@ -935,9 +935,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "956DFB09-4CD7-C358-F370-D5BBCC7859AF",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "EB4D1AF0-4806-4CFE-E5EA-2C9BE4C34F93",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "CCFD2F0D-491A-B96C-E85B-A1A8E48078E7"
@@ -972,9 +972,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "A50977A1-4CB5-8981-3F08-48B3743D1E0F",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "ADDD1DB2-418A-7CD6-E7B5-EDA3CDAE78F9",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "CF264FF2-43C7-4132-6DCD-A8BC31F94B4A"
@@ -1009,9 +1009,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "E4CC3DF2-4226-4E1B-09A0-5A85025AA20B",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "7960978B-4E91-EBCB-B72B-58B3ACED7D5C",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "D18F4000-46BB-A604-2D60-639E5EC5A006"
@@ -1046,9 +1046,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "A4E57947-46CB-CE27-6F55-1C9CB6E2FA07",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "40F67CDA-4CB5-0EF6-3CD7-C7B824DDCE52",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "43BEFBD5-414D-68F3-1A2C-2BB8476C72A5"
@@ -1083,9 +1083,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "E4CC3DF2-4226-4E1B-09A0-5A85025AA20B",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "7960978B-4E91-EBCB-B72B-58B3ACED7D5C",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "1DD2FE96-48B3-96AD-DC3E-8C99BEEB0770"
@@ -1120,9 +1120,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "C9E814D2-45CF-F6A6-F2C3-049902FED4D2",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "07B9310C-4769-275F-3611-668709D93FF1",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "7F99D738-4639-FBB2-DC74-44AA126E8588"
@@ -1157,9 +1157,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "E4CC3DF2-4226-4E1B-09A0-5A85025AA20B",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "7960978B-4E91-EBCB-B72B-58B3ACED7D5C",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "390D66D3-4B4C-2831-BACA-B180D3493AE7"
@@ -1194,9 +1194,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "92FF640C-4D2F-2D95-84AF-1FAE3B42D479",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "4D4A845C-498F-7794-FD3F-F39590E19653",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "D2C36CE0-49F3-E229-B2D0-298A27F965D3"
@@ -1231,9 +1231,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "A4E57947-46CB-CE27-6F55-1C9CB6E2FA07",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "40F67CDA-4CB5-0EF6-3CD7-C7B824DDCE52",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "9951604A-4774-8DA6-1358-8B862F06C7AB"
@@ -1268,9 +1268,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "A50977A1-4CB5-8981-3F08-48B3743D1E0F",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "ADDD1DB2-418A-7CD6-E7B5-EDA3CDAE78F9",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "533291B3-4C32-0650-EADC-7E823C31B0B8"
@@ -1305,9 +1305,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "BC626F15-4BCC-5145-F336-8A84CCA42FB9",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "3F2DA144-4A69-FC8F-B6B8-70998D765774",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "CEA8A92D-48EF-8A92-E1B9-D096C7F6218E"
@@ -1342,9 +1342,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "8100AA26-4521-DF3E-E2A9-6A96E018F866",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "631FDE29-4879-EE56-90D0-E4A5CC5EC247",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "5F1B736F-4FF4-5878-952C-E2B3FAA7982D"
@@ -1379,9 +1379,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "2825AD61-4171-03AA-AFE3-16A059E87286",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "D9749B35-4A40-9116-416B-439FADDE4FAA",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "3BA81E5F-4843-EABD-19B9-329A36524F46"
@@ -1416,9 +1416,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "E81825BA-49CA-63F9-ED37-0D819D3C7C6F",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "2CF60039-4F00-8374-C1B7-E5A2C5BF0950",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "42459F5F-4D04-035F-2DC7-D6B0AF4BE212"
@@ -1453,9 +1453,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "E5CE8C2E-4DC8-3198-0687-828C73ED01D2",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "E6816E6B-4A2F-D2A1-0151-1EB028E5D51E",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "DE0E80D7-499B-2AB3-3BEB-8192FD62FE60"
@@ -1490,9 +1490,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "A4E57947-46CB-CE27-6F55-1C9CB6E2FA07",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "40F67CDA-4CB5-0EF6-3CD7-C7B824DDCE52",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "E3FA8EE3-49F7-680D-7F7B-66BD8FC86494"
@@ -1527,9 +1527,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "243B7F76-47BC-2BE9-8141-DB9955EC9AAA",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "1D2CB943-4B9F-B890-DEB2-7C925C6C8D69",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "F4558ED9-42D5-6DCB-019A-17825B6A33BE"
@@ -1564,9 +1564,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "92BF467F-47A0-5B8E-FBB9-1D855CE3990B",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "737EFB29-4402-B238-20DA-10B33EB012D2",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "96ADC7A5-4DAC-6572-E6C3-8487B001043B"
@@ -1601,9 +1601,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "E5CE8C2E-4DC8-3198-0687-828C73ED01D2",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "E6816E6B-4A2F-D2A1-0151-1EB028E5D51E",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "A1CCB70D-4ADB-2D66-9E8E-8E81BC9E2EB1"
@@ -1638,9 +1638,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "243B7F76-47BC-2BE9-8141-DB9955EC9AAA",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "1D2CB943-4B9F-B890-DEB2-7C925C6C8D69",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "FA174584-41EE-157D-80A1-039D9F64919B"
@@ -1675,9 +1675,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "E5CE8C2E-4DC8-3198-0687-828C73ED01D2",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "E6816E6B-4A2F-D2A1-0151-1EB028E5D51E",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "14AFA1DC-4ECF-397C-0927-25A7972919EB"
@@ -1712,9 +1712,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "243B7F76-47BC-2BE9-8141-DB9955EC9AAA",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "1D2CB943-4B9F-B890-DEB2-7C925C6C8D69",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "DD078C31-4128-C5A3-3268-C195E2607311"
@@ -1749,9 +1749,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "92BF467F-47A0-5B8E-FBB9-1D855CE3990B",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "737EFB29-4402-B238-20DA-10B33EB012D2",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "F0A16F95-4A4B-01F9-D1F8-66BD889A155C"
@@ -1786,9 +1786,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "1A75C621-4D1F-643B-FB9E-008E8FA22B5F",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "A0CA0D26-4B2F-1CF7-FBBA-78AFCB9111BC",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "C39A321A-4332-838F-EF06-339260D2644E"
@@ -1823,9 +1823,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "E5CE8C2E-4DC8-3198-0687-828C73ED01D2",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "E6816E6B-4A2F-D2A1-0151-1EB028E5D51E",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "4DB62914-4414-8C09-1DB4-1FAB36B78647"
@@ -1860,9 +1860,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "E81825BA-49CA-63F9-ED37-0D819D3C7C6F",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "2CF60039-4F00-8374-C1B7-E5A2C5BF0950",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "6643D0FA-4B4C-9D22-9080-31A53635F617"
@@ -1897,9 +1897,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "5E4E70B1-4E40-7256-2B19-279CB8A0263E",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "A47C6532-47DE-5DC0-2C33-60824FD82E83",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "2F75D3B2-4B15-0E12-95E4-DAB178767880"
@@ -1934,9 +1934,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "92BF467F-47A0-5B8E-FBB9-1D855CE3990B",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "737EFB29-4402-B238-20DA-10B33EB012D2",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "0FDC8B8C-4293-A278-B5F8-7C884C768154"
@@ -1971,9 +1971,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "A50977A1-4CB5-8981-3F08-48B3743D1E0F",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "ADDD1DB2-418A-7CD6-E7B5-EDA3CDAE78F9",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "4A39D903-49D5-CFE5-C923-A790AB6160DD"
@@ -2008,9 +2008,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "BC626F15-4BCC-5145-F336-8A84CCA42FB9",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "3F2DA144-4A69-FC8F-B6B8-70998D765774",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "A1F4B9BB-43AE-883B-EB38-47988DEF1665"
@@ -2045,9 +2045,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "7DC91871-4545-C4CC-9CC2-D0AE86DB7AAF",
-                    "GuidMaterialHandle": "1A75C621-4D1F-643B-FB9E-008E8FA22B5F",
-                    "GuidPipelineHandle": "36B61CC9-4286-7AA1-09CD-FBA7FA91EF5C"
+                    "GuidMeshHandle": "B84CE156-49A4-612F-15C9-2FB68E16612B",
+                    "GuidMaterialHandle": "A0CA0D26-4B2F-1CF7-FBBA-78AFCB9111BC",
+                    "GuidPipelineHandle": "33B5A52B-403E-48ED-5142-7B9BEA828A4F"
                 }
             ],
             "GuidRootComponent": "20DB6701-4FFC-0F07-7147-7A9F49320465"
