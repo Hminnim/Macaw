@@ -31,6 +31,8 @@ void FTransformGizmo::Initialize(ID3D11Device* Device, FAssetRegistry& AssetRegi
 
 	GizmoMode = GizmoModeChannel.GetReadWriter();
 	GizmoMode.Emplace(static_cast<uint8>(EModifyMode::Translate));
+	GizmoCoordinateSpace = GizmoCoordinateSpaceChannel.GetReadWriter();
+	GizmoCoordinateSpace.Emplace(static_cast<uint8>(EGizmoCoordinateSpace::World));
 }
 
 void FTransformGizmo::ProcessInput(FKeyboardInput& KeyboardInput, FMouseInput& MouseInput, bool bMouseCapturedByUI) {
@@ -112,43 +114,50 @@ void FTransformGizmo::Update(const CameraProbe& Camera) {
 	}
 
 	const FMatrix TargetWorld = Target->GetComponentToWorld();
-	FVector3 Right = TargetWorld.Right();
-	FVector3 Up = TargetWorld.Up();
-	if (Right.LengthSquared() <= std::numeric_limits<float>::epsilon() ||
-		Up.LengthSquared() <= std::numeric_limits<float>::epsilon()) {
-		bVisible = false;
-		return;
-	}
+	const EGizmoCoordinateSpace CoordinateSpace = GizmoCoordinateSpace.HasValue()
+		? static_cast<EGizmoCoordinateSpace>(GizmoCoordinateSpace.Peek())
+		: EGizmoCoordinateSpace::World;
 
-	Right.Normalize();
-	Up = Up - Right * Right.Dot(Up);
-	if (Up.LengthSquared() <= std::numeric_limits<float>::epsilon()) {
-		Up = TargetWorld.Forward() - Right * Right.Dot(TargetWorld.Forward());
-	}
-	if (Up.LengthSquared() <= std::numeric_limits<float>::epsilon()) {
-		bVisible = false;
-		return;
-	}
-	Up.Normalize();
-
-	FVector3 Forward = Right.Cross(Up);
-	if (Forward.LengthSquared() <= std::numeric_limits<float>::epsilon()) {
-		bVisible = false;
-		return;
-	}
-	Forward.Normalize();
-
-	// Gizmo는 scale 없이 회전 축과 위치만 사용한다.
+	// Gizmo는 scale 없이 회전 축과 위치만 사용한다. World 모드에서는
+	// 축을 월드 그리드에 고정하고, Local 모드에서만 대상 회전을 따른다.
 	GizmoWorldTransform = FMatrix::Identity;
-	GizmoWorldTransform.m[0][0] = Right.x;
-	GizmoWorldTransform.m[0][1] = Right.y;
-	GizmoWorldTransform.m[0][2] = Right.z;
-	GizmoWorldTransform.m[1][0] = Up.x;
-	GizmoWorldTransform.m[1][1] = Up.y;
-	GizmoWorldTransform.m[1][2] = Up.z;
-	GizmoWorldTransform.m[2][0] = Forward.x;
-	GizmoWorldTransform.m[2][1] = Forward.y;
-	GizmoWorldTransform.m[2][2] = Forward.z;
+	if (CoordinateSpace == EGizmoCoordinateSpace::Local) {
+		FVector3 Right = TargetWorld.Right();
+		FVector3 Up = TargetWorld.Up();
+		if (Right.LengthSquared() <= std::numeric_limits<float>::epsilon() ||
+			Up.LengthSquared() <= std::numeric_limits<float>::epsilon()) {
+			bVisible = false;
+			return;
+		}
+
+		Right.Normalize();
+		Up = Up - Right * Right.Dot(Up);
+		if (Up.LengthSquared() <= std::numeric_limits<float>::epsilon()) {
+			Up = TargetWorld.Forward() - Right * Right.Dot(TargetWorld.Forward());
+		}
+		if (Up.LengthSquared() <= std::numeric_limits<float>::epsilon()) {
+			bVisible = false;
+			return;
+		}
+		Up.Normalize();
+
+		FVector3 Forward = Right.Cross(Up);
+		if (Forward.LengthSquared() <= std::numeric_limits<float>::epsilon()) {
+			bVisible = false;
+			return;
+		}
+		Forward.Normalize();
+
+		GizmoWorldTransform.m[0][0] = Right.x;
+		GizmoWorldTransform.m[0][1] = Right.y;
+		GizmoWorldTransform.m[0][2] = Right.z;
+		GizmoWorldTransform.m[1][0] = Up.x;
+		GizmoWorldTransform.m[1][1] = Up.y;
+		GizmoWorldTransform.m[1][2] = Up.z;
+		GizmoWorldTransform.m[2][0] = Forward.x;
+		GizmoWorldTransform.m[2][1] = Forward.y;
+		GizmoWorldTransform.m[2][2] = Forward.z;
+	}
 	GizmoWorldTransform.Translation(TargetWorld.Translation());
 
 	FVector3 BoundsExtent{};
@@ -489,6 +498,9 @@ bool FTransformGizmo::BeginDrag(EAxis Axis, const FRay& WorldRay) {
 
 	NewSession.Target.Set(Target);
 	NewSession.ModifyMode = CurrentMode;
+	NewSession.CoordinateSpace = GizmoCoordinateSpace.HasValue()
+		? static_cast<EGizmoCoordinateSpace>(GizmoCoordinateSpace.Peek())
+		: EGizmoCoordinateSpace::World;
 	NewSession.DragAxis = Axis;
 	NewSession.AxisWorld = AxisWorld;
 	NewSession.InteractionPivotWorld = InteractionPivotWorld;
@@ -629,29 +641,31 @@ void FTransformGizmo::UpdateDrag(const FRay& WorldRay) {
 		const float SinAngle = Session.AxisWorld.Dot(Session.PreviousRotationDirection.Cross(CurrentDirection));
 		const float CosAngle = std::clamp(Session.PreviousRotationDirection.Dot(CurrentDirection),-1.0f,1.0f);
 		const float AngleDelta = std::atan2(SinAngle,CosAngle);
-		FVector3 LocalAxis{};
-		switch (Session.DragAxis) {
-		case EAxis::X: LocalAxis = FVector3::UnitX; break;
-		case EAxis::Y: LocalAxis = FVector3::UnitY; break;
-		case EAxis::Z: LocalAxis = FVector3::UnitZ; break;
-		default: return;
-		}
-		const FQuat LocalRotationDelta = FQuat::CreateFromAxisAngle(LocalAxis, AngleDelta);
+		if (Session.CoordinateSpace == EGizmoCoordinateSpace::Local) {
+			FVector3 LocalAxis{};
+			switch (Session.DragAxis) {
+			case EAxis::X: LocalAxis = FVector3::UnitX; break;
+			case EAxis::Y: LocalAxis = FVector3::UnitY; break;
+			case EAxis::Z: LocalAxis = FVector3::UnitZ; break;
+			default: return;
+			}
 
-		if (Target->GetParent() != nullptr) {
 			FTransform RelativeTransform = Target->GetRelativeTransform();
 			RelativeTransform.SetRotation(FQuat::Concatenate(
 				RelativeTransform.GetRotationQuaternion(),
-				LocalRotationDelta));
+				FQuat::CreateFromAxisAngle(LocalAxis, AngleDelta)));
 			Target->SetRelativeTransform(RelativeTransform);
 			Session.PreviousRotationDirection = CurrentDirection;
 			return;
 		}
 
+		// FTransform의 quaternion은 source Y-up 축을 사용하므로, 월드 Z-up
+		// Gizmo 축을 source 축으로 바꾼 뒤 world transform에 적용한다.
+		const FVector3 TransformSpaceAxis = FMatrix::CreateYUpToZUp().TransformDirection(Session.AxisWorld);
 		FTransform DesiredWorldTransform = Target->GetComponentTransform();
 		DesiredWorldTransform.SetRotation(FQuat::Concatenate(
 			DesiredWorldTransform.GetRotationQuaternion(),
-			LocalRotationDelta));
+			FQuat::CreateFromAxisAngle(TransformSpaceAxis, AngleDelta)));
 		if (Target->SetWorldTransform(DesiredWorldTransform)) {
 			Session.PreviousRotationDirection = CurrentDirection;
 		}
@@ -678,7 +692,7 @@ void FTransformGizmo::UpdateDrag(const FRay& WorldRay) {
 			const float ScaleSpeed = std::max(100.0f * Session.WorkUnitsPerPixel, 0.0001f);
 			const float ScaleFactor = std::max(0.01f,1.0f + Delta / ScaleSpeed);
 
-			if (Target->GetParent() != nullptr) {
+			if (Session.CoordinateSpace == EGizmoCoordinateSpace::Local) {
 				FVector3 RelativeScale = Target->GetRelativeScale3D();
 				switch (Session.DragAxis) {
 				case EAxis::X:

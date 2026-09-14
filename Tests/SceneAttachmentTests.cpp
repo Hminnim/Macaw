@@ -164,6 +164,43 @@ TEST_SUITE("CH4 Scene Attachment") {
         CHECK(Up.Dot(Forward) == doctest::Approx(0.0f).epsilon(0.0001f));
     }
 
+    TEST_CASE("Attached transforms can inherit location rotation and scale independently") {
+        UWorld World;
+        AActor* Actor = World.AdoptActor<AActor>();
+        REQUIRE(Actor != nullptr);
+
+        USceneComponent* Parent = Actor->AddComponent<USceneComponent>();
+        USceneComponent* Child = Actor->AddComponent<USceneComponent>();
+        REQUIRE(Parent != nullptr);
+        REQUIRE(Child != nullptr);
+
+        Parent->SetRelativeTransform({
+            { 10.0f, 20.0f, 30.0f }, { 0.2f, -0.4f, 0.6f }, { 2.0f, 3.0f, 4.0f }
+        });
+        FTransform ChildTransform{
+            { 5.0f, 6.0f, 7.0f }, { -0.3f, 0.1f, 0.5f }, { 5.0f, 6.0f, 7.0f }
+        };
+        ChildTransform.SetAbsoluteRotation(true);
+        Child->SetRelativeTransform(ChildTransform);
+        REQUIRE(Child->AttachToComponent(Parent));
+
+        const FTransform RotationAbsoluteWorld = Child->GetComponentTransform();
+        const FQuat ChildRotation = Child->GetRelativeTransform().GetRotationQuaternion();
+        const FQuat WorldRotation = RotationAbsoluteWorld.GetRotationQuaternion();
+        const float RotationDot = std::abs(
+            ChildRotation.x * WorldRotation.x + ChildRotation.y * WorldRotation.y +
+            ChildRotation.z * WorldRotation.z + ChildRotation.w * WorldRotation.w);
+        CHECK(RotationDot == doctest::Approx(1.0f).epsilon(0.0001f));
+        CHECK_EQ(RotationAbsoluteWorld.GetScale(), FVector3(10.0f, 18.0f, 28.0f));
+
+        ChildTransform.SetAbsoluteLocation(true);
+        ChildTransform.SetAbsoluteScale(true);
+        Child->SetRelativeTransform(ChildTransform);
+        const FTransform FullyAbsoluteWorld = Child->GetComponentTransform();
+        CHECK_EQ(FullyAbsoluteWorld.GetLocation(), FVector3(5.0f, 6.0f, 7.0f));
+        CHECK_EQ(FullyAbsoluteWorld.GetScale(), FVector3(5.0f, 6.0f, 7.0f));
+    }
+
     TEST_CASE("Scene component parent references survive serialization and resolve") {
         RegisterSceneAttachmentTypes();
         rapidjson::Document Document;

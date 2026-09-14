@@ -20,7 +20,8 @@ public:
 
         HWND WindowHandle,
 
-        FStateChannel<uint8>::FReadWriter GizmoSender
+        FStateChannel<uint8>::FReadWriter GizmoSender,
+        FStateChannel<uint8>::FReadWriter GizmoCoordinateSpaceSender
     )
     {
         Panels.emplace_back(
@@ -34,7 +35,8 @@ public:
         Panels.emplace_back(
             std::make_unique<FPropertyPanel>(
                 EditorContext,
-                std::move(GizmoSender)
+                std::move(GizmoSender),
+                std::move(GizmoCoordinateSpaceSender)
             )
         );
 

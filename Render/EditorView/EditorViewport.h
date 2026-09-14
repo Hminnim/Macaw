@@ -36,6 +36,7 @@ public:
 	void RenderOrientationAxis(ID3D11DeviceContext* Context, CameraProbe& Probe);
 
 	FStateChannel<uint8>::FReadWriter GetGizmoMode() { return TransformGizmo.GetGizmoMode(); }
+	FStateChannel<uint8>::FReadWriter GetGizmoCoordinateSpace() { return TransformGizmo.GetGizmoCoordinateSpace(); }
 private:
 	void RenderGrid(ELineDepthMode DepthMode);
 	void RenderAxis(ELineDepthMode DepthMode);

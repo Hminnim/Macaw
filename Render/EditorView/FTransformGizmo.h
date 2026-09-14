@@ -50,6 +50,7 @@ class FTransformGizmo {
 		float PreviousAxisParameter = 0.0f;
 		EAxis DragAxis = EAxis::None;
 		EModifyMode ModifyMode = EModifyMode::None;
+		EGizmoCoordinateSpace CoordinateSpace = EGizmoCoordinateSpace::World;
 		FVector3 PreviousRotationDirection{};
 		float WorkUnitsPerPixel = 1.0f;
 	};
@@ -72,6 +73,7 @@ public:
 	void Render(FRenderProbe& Probe);
 
 	FStateChannel<uint8>::FReadWriter GetGizmoMode() { return GizmoModeChannel.GetReadWriter(); }
+	FStateChannel<uint8>::FReadWriter GetGizmoCoordinateSpace() { return GizmoCoordinateSpaceChannel.GetReadWriter(); }
 private:
 
 	void SetTranslate(const FVector3& Pivot, float WorldUnitsPerPixel);
@@ -138,6 +140,8 @@ private:
 	FWorldEditorContext* EditorContext = nullptr;
 	FStateChannel<uint8> GizmoModeChannel{};
 	FStateChannel<uint8>::FReadWriter GizmoMode{};
+	FStateChannel<uint8> GizmoCoordinateSpaceChannel{};
+	FStateChannel<uint8>::FReadWriter GizmoCoordinateSpace{};
 
 	CameraProbe LastCamera{};
 

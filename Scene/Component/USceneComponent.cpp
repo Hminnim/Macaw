@@ -19,28 +19,14 @@ namespace {
     }
 
     bool ApplyWorldMatrix(USceneComponent& Component, const FMatrix& DesiredWorld) {
-        FMatrix LocalMatrix = DesiredWorld;
-        if (USceneComponent* Parent = Component.GetParent()) {
-            FMatrix ParentInverse;
-            if (!Parent->GetComponentToWorld().TryInverse(ParentInverse)) {
-                return false;
-            }
-
-            LocalMatrix = DesiredWorld * ParentInverse;
-        }
-
         FVector3 Scale{};
         FQuat Rotation{};
         FVector3 Translation{};
-        if (!DecomposeWorldTransform(LocalMatrix, Scale, Rotation, Translation)) {
+        if (!DecomposeWorldTransform(DesiredWorld, Scale, Rotation, Translation)) {
             return false;
         }
 
-        FTransform& Transform = Component.GetRelativeTransform();
-        Transform.SetPosition(Translation);
-        Transform.SetRotation(Rotation);
-        Transform.SetScale(Scale);
-        return true;
+        return Component.SetWorldTransform(FTransform{ Translation, Rotation, Scale });
     }
 }
 
@@ -165,9 +151,14 @@ bool USceneComponent::DetachFromComponent(EAttachmentTransformRule Rule) {
 }
 
 bool USceneComponent::SetWorldTransform(const FTransform& WorldTransform) {
+    FTransform DesiredWorldTransform = WorldTransform;
+    DesiredWorldTransform.SetAbsoluteLocation(Transform.IsAbsoluteLocation());
+    DesiredWorldTransform.SetAbsoluteRotation(Transform.IsAbsoluteRotation());
+    DesiredWorldTransform.SetAbsoluteScale(Transform.IsAbsoluteScale());
+
     if (USceneComponent* ParentComponent = Parent.Get()) {
         FTransform RelativeTransform;
-        if (!WorldTransform.MakeRelativeTo(ParentComponent->GetComponentTransform(), RelativeTransform)) {
+        if (!DesiredWorldTransform.MakeRelativeTo(ParentComponent->GetComponentTransform(), RelativeTransform)) {
             return false;
         }
 
@@ -175,7 +166,7 @@ bool USceneComponent::SetWorldTransform(const FTransform& WorldTransform) {
         return true;
     }
 
-    Transform = WorldTransform;
+    Transform = DesiredWorldTransform;
     return true;
 }
 

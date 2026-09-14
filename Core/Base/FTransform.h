@@ -23,6 +23,9 @@ public:
     const FQuat& GetRotationQuaternion() const { return Rotation; }
     const FVector3& GetScale() const { return Scale; }
     const FVector3& GetScale3D() const { return Scale; }
+    bool IsAbsoluteLocation() const { return bAbsoluteLocation; }
+    bool IsAbsoluteRotation() const { return bAbsoluteRotation; }
+    bool IsAbsoluteScale() const { return bAbsoluteScale; }
 
     void SetPosition(const FVector3& InPosition) { Position = InPosition; }
     void SetLocation(const FVector3& Location) { Position = Location; }
@@ -31,6 +34,9 @@ public:
 
     void SetScale(const FVector3& InScale) { Scale = InScale; }
     void SetScale3D(const FVector3& Scale) { this->Scale = Scale; }
+    void SetAbsoluteLocation(bool bInAbsoluteLocation) { bAbsoluteLocation = bInAbsoluteLocation; }
+    void SetAbsoluteRotation(bool bInAbsoluteRotation) { bAbsoluteRotation = bInAbsoluteRotation; }
+    void SetAbsoluteScale(bool bInAbsoluteScale) { bAbsoluteScale = bInAbsoluteScale; }
 
     FMatrix ToMatrixWithScale() const;
     FMatrix ToMatrixNoScale() const;
@@ -44,4 +50,7 @@ private:
     FQuat Rotation{};
     FRotator RotationEuler{};
     FVector3 Scale{ 1.0f, 1.0f, 1.0f };
+    bool bAbsoluteLocation = false;
+    bool bAbsoluteRotation = false;
+    bool bAbsoluteScale = false;
 };

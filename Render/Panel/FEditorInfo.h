@@ -75,3 +75,9 @@ enum class EGizmoMode : uint8
     Rotate,
     Scale
 };
+
+enum class EGizmoCoordinateSpace : uint8
+{
+    World,
+    Local
+};

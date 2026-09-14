@@ -243,7 +243,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
         gHWND,
 
-        EditorView.GetGizmoMode()
+        EditorView.GetGizmoMode(),
+        EditorView.GetGizmoCoordinateSpace()
     );
 
     GMouseInput.InitializeWorldCommandSender(WorldCommandChannel.GetSender());

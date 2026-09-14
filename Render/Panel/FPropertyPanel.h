@@ -13,9 +13,11 @@ class FPropertyPanel : public IEditorPanel {
 public:
 	FPropertyPanel(
 		FWorldEditorContext& InEditorContext,
-		FStateChannel<uint8>::FReadWriter InGizmoMode)
+		FStateChannel<uint8>::FReadWriter InGizmoMode,
+		FStateChannel<uint8>::FReadWriter InGizmoCoordinateSpace)
 		: EditorContext(&InEditorContext)
-		, GizmoMode(std::move(InGizmoMode)) {
+		, GizmoMode(std::move(InGizmoMode))
+		, GizmoCoordinateSpace(std::move(InGizmoCoordinateSpace)) {
 	}
 
 	void DrawPanel() override {
@@ -56,6 +58,17 @@ public:
 			CurrentGizmoMode = static_cast<EGizmoMode>(ModeIndex);
 			GizmoMode.Emplace(static_cast<uint8>(CurrentGizmoMode));
 		}
+
+		ImGui::SameLine();
+		ImGui::Text("Coordinate");
+		int CoordinateSpaceIndex = static_cast<int>(GizmoCoordinateSpace.Read());
+		bool bCoordinateSpaceChanged = false;
+		bCoordinateSpaceChanged |= ImGui::RadioButton("World", &CoordinateSpaceIndex, static_cast<int>(EGizmoCoordinateSpace::World));
+		ImGui::SameLine();
+		bCoordinateSpaceChanged |= ImGui::RadioButton("Local", &CoordinateSpaceIndex, static_cast<int>(EGizmoCoordinateSpace::Local));
+		if (bCoordinateSpaceChanged) {
+			GizmoCoordinateSpace.Emplace(static_cast<uint8>(CoordinateSpaceIndex));
+		}
 		ImGui::Separator();
 
 		ImGui::Text("Relative Transform");
@@ -72,6 +85,11 @@ public:
 		const bool bScaleActivated = ImGui::IsItemActivated();
 		const bool bScaleDeactivated = ImGui::IsItemDeactivatedAfterEdit();
 
+		bool bAbsoluteTransformChanged = false;
+		bAbsoluteTransformChanged |= ImGui::Checkbox("Absolute Location", &bAbsoluteLocation);
+		bAbsoluteTransformChanged |= ImGui::Checkbox("Absolute Rotation", &bAbsoluteRotation);
+		bAbsoluteTransformChanged |= ImGui::Checkbox("Absolute Scale", &bAbsoluteScale);
+
 		const bool bTransformActivated = bPositionActivated || bRotationActivated || bScaleActivated;
 		const bool bTransformModified = bPositionModified || bRotationModified || bScaleModified;
 		const bool bTransformDeactivated = bPositionDeactivated || bRotationDeactivated || bScaleDeactivated;
@@ -82,6 +100,10 @@ public:
 		}
 
 		if (bTransformModified && bEditingTransform && EditingTransformTarget == Target) {
+			Target->SetRelativeTransform(BuildDesiredTransform());
+		}
+
+		if (bAbsoluteTransformChanged && !bEditingTransform) {
 			Target->SetRelativeTransform(BuildDesiredTransform());
 		}
 
@@ -98,20 +120,31 @@ private:
 		EditPosition = Transform.GetPosition();
 		EditRotation = Transform.GetRotation();
 		EditScale = Transform.GetScale();
+		bAbsoluteLocation = Transform.IsAbsoluteLocation();
+		bAbsoluteRotation = Transform.IsAbsoluteRotation();
+		bAbsoluteScale = Transform.IsAbsoluteScale();
 	}
 
 	FTransform BuildDesiredTransform() const {
-		return FTransform{ EditPosition, EditRotation, EditScale };
+		FTransform Transform{ EditPosition, EditRotation, EditScale };
+		Transform.SetAbsoluteLocation(bAbsoluteLocation);
+		Transform.SetAbsoluteRotation(bAbsoluteRotation);
+		Transform.SetAbsoluteScale(bAbsoluteScale);
+		return Transform;
 	}
 
 private:
 	FWorldEditorContext* EditorContext = nullptr;
 	FStateChannel<uint8>::FReadWriter GizmoMode;
+	FStateChannel<uint8>::FReadWriter GizmoCoordinateSpace;
 
 	USceneComponent* EditingTransformTarget = nullptr;
 	bool bEditingTransform = false;
 	FVector3 EditPosition{};
 	FRotator EditRotation{};
 	FVector3 EditScale{ 1.0f, 1.0f, 1.0f };
+	bool bAbsoluteLocation = false;
+	bool bAbsoluteRotation = false;
+	bool bAbsoluteScale = false;
 	EGizmoMode CurrentGizmoMode = EGizmoMode::Translate;
 };
