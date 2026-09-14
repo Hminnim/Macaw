@@ -1,0 +1,60 @@
+{
+  "VertexShader": {
+    "Source": "./Content/Shader/BatchLine.hlsl",
+    "EntryPoint": "mainVS",
+    "Profile": "vs_5_0"
+  },
+
+  "PixelShader": {
+    "Source": "./Content/Shader/BatchLine.hlsl",
+    "EntryPoint": "mainPS",
+    "Profile": "ps_5_0"
+  },
+
+  "InputLayout": [
+    {
+      "SemanticName": "POSITION",
+      "SemanticIndex": 0,
+      "Format": "Float3",
+      "InputSlot": 0,
+      "AlignedByteOffset": 0,
+      "InputClassification": "PerVertex",
+      "InstanceDataStepRate": 0
+    },
+    {
+      "SemanticName": "COLOR",
+      "SemanticIndex": 0,
+      "Format": "Float4",
+      "InputSlot": 0,
+      "AlignedByteOffset": 12,
+      "InputClassification": "PerVertex",
+      "InstanceDataStepRate": 0
+    }
+  ],
+
+  "PrimitiveTopology": "LineList",
+
+  "Rasterizer": {
+    "FillMode": "Solid",
+    "CullMode": "None",
+    "FrontCounterClockwise": false,
+    "DepthClipEnable": true,
+    "ScissorEnable": false
+  },
+
+  "DepthStencil": {
+    "DepthEnable": true,
+    "DepthWriteEnable": false,
+    "DepthFunc": "LessEqual"
+  },
+
+  "Blend": {
+    "BlendEnable": true,
+    "SrcBlend": "SrcAlpha",
+    "DestBlend": "InvSrcAlpha",
+    "BlendOp": "Add",
+    "SrcBlendAlpha": "One",
+    "DestBlendAlpha": "InvSrcAlpha",
+    "BlendOpAlpha": "Add"
+  }
+}

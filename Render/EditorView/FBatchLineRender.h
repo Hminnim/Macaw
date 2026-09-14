@@ -1,16 +1,11 @@
-﻿#pragma once
+#pragma once
 
 #include "ILineRenderer.h"
-
-class FLineRenderer : public ILineRenderer {
+class FBatchLineRenderer : public ILineRenderer {
 private:
-	struct FQuadVertex {
-		FVector2D Corner{};
-	};
 
-	struct FLineInstance {
-		FVector4 StartAndWidth{};
-		FVector4 EndAndPadding{};
+	struct FBatchLineInstance {
+		FVector3 Position{};
 		FVector4 Color{};
 	};
 
@@ -22,20 +17,20 @@ private:
 	static_assert(sizeof(FLineFrameConstants) == sizeof(uint32) * 20);
 
 	struct FLineBatch {
-		TArray<FLineInstance> Instances{};
-		FGraphicsBuffer InstanceBuffer{};
+		TArray<FBatchLineInstance> Vertices{};
+		FGraphicsBuffer VertexBuffer{};
 		uint32 Capacity{ 0 };
 	};
 
 public:
-	FLineRenderer() = default;
-	~FLineRenderer() = default;
+	FBatchLineRenderer() = default;
+	~FBatchLineRenderer() = default;
 
-	FLineRenderer(const FLineRenderer&) = delete;
-	FLineRenderer& operator=(const FLineRenderer&) = delete;
+	FBatchLineRenderer(const FBatchLineRenderer&) = delete;
+	FBatchLineRenderer& operator=(const FBatchLineRenderer&) = delete;
 
-	FLineRenderer(FLineRenderer&&) noexcept = default;
-	FLineRenderer& operator=(FLineRenderer&&) noexcept = default;
+	FBatchLineRenderer(FBatchLineRenderer&&) noexcept = default;
+	FBatchLineRenderer& operator=(FBatchLineRenderer&&) noexcept = default;
 
 public:
 	void Initialize(ID3D11Device* InDevice, uint32 InitialLineCapacity = 1024);
@@ -51,19 +46,15 @@ public:
 	[[nodiscard]] bool IsEmpty() const;
 
 private:
-	bool CreateQuadGeometry(ID3D11Device* Device);
-	bool CreateInstanceBuffer(ID3D11Device* Device, FLineBatch& Batch, uint32 Capacity);
-	bool EnsureCapacity(ID3D11Device* Device, FLineBatch& Batch, uint32 RequiredCapacity);
-	bool RenderBatch(ID3D11Device* Device, ID3D11DeviceContext* Context, FLineBatch& Batch, const UPipeline* Pipeline);
+	bool CreateVertexBuffer(ID3D11Device* InDevice, FLineBatch& Batch, uint32 Capacity);
+	bool EnsureCapacity(ID3D11Device* InDevice, FLineBatch& Batch, uint32 RequiredCapacity);
+	bool RenderBatch(ID3D11Device* InDevice, ID3D11DeviceContext* Context, FLineBatch& Batch, const UPipeline* Pipeline);
 
 private:
 	ID3D11Device* Device{ nullptr };
 
 	std::unique_ptr<UPipeline> DepthTestedPipeline{};
 	std::unique_ptr<UPipeline> OverlayPipeline{};
-
-	FGraphicsBuffer QuadVertexBuffer{};
-	FGraphicsBuffer QuadIndexBuffer{};
 
 	FLineBatch DepthTestedBatch{};
 	FLineBatch OverlayBatch{};

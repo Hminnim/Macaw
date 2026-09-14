@@ -9,7 +9,9 @@
 #include "../../FMouseInput.h"
 #include "../RenderWindowInfo.h"
 
+#include "ILineRenderer.h"
 #include "FLineRenderer.h"
+#include "FBatchLineRender.h"
 #include "FTransformGizmo.h"
 
 class EditorViewport {
@@ -40,11 +42,12 @@ public:
 private:
 	void RenderGrid(ELineDepthMode DepthMode);
 	void RenderAxis(ELineDepthMode DepthMode);
+	void RenderBoundingBox(ELineDepthMode DepthMode);
 
 private:
 	FStateChannel<RenderWindowInfo>::FReader WindowInfoReader{};
 
-	FLineRenderer LineRenderer{};
+	std::unique_ptr<ILineRenderer> LineRenderer = std::make_unique<FLineRenderer>();
 	FTransformGizmo TransformGizmo{};
 
 	D3D11_VIEWPORT OrientationAxisViewport{ 5.0f, 5.0f, OrientationAxisSize, OrientationAxisSize, 0.0f, 1.0f };
