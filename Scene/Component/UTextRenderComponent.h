@@ -27,8 +27,8 @@ public:
 	const FString& GetText() const;
 	const TArray<FTextVertex>& GetVertex() const;
 
-	void OnCreate() override;
-	void OnDestroy() override;
+	void OnRegister() override;
+	void OnDeRegister() override;
 
 	virtual void RebuildTextGeometry();
 
