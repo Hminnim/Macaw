@@ -7,9 +7,9 @@
 
 #include "../../FMouseInput.h"
 
-void EditorViewport::Initialize(ID3D11Device* Device, FAssetRegistry& AssetRegistry, FStateChannel<RenderWindowInfo>::FReader windowReader, FWorldEditorContext& EditorContext) {
-	LineRenderer.Initialize(Device);
-	TransformGizmo.Initialize(Device, AssetRegistry, windowReader, EditorContext);
+void EditorViewport::Initialize(ID3D11Device* Device, FAssetRegistry& AssetRegistry, FStateChannel<RenderWindowInfo>::FReader windowReader, FStateChannel<FEditorSelectionState>::FReader selectionReader, FMessageChannel::FSender worldCommandSender) {
+	LineRenderer->Initialize(Device);
+	TransformGizmo.Initialize(Device, AssetRegistry, windowReader, selectionReader, std::move(worldCommandSender));
 	WindowInfoReader = windowReader;
 }
 
@@ -28,7 +28,7 @@ void EditorViewport::Render(ID3D11DeviceContext* Context, FRenderProbe& Probe) {
 	RenderGrid(DepthMode);
 	RenderAxis(DepthMode);
 
-	LineRenderer.Render(Context, FLineViewData{
+	LineRenderer->Render(Context, FLineViewData{
 		.ViewProjection = Probe.MainCameraProbe.ViewProjection,
 		.ViewportSize = FVector2D{ WindowInfoReader.Read().Viewport.Width, WindowInfoReader.Read().Viewport.Height }
 	});
@@ -44,26 +44,31 @@ void EditorViewport::RenderGrid(ELineDepthMode DepthMode) {
 		if (x == 0) {
 			continue;
 		}
-		LineRenderer.AddLine(FVector3{ static_cast<float>(x), -LineLength, 0.f }, FVector3{ static_cast<float>(x), LineLength, 0.f }, FVector4{ 0.5f, 0.5f, 0.5f, 1.0f }, 1.0f, DepthMode);
+		LineRenderer->AddLine(FVector3{ static_cast<float>(x), -LineLength, 0.f }, FVector3{ static_cast<float>(x), LineLength, 0.f }, FVector4{ 0.5f, 0.5f, 0.5f, 1.0f }, 1.0f, DepthMode);
 	}
 
 	for (auto y : std::views::iota(-GridSize, GridSize + 1)) {
 		if (y == 0) {
 			continue;
 		}
-		LineRenderer.AddLine(FVector3{ -LineLength, static_cast<float>(y), 0.f }, FVector3{ LineLength, static_cast<float>(y), 0.f }, FVector4{ 0.5f, 0.5f, 0.5f, 1.0f }, 1.0f, DepthMode);
+		LineRenderer->AddLine(FVector3{ -LineLength, static_cast<float>(y), 0.f }, FVector3{ LineLength, static_cast<float>(y), 0.f }, FVector4{ 0.5f, 0.5f, 0.5f, 1.0f }, 1.0f, DepthMode);
 	}
 }
 
 void EditorViewport::RenderAxis(ELineDepthMode DepthMode) {
-	LineRenderer.AddRay(FVector3{ 0.0f, 0.0f, 0.0f }, FVector3{ 1.0f, 0.0f, 0.0f }, 1000.0f, FVector4{ 1.0f, 0.0f, 0.0f, 1.0f }, 3.0f, DepthMode);
-	LineRenderer.AddRay(FVector3{ 0.0f, 0.0f, 0.0f }, FVector3{ -1.0f, 0.0f, 0.0f }, 1000.0f, FVector4{ 1.0f, 0.0f, 0.0f, 1.0f }, 3.0f, DepthMode);
+	LineRenderer->AddRay(FVector3{ 0.0f, 0.0f, 0.0f }, FVector3{ 1.0f, 0.0f, 0.0f }, 1000.0f, FVector4{ 1.0f, 0.0f, 0.0f, 1.0f }, 3.0f, DepthMode);
+	LineRenderer->AddRay(FVector3{ 0.0f, 0.0f, 0.0f }, FVector3{ -1.0f, 0.0f, 0.0f }, 1000.0f, FVector4{ 1.0f, 0.0f, 0.0f, 1.0f }, 3.0f, DepthMode);
 
-	LineRenderer.AddRay(FVector3{ 0.0f, 0.0f, 0.0f }, FVector3{ 0.0f, 1.0f, 0.0f }, 1000.0f, FVector4{ 0.0f, 1.0f, 0.0f, 1.0f }, 3.0f, DepthMode);
-	LineRenderer.AddRay(FVector3{ 0.0f, 0.0f, 0.0f }, FVector3{ 0.0f, -1.0f, 0.0f }, 1000.0f, FVector4{ 0.0f, 1.0f, 0.0f, 1.0f }, 3.0f, DepthMode);
+	LineRenderer->AddRay(FVector3{ 0.0f, 0.0f, 0.0f }, FVector3{ 0.0f, 1.0f, 0.0f }, 1000.0f, FVector4{ 0.0f, 1.0f, 0.0f, 1.0f }, 3.0f, DepthMode);
+	LineRenderer->AddRay(FVector3{ 0.0f, 0.0f, 0.0f }, FVector3{ 0.0f, -1.0f, 0.0f }, 1000.0f, FVector4{ 0.0f, 1.0f, 0.0f, 1.0f }, 3.0f, DepthMode);
 
-	LineRenderer.AddRay(FVector3{ 0.0f, 0.0f, 0.0f }, FVector3{ 0.0f, 0.0f, 1.0f }, 1000.0f, FVector4{ 0.0f, 0.0f, 1.0f, 1.0f }, 3.0f, DepthMode);
-	LineRenderer.AddRay(FVector3{ 0.0f, 0.0f, 0.0f }, FVector3{ 0.0f, 0.0f, -1.0f }, 1000.0f, FVector4{ 0.0f, 0.0f, 1.0f, 1.0f }, 3.0f, DepthMode);
+	LineRenderer->AddRay(FVector3{ 0.0f, 0.0f, 0.0f }, FVector3{ 0.0f, 0.0f, 1.0f }, 1000.0f, FVector4{ 0.0f, 0.0f, 1.0f, 1.0f }, 3.0f, DepthMode);
+	LineRenderer->AddRay(FVector3{ 0.0f, 0.0f, 0.0f }, FVector3{ 0.0f, 0.0f, -1.0f }, 1000.0f, FVector4{ 0.0f, 0.0f, 1.0f, 1.0f }, 3.0f, DepthMode);
+}
+
+void EditorViewport::RenderBoundingBox(ELineDepthMode DepthMode)
+{
+	
 }
 
 void EditorViewport::RenderOrientationAxis(ID3D11DeviceContext* Context, CameraProbe& Probe) {
@@ -74,11 +79,11 @@ void EditorViewport::RenderOrientationAxis(ID3D11DeviceContext* Context, CameraP
 
 	Context->RSSetViewports(1, &OrientationAxisViewport);
 
-	LineRenderer.AddRay(FVector3{ 0.0f, 0.0f, 0.0f }, FVector3{ 1.0f, 0.0f, 0.0f }, 1.0f, FVector4{ 1.0f, 0.0f, 0.0f, 1.0f }, 3.0f, ELineDepthMode::DepthTested);
-	LineRenderer.AddRay(FVector3{ 0.0f, 0.0f, 0.0f }, FVector3{ 0.0f, 1.0f, 0.0f }, 1.0f, FVector4{ 0.0f, 1.0f, 0.0f, 1.0f }, 3.0f, ELineDepthMode::DepthTested);
-	LineRenderer.AddRay(FVector3{ 0.0f, 0.0f, 0.0f }, FVector3{ 0.0f, 0.0f, 1.0f }, 1.0f, FVector4{ 0.0f, 0.0f, 1.0f, 1.0f }, 3.0f, ELineDepthMode::DepthTested);
+	LineRenderer->AddRay(FVector3{ 0.0f, 0.0f, 0.0f }, FVector3{ 1.0f, 0.0f, 0.0f }, 1.0f, FVector4{ 1.0f, 0.0f, 0.0f, 1.0f }, 3.0f, ELineDepthMode::Overlay);
+	LineRenderer->AddRay(FVector3{ 0.0f, 0.0f, 0.0f }, FVector3{ 0.0f, 1.0f, 0.0f }, 1.0f, FVector4{ 0.0f, 1.0f, 0.0f, 1.0f }, 3.0f, ELineDepthMode::Overlay);
+	LineRenderer->AddRay(FVector3{ 0.0f, 0.0f, 0.0f }, FVector3{ 0.0f, 0.0f, 1.0f }, 1.0f, FVector4{ 0.0f, 0.0f, 1.0f, 1.0f }, 3.0f, ELineDepthMode::Overlay);
 
-	LineRenderer.Render(Context, FLineViewData{
+	LineRenderer->Render(Context, FLineViewData{
 		.ViewProjection = view * proj,
 		.ViewportSize = FVector2D{ OrientationAxisViewport.Width, OrientationAxisViewport.Height }
 	});
@@ -91,7 +96,7 @@ void EditorViewport::RenderSceneGuides(ID3D11DeviceContext* Context,FRenderProbe
 	RenderGrid(DepthMode);
 	RenderAxis(DepthMode);
 
-	LineRenderer.Render(Context,FLineViewData{.ViewProjection = Probe.MainCameraProbe.ViewProjection,
+	LineRenderer->Render(Context,FLineViewData{.ViewProjection = Probe.MainCameraProbe.ViewProjection,
 			.ViewportSize = FVector2D{
 				WindowInfoReader.Read().Viewport.Width,
 				WindowInfoReader.Read().Viewport.Height
