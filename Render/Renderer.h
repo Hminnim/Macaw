@@ -54,6 +54,9 @@ public:
 	FStateChannel<RenderWindowInfo>::FReader GetWindowInfoReader() const { return WindowInfoChannel.GetReader(); }
 
 	void ReSize(uint32 width, uint32 height);
+	
+	void Terminate(); 
+	void ReportLiveObjects() const;
 private:
 	void CreateDeviceAndSwapChain(HWND WindowHandle);
 	
@@ -62,6 +65,9 @@ private:
 	void CreateSamplerStates();
 
 private:
+#ifdef _DEBUG
+	Microsoft::WRL::ComPtr<ID3D11Debug> DebugInterface;
+#endif 
 	Microsoft::WRL::ComPtr<ID3D11Device> Device;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> DeviceContext;
 

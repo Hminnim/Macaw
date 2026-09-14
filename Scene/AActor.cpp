@@ -249,6 +249,8 @@ void AActor::Tick(float DeltaTime) {
 void AActor::Serialize(FArchive& Archive) {
     UObject::Serialize(Archive);
 
+    Archive.Serialize("FolderGuid", FolderGuid);
+
     // components
     size_t ArraySize = Components.size();
     Archive.BeginArrayScope("Components", ArraySize);

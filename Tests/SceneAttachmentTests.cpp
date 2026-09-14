@@ -82,7 +82,8 @@ TEST_SUITE("CH4 Scene Attachment") {
     TEST_CASE("Camera pitch follows the yawed local-right quaternion axis") {
         const FQuat Yaw = FQuat::CreateFromAxisAngle(FVector3::UnitZ, DirectX::XM_PIDIV2);
         const FQuat YawedRotation = FQuat::Concatenate(FQuat{}, Yaw);
-        const FVector3 PitchAxis = FMatrix::CreateFromQuaternion(YawedRotation).Right();
+        const FTransform YawedCamera({ 0.0f, 0.0f, 0.0f }, YawedRotation, { 1.0f, 1.0f, 1.0f });
+        const FVector3 PitchAxis = YawedCamera.ToMatrixNoScale().Right();
         const FQuat Pitch = FQuat::CreateFromAxisAngle(PitchAxis, 0.25f);
         const FQuat CameraRotation = FQuat::Concatenate(YawedRotation, Pitch);
         const FTransform Camera({ 0.0f, 0.0f, 0.0f }, CameraRotation, { 1.0f, 1.0f, 1.0f });

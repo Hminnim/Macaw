@@ -71,9 +71,7 @@ PS_INPUT mainVS(VS_INPUT Input)
     float2 ScreenDirection = (EndNDC - StartNDC) * float2(Viewport.x, -Viewport.y);
     float ScreenLength = length(ScreenDirection);
 
-    ScreenDirection = ScreenLength > 0.0001f
-        ? ScreenDirection / ScreenLength
-        : float2(1.0f, 0.0f);
+    ScreenDirection = ScreenLength > 0.0001f ? ScreenDirection / ScreenLength : float2(1.0f, 0.0f);
 
     float2 ScreenNormal = float2(-ScreenDirection.y, ScreenDirection.x);
 

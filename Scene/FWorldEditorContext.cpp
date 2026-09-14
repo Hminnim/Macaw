@@ -1,4 +1,4 @@
-#include "PCH.h"
+﻿#include "PCH.h"
 #include "FWorldEditorContext.h"
 
 #include "AActor.h"
@@ -28,9 +28,6 @@ void FWorldEditorContext::InitializeChannels(FAssetRegistry& AssetRegistry, ID3D
     });
     EditorToWorld.TryBind<FMessageLoadScene>([this, &AssetRegistry, Device](const FMessageLoadScene& Message) {
         World->LoadScene(std::filesystem::path(Message.FilePath.c_str()), Device, &AssetRegistry);
-    });
-    EditorToWorld.TryBind<FMessageSetEditorCameraRequest>([this](const FMessageSetEditorCameraRequest& Message) {
-        World->HandleEditorCameraRequest(Message);
     });
 }
 

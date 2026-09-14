@@ -185,7 +185,7 @@ void FControlPanel::DrawPanel()
     // RenderMode
     // =====================================================
     bool bRenderModeChanged = false;
-    int renderIndex = EditorContext->GetRenderModeState();
+    int renderIndex = static_cast<int>(EditorContext->GetRenderModeState());
 
     const char* renderMode[] = { "Solid", "Lit", "Unlit", "Wireframe" };
 
