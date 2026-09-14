@@ -81,10 +81,20 @@ TEST_SUITE("CH2 Scene Load Pipeline")
                 SourceActor->AddComponent<USceneLoadProbeComponent>();
             SourceProbe->SerializedValue = 73;
             SourceActor->SetRootComponent(SourceRoot);
+            Folder* SourceFolder = SourceWorld.CreateFolder("Gameplay");
+            REQUIRE(SourceFolder != nullptr);
+            REQUIRE(SourceWorld.SetActorFolder(SourceActor, SourceFolder->GetID()));
 
             FArchiveJson ArchiveSave(Document, Document.GetAllocator());
             size_t AssetCount = 0;
             ArchiveSave.BeginArrayScope("Assets", AssetCount);
+            ArchiveSave.EndArrayScope();
+
+            size_t FolderCount = 1;
+            ArchiveSave.BeginArrayScope("Folders", FolderCount);
+            ArchiveSave.BeginObjectScope("0");
+            SourceFolder->Serialize(ArchiveSave);
+            ArchiveSave.EndObjectScope();
             ArchiveSave.EndArrayScope();
 
             size_t ActorCount = 1;
@@ -118,6 +128,9 @@ TEST_SUITE("CH2 Scene Load Pipeline")
             AActor* LoadedActor = LoadedWorld.GetActors()[0].get();
             REQUIRE(LoadedActor != nullptr);
             CHECK(LoadedActor->GetRootComponent() != nullptr);
+            REQUIRE_EQ(LoadedWorld.GetFolders().size(), 1);
+            CHECK(LoadedWorld.FindFolder(LoadedActor->GetFolderGuid()) != nullptr);
+            CHECK(std::strcmp(LoadedWorld.FindFolder(LoadedActor->GetFolderGuid())->GetName().c_str(), "Gameplay") == 0);
 
             USceneLoadProbeComponent* LoadedProbe =
                 LoadedActor->GetComponent<USceneLoadProbeComponent>();

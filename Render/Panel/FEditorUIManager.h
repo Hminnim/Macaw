@@ -6,6 +6,7 @@
 #include "FPropertyPanel.h"
 #include "FConsolePanel.h"
 #include "FStatPanel.h"
+#include "Inspection.h" // FOutlinerPanel
 
 #include "Core/Channel/FStateChannel.h"
 #include "../../Scene/FWorldEditorContext.h"
@@ -49,6 +50,10 @@ public:
         Panels.emplace_back(
             std::make_unique<FStatPanel>(World)
         );
+
+		Panels.emplace_back(
+			std::make_unique<FOutlinerPanel>(World)
+		);
     }
 
     void Tick()

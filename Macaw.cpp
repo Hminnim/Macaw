@@ -252,11 +252,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     EditorUIManager.Initialize(
         World,
-
         EditorContext,
-
         gHWND,
-
         EditorView.GetGizmoMode(),
         EditorView.GetGizmoCoordinateSpace()
     );
@@ -467,6 +464,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		World.SaveScene("test", &AssetRegistry);
     }
 
+    Renderer.Terminate();
+    Renderer.ReportLiveObjects(); 
     return (int) msg.wParam;
 }
 

@@ -27,6 +27,8 @@
 #include "../Render/RenderWindowInfo.h"
 
 #include "../Serialize/FEditorConfigManager.h"
+#include "Folder.h"
+
 class AActor;
 class UCameraComponent;
 class UStaticMeshComponent;
@@ -66,6 +68,13 @@ public:
     void FlushPendingDestroyActors();
 
     const TArray<std::unique_ptr<AActor>>& GetActors() const;
+    Folder* CreateFolder(FString InName, FGuid InParentFolderGuid = {});
+    bool DestroyFolder(FGuid FolderGuid);
+    bool SetFolderParent(FGuid FolderGuid, FGuid InParentFolderGuid);
+    Folder* FindFolder(FGuid FolderGuid);
+    const Folder* FindFolder(FGuid FolderGuid) const;
+    const TArray<std::unique_ptr<Folder>>& GetFolders() const;
+    bool SetActorFolder(AActor* Actor, FGuid FolderGuid);
     FRenderProbe& BuildRenderProbe();
     
     void SetEditorContext(FWorldEditorContext* InEditorContext);
@@ -86,13 +95,8 @@ public:
 	JG_DECLARE_DERIVED_TYPEINFO(UWorld, UObject);
 
     void HandleMousePickRequest(const FMousePickRequestMessage& Message);
-
     void HandleMouseCameraRotateRequest(const FMouseCameraRotateRequestMessage& Message);
-
-    void HandleEditorCameraRequest(const FMessageSetEditorCameraRequest& Message);
-
     void HandleKeyboardCameraMoveRequest(const FKeyboardCameraMoveRequestMessage& Message);
-
     void HandleSpawnPrimitive(const FMessageSpawnPrimitive& Message, FAssetRegistry& AssetRegistry);
 
     void RegisterTextRenderable(UTextRenderComponent* Component);
@@ -113,12 +117,16 @@ public:
 private:
 	void InitializeSubsystems();
 	void DeinitializeSubsystems();
+    bool AdoptFolder(std::unique_ptr<Folder> InFolder);
+    bool ValidateFolderHierarchy() const;
 
     void PublishEditorCameraState();
 
 private:
+    TArray<std::unique_ptr<Folder>> Folders;
     TArray<std::unique_ptr<AActor>> Actors;
     TArray<AActor*> PendingDestroyActors;
+   
     TArray<UStaticMeshComponent*> RenderableComponents;
     TArray<TObjectRef<UCollisionComponent>> CollisionComponents;
     TArray<UTextRenderComponent*> TextRenderableComponents{};
@@ -132,8 +140,11 @@ private:
     std::unique_ptr<URenderSubsystem> RenderSubsystem;
     std::unique_ptr<UCollisionSubsystem> CollisionSubsystem;
     std::unique_ptr<UCameraSubsystem> CameraSubsystem;
+	// std::unique_ptr<TextRenderSubSystem> TextRenderSubsystem;
 
     FRenderProbe Probe{};
 
     FEditorSettings Settings;
+
+    
 };
