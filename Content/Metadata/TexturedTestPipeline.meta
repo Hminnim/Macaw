@@ -1,3 +1,4 @@
 {
-	"FilePath" : "./Pipeline/TexturedTest.json",
+	"SolidFilePath" : "./Pipeline/TexturedTest.json",
+	"Primary" : 0,
 }

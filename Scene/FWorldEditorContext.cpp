@@ -48,6 +48,26 @@ void FWorldEditorContext::SetCameraState(const FMessageEditorCameraState& State)
     SharedState.GetWriter().Modify([&State](FWorldEditorSharedState& Shared) { Shared.Camera = State; });
 }
 
+const float FWorldEditorContext::GetGridSizeState() const noexcept
+{
+    return SharedState.GetReader().Peek().GridSize;
+}
+
+void FWorldEditorContext::SetGridSizeState(const float State)
+{
+    SharedState.GetWriter().Modify([&State](FWorldEditorSharedState& Shared) {Shared.GridSize = State;});
+}
+
+const size_t FWorldEditorContext::GetRenderModeState() const noexcept
+{
+    return SharedState.GetReader().Peek().ModeIndex;
+}
+
+void FWorldEditorContext::SetRenderModeState(const size_t State)
+{
+    SharedState.GetWriter().Modify([&State](FWorldEditorSharedState& Shared) {Shared.ModeIndex = State;});
+}
+
 void FWorldEditorContext::SetSelectedCollider(UCollisionComponent* Collider) {
     if (Collider == nullptr || Collider->GetOwner() == nullptr) {
         ClearSelection();

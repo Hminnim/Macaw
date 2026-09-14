@@ -1,3 +1,4 @@
 {
-  "FilePath": "./Pipeline/Gizmo.json"
+	"SolidFilePath": "./Pipeline/Gizmo.json",
+	"Primary" : 0,
 }

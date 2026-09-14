@@ -18,6 +18,8 @@
 
 #include "FTextRenderer.h"
 
+#include "../../Scene/FWorldEditorContext.h"
+
 class FRenderer {
 	struct ModelContext {
 		FMatrix World{};
@@ -86,4 +88,8 @@ private:
 	FTextRenderer TextRenderer{};
 
 	const float ClearColor[4] = { 0.2f, 0.2f, 0.7f, 1.0f };
+
+	//FWorldEditorContext* EditorContext = ;
+
+	size_t RenderIndex = 0;
 };

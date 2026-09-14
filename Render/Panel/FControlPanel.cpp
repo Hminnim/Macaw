@@ -150,6 +150,50 @@ void FControlPanel::DrawPanel()
         EditorContext->SetCameraState(FMessageEditorCameraState{ CachedCamPos, CachedCamRot, CachedFOV });
     }
 
+    ImGui::Separator();
+
+    // =====================================================
+    // Grid
+    // =====================================================
+
+    ImGui::Text("Grid");
+
+    bool bGridChanged = false;
+
+    float gridSize = EditorContext->GetGridSizeState();
+
+    if (ImGui::SliderFloat(
+        "GridSize",
+        &gridSize,
+        0.1f,
+        100.0f))
+    {
+        bGridChanged = true;
+    }
+
+    if (bGridChanged)
+    {
+        EditorContext->SetGridSizeState(gridSize);
+    }
+    
+    ImGui::Separator();
+
+    // =====================================================
+    // RenderMode
+    // =====================================================
+    bool bRenderModeChanged = false;
+    int renderIndex = EditorContext->GetRenderModeState();
+
+    const char* renderMode[] = { "Solid", "Lit", "Unlit", "Wireframe" };
+
+    if (ImGui::Combo("Render Mode", &renderIndex, renderMode, IM_ARRAYSIZE(renderMode))) {
+        bRenderModeChanged = true;
+    }
+
+    if (bRenderModeChanged)
+    {
+        EditorContext->SetRenderModeState(static_cast<size_t>(renderIndex));
+    }
     ImGui::End();
 }
 

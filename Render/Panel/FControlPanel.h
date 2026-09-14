@@ -41,5 +41,9 @@ private:
     // UCameraComponent와 동일하게 radians
     float CachedFOV = 1.0472f;
 
+    float GridSize{};
+
+    size_t RenderModeIndex = 0;
+
     HWND WindowHandle;
 };

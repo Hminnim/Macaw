@@ -7,6 +7,8 @@
 #include "Scene/Component/UStaticMeshComponent.h"
 #include "Scene/FWorldEditorContext.h"
 
+#include "../../Render/Pipeline/UPipeline.h"
+
 void URenderSubsystem::RegisterComponent(UStaticMeshComponent* Component) {
     if (Component == nullptr || ContainsComponent(Component)) {
         return;
@@ -19,7 +21,7 @@ void URenderSubsystem::UnregisterComponent(UStaticMeshComponent* Component) {
     std::erase(Components, Component);
 }
 
-void URenderSubsystem::BuildRenderProbes(FRenderProbe& Probe) const {
+void URenderSubsystem::BuildRenderProbes(FAssetRegistry* AssetRegistry, FRenderProbe& Probe) const {
     Probe.ActorProbes.clear();
     Probe.GizmoProbes.clear();
 
@@ -28,6 +30,12 @@ void URenderSubsystem::BuildRenderProbes(FRenderProbe& Probe) const {
     for (const UStaticMeshComponent* Component : Components) {
         FActorProbe ActorProbe{};
         Component->MakeRender(ActorProbe);
+
+        size_t mode = { EditorContext->GetRenderModeState()};
+        
+        auto resolved = AssetRegistry->ResolveAsset<UPipeline>(Component->GetPipelineHandle());
+        resolved->SetRenderMode(static_cast<ERenderMode>(mode)); 
+
 
         if (SelectedActor != nullptr && Component->GetOwner() == SelectedActor) {
             ActorProbe.Flags |= static_cast<uint32>(ERenderObjectFlags::Selected);

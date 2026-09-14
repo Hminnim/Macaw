@@ -6,7 +6,7 @@
 #include <memory>
 
 #include "../../Core/Asset/FAssetMetadataParser.h"
-
+#include "../../Externals/Include/range/v3/view/zip.hpp"
 
 void UPipeline::Initialize(ID3D11Device* Device, const std::filesystem::path& metaData) {
 	UAsset::Initialize(Device, metaData);
@@ -14,34 +14,46 @@ void UPipeline::Initialize(ID3D11Device* Device, const std::filesystem::path& me
 	FAssetMetadataParser MetadataParser{};
 	ErrorHandler::Report(not MetadataParser.Load(AssetMetaDataPath), " [ UPipeline ]", "Failed to load metadata", ErrorHandler::EErrorLevel::Critical);
 
-    auto path = MetadataParser.ResolvePath("FilePath");
+    const TFixedArray<std::filesystem::path, static_cast<size_t>(ERenderMode::Max)> ParsePath{
+        MetadataParser.ResolvePath("SolidFilePath"),
+        MetadataParser.ResolvePath("LitFilePath"),
+        MetadataParser.ResolvePath("UnlitFilePath"),
+        MetadataParser.ResolvePath("WireframeFilePath"),
+    };
 
-    FPipelineDescription Description{};
-	ErrorHandler::Report(not UPipeline::LoadPipelineDescription(path, Description), " [ UPipeline ]", "Failed to load pipeline description", ErrorHandler::EErrorLevel::Critical);
-	
-    ErrorHandler::Report(not UPipeline::Make(Device, Description), " [ UPipeline ]", "Failed to create pipeline", ErrorHandler::EErrorLevel::Critical);
+    for (auto&& [path, pipeline] : ranges::views::zip(ParsePath, Pipelines)) {
+        if (path == "")  continue;
+        FPipelineDescription Description{};
+        
+        ErrorHandler::Report(not UPipeline::LoadPipelineDescription(path, Description), " [ UPipeline ]", "Failed to load pipeline description", ErrorHandler::EErrorLevel::Critical);
+
+        ErrorHandler::Report(not UPipeline::Make(Device, Description, pipeline), " [ UPipeline ]", "Failed to create pipeline", ErrorHandler::EErrorLevel::Critical);
+    }
+    ErrorHandler::Report(not MetadataParser.TryGet<size_t>("Primary", PrimaryIndex), "[ UPipeline ]", "Failed to load primary Index", ErrorHandler::EErrorLevel::Critical);
+
+    Mode = static_cast<ERenderMode>(PrimaryIndex);
 }
 
 
-bool UPipeline::Make(ID3D11Device* Device, const FPipelineDescription& Description) {
+bool UPipeline::Make(ID3D11Device* Device, const FPipelineDescription& Description, PipelineUnit& Pipeline) {
     if (Device == nullptr) {
         ErrorHandler::Report("Pipeline::Initialize", "A valid Direct3D device is required to initialize a pipeline.", ErrorHandler::EErrorLevel::Error);
         return false;
     }
 
-    Reset();
+    // Reset();
 
-    if (!VertexShader.Initialize(Device, Description.VertexShader)) {
+    if (!Pipeline.VertexShader.Initialize(Device, Description.VertexShader)) {
         return false;
     }
 
-    if (!PixelShader.Initialize(Device, Description.PixelShader)) {
+    if (!Pipeline.PixelShader.Initialize(Device, Description.PixelShader)) {
         return false;
     }
 
     if (Description.bHasGeometryShader)
     {
-        if (!GeometryShader.Initialize(Device,Description.GeometryShader))
+        if (!Pipeline.GeometryShader.Initialize(Device,Description.GeometryShader))
         {
             return false;
         }
@@ -63,7 +75,7 @@ bool UPipeline::Make(ID3D11Device* Device, const FPipelineDescription& Descripti
         NativeInputLayout.emplace_back(Element);
     }
 
-    HRESULT Result = Device->CreateInputLayout(NativeInputLayout.data(), static_cast<UINT>(NativeInputLayout.size()), VertexShader.GetByteCodeData(), VertexShader.GetByteCodeSize(), InputLayout.GetAddressOf());
+    HRESULT Result = Device->CreateInputLayout(NativeInputLayout.data(), static_cast<UINT>(NativeInputLayout.size()), Pipeline.VertexShader.GetByteCodeData(), Pipeline.VertexShader.GetByteCodeSize(), Pipeline.InputLayout.GetAddressOf());
 
     if (FAILED(Result)) {
         ErrorHandler::ReportHRESULT(Result, "Pipeline::Initialize", "Failed to create the input layout.", ErrorHandler::EErrorLevel::Error);
@@ -78,7 +90,7 @@ bool UPipeline::Make(ID3D11Device* Device, const FPipelineDescription& Descripti
     RasterizerDesc.DepthClipEnable = Description.Rasterizer.DepthClipEnable;
     RasterizerDesc.ScissorEnable = Description.Rasterizer.ScissorEnable;
 
-    Result = Device->CreateRasterizerState(&RasterizerDesc, RasterizerState.GetAddressOf());
+    Result = Device->CreateRasterizerState(&RasterizerDesc, Pipeline.RasterizerState.GetAddressOf());
 
     if (FAILED(Result)) {
         ErrorHandler::ReportHRESULT(Result, "Pipeline::Initialize", "Failed to create the rasterizer state.", ErrorHandler::EErrorLevel::Error);
@@ -92,7 +104,7 @@ bool UPipeline::Make(ID3D11Device* Device, const FPipelineDescription& Descripti
     DepthStencilDesc.DepthFunc = ConvertCompareFunc(Description.DepthStencil.DepthFunc);
     DepthStencilDesc.StencilEnable = false;
 
-    Result = Device->CreateDepthStencilState(&DepthStencilDesc, DepthStencilState.GetAddressOf());
+    Result = Device->CreateDepthStencilState(&DepthStencilDesc, Pipeline.DepthStencilState.GetAddressOf());
 
     if (FAILED(Result)) {
         ErrorHandler::ReportHRESULT(Result, "Pipeline::Initialize", "Failed to create the depth-stencil state.", ErrorHandler::EErrorLevel::Error);
@@ -114,7 +126,7 @@ bool UPipeline::Make(ID3D11Device* Device, const FPipelineDescription& Descripti
     RenderTarget.BlendOpAlpha = ConvertBlendOp(Description.Blend.BlendOpAlpha);
     RenderTarget.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 
-    Result = Device->CreateBlendState(&BlendDesc, BlendState.GetAddressOf());
+    Result = Device->CreateBlendState(&BlendDesc, Pipeline.BlendState.GetAddressOf());
 
     if (FAILED(Result)) {
         ErrorHandler::ReportHRESULT(Result, "Pipeline::Initialize", "Failed to create the blend state.", ErrorHandler::EErrorLevel::Error);
@@ -122,8 +134,9 @@ bool UPipeline::Make(ID3D11Device* Device, const FPipelineDescription& Descripti
         return false;
     }
 
-    PrimitiveTopology = ConvertPrimitiveTopology(Description.PrimitiveTopology);
+    Pipeline.PrimitiveTopology = ConvertPrimitiveTopology(Description.PrimitiveTopology);
 
+    Pipeline.Initialized = true;
     return true;
 }
 
@@ -133,32 +146,49 @@ void UPipeline::Bind(ID3D11DeviceContext* Context) const {
         return;
     }
 
-    Context->IASetInputLayout(InputLayout.Get());
-    Context->IASetPrimitiveTopology(PrimitiveTopology);
+    Context->IASetInputLayout(Pipelines[static_cast<size_t>(Mode)].InputLayout.Get());
+    Context->IASetPrimitiveTopology(Pipelines[static_cast<size_t>(Mode)].PrimitiveTopology);
 
-    Context->VSSetShader(VertexShader.GetVertexShader(), nullptr, 0);
-    Context->PSSetShader(PixelShader.GetPixelShader(), nullptr, 0);
+    Context->VSSetShader(Pipelines[static_cast<size_t>(Mode)].VertexShader.GetVertexShader(), nullptr, 0);
+    Context->PSSetShader(Pipelines[static_cast<size_t>(Mode)].PixelShader.GetPixelShader(), nullptr, 0);
 
-    Context->GSSetShader(GeometryShader.GetGeometryShader(), nullptr, 0);
+    Context->GSSetShader(Pipelines[static_cast<size_t>(Mode)].GeometryShader.GetGeometryShader(), nullptr, 0);
     Context->HSSetShader(nullptr, nullptr, 0);
     Context->DSSetShader(nullptr, nullptr, 0);
 
-    Context->RSSetState(RasterizerState.Get());
-    Context->OMSetBlendState(BlendState.Get(), nullptr, 0xffffffff);
-    Context->OMSetDepthStencilState(DepthStencilState.Get(), 0);
+    Context->RSSetState(Pipelines[static_cast<size_t>(Mode)].RasterizerState.Get());
+    Context->OMSetBlendState(Pipelines[static_cast<size_t>(Mode)].BlendState.Get(), nullptr, 0xffffffff);
+    Context->OMSetDepthStencilState(Pipelines[static_cast<size_t>(Mode)].DepthStencilState.Get(), 0);
 }
 
 void UPipeline::Reset() {
-    VertexShader.Reset();
-    PixelShader.Reset();
-    GeometryShader.Reset();
+    for (auto& pipelines : Pipelines) {
+        pipelines.VertexShader.Reset();
+        pipelines.PixelShader.Reset();
+        pipelines.GeometryShader.Reset();
 
-    InputLayout.Reset();
-    RasterizerState.Reset();
-    BlendState.Reset();
-    DepthStencilState.Reset();
+        pipelines.InputLayout.Reset();
+        pipelines.RasterizerState.Reset();
+        pipelines.BlendState.Reset();
+        pipelines.DepthStencilState.Reset();
 
-    PrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+        pipelines.PrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+    }
+}
+
+void UPipeline::SetRenderMode(ERenderMode mode)
+{
+    if (RenderModeSettable(mode)) {
+        Mode = mode;
+    }
+    else {
+        Mode = static_cast<ERenderMode>(PrimaryIndex);
+    }
+}
+
+bool UPipeline::RenderModeSettable(ERenderMode mode)
+{
+    return Pipelines[static_cast<size_t>(mode)].Initialized;
 }
 
 bool UPipeline::LoadPipelineDescription(const std::filesystem::path& Path, FPipelineDescription& OutDescription) {

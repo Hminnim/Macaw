@@ -159,6 +159,8 @@ void FRenderer::RenderActorList(TArray<FActorProbe>& ActorProbes, const CameraPr
 			BoundTextureSet = Signature;
 			bTextureSetBound = true;
 		}
+		
+		Pipeline->SetRenderMode(static_cast<ERenderMode>(0));
 
 		ID3D11Buffer* VertexBuffers[] = { 
 			Mesh->GetVertexBuffer(EVertexAttribute::Position),

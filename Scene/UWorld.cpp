@@ -166,7 +166,7 @@ FRenderProbe& UWorld::BuildRenderProbe()
 		}
 	}*/
 
-	RenderSubsystem->BuildRenderProbes(Probe);
+	RenderSubsystem->BuildRenderProbes(AssetRegistry, Probe);
 
     for (const UTextRenderComponent* Component : TextRenderableComponents)
     {
