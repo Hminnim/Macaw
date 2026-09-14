@@ -11,6 +11,8 @@
 #include "TypeInfo.h"
 #include "../../ErrorHandler.h"
 
+#include "../../FName.h"
+
 class UObject;
 namespace UObjectSystem
 {
@@ -30,6 +32,8 @@ public:
 	const FGuid& GetGuid() const;
 	FObjectHandle GetHandle() const;
 
+	FName GetName() const { return Name; }
+	void SetName(FName InName) { Name = InName; }
 
 	void Save(FArchive& Archive) 
 	{
@@ -56,6 +60,7 @@ protected:
 		Archive.Serialize("Guid", Guid);
 		FString TypeNameStr(GetTypeInfo()->TypeName);
 		Archive.Serialize("TypeName", TypeNameStr);
+		Archive.Serialize("Name", Name);
 	}
 
 private:
@@ -68,4 +73,5 @@ private:
 private:
 	FGuid Guid;
 	FObjectHandle Handle;
+	FName Name;
 };
