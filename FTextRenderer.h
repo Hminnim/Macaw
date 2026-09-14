@@ -30,6 +30,5 @@ private:
 	ID3D11Device* Device = nullptr;
 	FGraphicsBuffer VertexBuffer{};
 	uint32_t VertexCapacity = 0;
-	TGraphicsRootConstants<52>
-		TextConstants{};
+	TGraphicsRootConstants<52> TextConstants{};
 };

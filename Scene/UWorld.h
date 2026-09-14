@@ -59,8 +59,7 @@ public:
         return ActorPtr;
     }
 
-    bool SpawnActor(const FAssetHandle& MeshHandle, const FAssetHandle& PipelineHandle, const FAssetHandle& MaterialHandle,
-        const FVector3& Position);
+    bool SpawnActor(const FAssetHandle& MeshHandle, const FAssetHandle& PipelineHandle, const FAssetHandle& MaterialHandle, const FVector3& Position);
     bool DestroyActor(AActor* Actor);
     void FlushPendingDestroyActors();
 

@@ -228,6 +228,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UWorld World{};
     FWorldEditorContext EditorContext{};
     World.SetEditorContext(&EditorContext);
+	EditorContext.SetWorld(&World);
 
     Renderer.Create(gHWND, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
 
