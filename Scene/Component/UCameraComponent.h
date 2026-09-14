@@ -1,10 +1,9 @@
 ﻿#pragma once
 
 #include "USceneComponent.h"
+#include "Serialize/FArchive.h"
 
-class FArchive;
-class UCameraComponent : public USceneComponent
-{
+class UCameraComponent : public USceneComponent {
 public:
     UCameraComponent();
     ~UCameraComponent() override = default;
@@ -25,8 +24,8 @@ public:
     void SetNearPlane(float InNearPlane);
     void SetFarPlane(float InFarPlane);
 
-    void OnCreate() override;
-    void OnDestroy() override;
+    void OnRegister() override;
+    void OnUnregister() override;
 
 protected:
     void Serialize(FArchive& Archive) override;

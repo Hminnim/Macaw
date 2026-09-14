@@ -9,10 +9,10 @@
 #include "../../Core/Asset/UMaterial.h"
 #include "../../Core/Asset/UMesh.h"
 #include "../../Core/Base/FRenderProbe.h"
-#include "../../Core/Channel/FMessageChannel.h"
+#include "../../Core/Base/TObjectRef.h"
 #include "../../Core/Channel/FStateChannel.h"
-#include "../../FEditorSelectionState.h"
-#include "../../FTransformEditRequestMessage.h"
+#include "../../Scene/FWorldEditorContext.h"
+#include "../../Scene/Component/USceneComponent.h"
 #include "../Pipeline/UPipeline.h"
 #include "../RenderWindowInfo.h"
 
@@ -43,17 +43,15 @@ class FTransformGizmo {
 	};
 
 	struct FDragSession {
-		std::uint64_t SessionId = 0;
-		FObjectHandle TargetHandle{};
-		FMatrix InitialWorld{ FMatrix::Identity };
+		TObjectRef<USceneComponent> Target;
 		FVector3 AxisWorld{};
 		FVector3 InteractionPivotWorld{};
 		FVector3 DragPlaneNormal{};
-		float InitialAxisParameter = 0.0f;
-		std::uint64_t InitialTransformRevision = 0;
+		float PreviousAxisParameter = 0.0f;
 		EAxis DragAxis = EAxis::None;
 		EModifyMode ModifyMode = EModifyMode::None;
-		FVector3 InitialRotationDirection{};
+		EGizmoCoordinateSpace CoordinateSpace = EGizmoCoordinateSpace::World;
+		FVector3 PreviousRotationDirection{};
 		float WorkUnitsPerPixel = 1.0f;
 	};
 
@@ -68,13 +66,14 @@ public:
 	FTransformGizmo& operator=(FTransformGizmo&&) = default;
 
 public:
-	void Initialize(ID3D11Device* Device, FAssetRegistry& AssetRegistry, FStateChannel<RenderWindowInfo>::FReader InWindowInfoReader, FStateChannel<FEditorSelectionState>::FReader InSelectionReader, FMessageChannel::FSender InWorldCommandSender);
+	void Initialize(ID3D11Device* Device, FAssetRegistry& AssetRegistry, FStateChannel<RenderWindowInfo>::FReader InWindowInfoReader, FWorldEditorContext& InEditorContext);
 
 	void ProcessInput(FKeyboardInput& KeyboardInput, FMouseInput& MouseInput, bool bMouseCapturedByUI);
 	void Update(const CameraProbe& Camera);
 	void Render(FRenderProbe& Probe);
 
 	FStateChannel<uint8>::FReadWriter GetGizmoMode() { return GizmoModeChannel.GetReadWriter(); }
+	FStateChannel<uint8>::FReadWriter GetGizmoCoordinateSpace() { return GizmoCoordinateSpaceChannel.GetReadWriter(); }
 private:
 
 	void SetTranslate(const FVector3& Pivot, float WorldUnitsPerPixel);
@@ -84,18 +83,16 @@ private:
 	FAssetHandle GetAxisMaterial(EAxis Axis) const;
 	void AddRenderPart(EAxis Axis,const FMatrix& LocalTransform,FAssetHandle MeshHandle);
 
-	void UpdateBoundsInGizmoSpace(const FEditorSelectionState& Selection, FVector3& OutCenter, FVector3& OutExtent) const;
+	void UpdateBoundsInGizmoSpace(const UCollisionComponent& Collider, FVector3& OutCenter, FVector3& OutExtent) const;
 
 	std::optional<FRay> MakeWorldRay(const POINT& ScreenPosition) const;
 	std::optional<FAxisHit> HitTest(const FRay& WorldRay) const;
 
 	bool BeginDrag(EAxis Axis, const FRay& WorldRay);
 	void UpdateDrag(const FRay& WorldRay);
-	void EndDrag(bool bCancel);
+	void EndDrag();
 	bool GetAxisParameterOnDragPlane(const FRay& WorldRay, const FDragSession& Session, float& OutParameter) const;
 	FVector3 GetWorldAxis(EAxis Axis) const;
-
-	void SendTransformEdit(std::uint64_t SessionId, ETransformEditPhase Phase, FObjectHandle TargetHandle, const FMatrix& DesiredWorld, std::uint64_t ExpectedTransformRevision);
 
 private:
 	static constexpr float ShaftLengthPixels = 66.0f;
@@ -140,12 +137,12 @@ private:
 	std::array<FAxisHitProxy, 3> AxisHitProxies{};
 
 	FStateChannel<RenderWindowInfo>::FReader WindowInfoReader{};
-	FStateChannel<FEditorSelectionState>::FReader SelectionReader{};
+	FWorldEditorContext* EditorContext = nullptr;
 	FStateChannel<uint8> GizmoModeChannel{};
 	FStateChannel<uint8>::FReadWriter GizmoMode{};
-	std::optional<FMessageChannel::FSender> WorldCommandSender;
+	FStateChannel<uint8> GizmoCoordinateSpaceChannel{};
+	FStateChannel<uint8>::FReadWriter GizmoCoordinateSpace{};
 
-	FEditorSelectionState CurrentSelection{};
 	CameraProbe LastCamera{};
 
 	std::optional<FDragSession> DragSession;

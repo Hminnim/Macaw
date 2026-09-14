@@ -11,8 +11,9 @@
 #include "../../Core/Asset/BasicGeometry/Corn.h"
 #include "../../Core/Asset/BasicGeometry/Cylinder.h"
 #include "../../Core/Asset/UColorMaterial.h"
+#include "../../Scene/Component/UCollisionComponent.h"
 
-void FTransformGizmo::Initialize(ID3D11Device* Device, FAssetRegistry& AssetRegistry, FStateChannel<RenderWindowInfo>::FReader InWindowInfoReader, FStateChannel<FEditorSelectionState>::FReader InSelectionReader, FMessageChannel::FSender InWorldCommandSender) {
+void FTransformGizmo::Initialize(ID3D11Device* Device, FAssetRegistry& AssetRegistry, FStateChannel<RenderWindowInfo>::FReader InWindowInfoReader, FWorldEditorContext& InEditorContext) {
 
 	CylinderMesh = AssetRegistry.EmplaceAsset<UMesh>(Device, "CylinderMesh", "./Content/Metadata/CylinderMesh.meta");
 	ConeMesh = AssetRegistry.EmplaceAsset<UMesh>(Device, "ConeMesh", "./Content/Metadata/ConeMesh.meta");
@@ -26,11 +27,12 @@ void FTransformGizmo::Initialize(ID3D11Device* Device, FAssetRegistry& AssetRegi
 	GizmoPipeline = AssetRegistry.EmplaceAsset<UPipeline>(Device, "GizmoPipeline", "./Content/Metadata/GizmoPipeline.meta");
 
 	WindowInfoReader = InWindowInfoReader;
-	SelectionReader = InSelectionReader;
-	WorldCommandSender.emplace(std::move(InWorldCommandSender));
+	EditorContext = &InEditorContext;
 
 	GizmoMode = GizmoModeChannel.GetReadWriter();
 	GizmoMode.Emplace(static_cast<uint8>(EModifyMode::Translate));
+	GizmoCoordinateSpace = GizmoCoordinateSpaceChannel.GetReadWriter();
+	GizmoCoordinateSpace.Emplace(static_cast<uint8>(EGizmoCoordinateSpace::World));
 }
 
 void FTransformGizmo::ProcessInput(FKeyboardInput& KeyboardInput, FMouseInput& MouseInput, bool bMouseCapturedByUI) {
@@ -58,7 +60,7 @@ void FTransformGizmo::ProcessInput(FKeyboardInput& KeyboardInput, FMouseInput& M
 			if (const std::optional<FRay> Ray = MakeWorldRay(Capture.current)) {
 				UpdateDrag(*Ray);
 			}
-			EndDrag(false);
+			EndDrag();
 		}
 
 
@@ -92,40 +94,74 @@ void FTransformGizmo::Update(const CameraProbe& Camera) {
 	LastCamera = Camera;
 	bHasCamera = true;
 
-	if (!SelectionReader.HasValue() || !WindowInfoReader.HasValue()) {
+	if (EditorContext == nullptr || !WindowInfoReader.HasValue()) {
 		if (DragSession.has_value()) {
-			EndDrag(true);
+			EndDrag();
 		}
 		bVisible = false;
 		return;
 	}
 
-	const FEditorSelectionState& Selection = SelectionReader.Read();
-	if (!Selection.TransformTargetHandle.IsValid()) {
+	USceneComponent* Target = EditorContext->GetSelectedTransformTarget();
+	UCollisionComponent* Collider = EditorContext->GetSelectedCollider();
+	if (Target == nullptr || Collider == nullptr) {
 		bVisible = false;
 		return;
 	}
 
-	if (DragSession.has_value() && DragSession->TargetHandle != Selection.TransformTargetHandle) {
-		EndDrag(true);
+	if (DragSession.has_value() && DragSession->Target.Get() != Target) {
+		EndDrag();
 	}
 
-	CurrentSelection = Selection;
+	const FMatrix TargetWorld = Target->GetComponentToWorld();
+	const EGizmoCoordinateSpace CoordinateSpace = GizmoCoordinateSpace.HasValue()
+		? static_cast<EGizmoCoordinateSpace>(GizmoCoordinateSpace.Peek())
+		: EGizmoCoordinateSpace::World;
 
-	FVector3 TargetScale{};
-	FQuat TargetRotation{};
-	FVector3 TargetTranslation{};
-	FMatrix TargetWorld = Selection.TargetWorld;
-	if (!TargetWorld.Decompose(TargetScale, TargetRotation, TargetTranslation)) {
-		bVisible = false;
-		return;
+	// Gizmo는 scale 없이 회전 축과 위치만 사용한다. World 모드에서는
+	// 축을 월드 그리드에 고정하고, Local 모드에서만 대상 회전을 따른다.
+	GizmoWorldTransform = FMatrix::Identity;
+	if (CoordinateSpace == EGizmoCoordinateSpace::Local) {
+		FVector3 Right = TargetWorld.Right();
+		FVector3 Up = TargetWorld.Up();
+		if (Right.LengthSquared() <= std::numeric_limits<float>::epsilon() ||
+			Up.LengthSquared() <= std::numeric_limits<float>::epsilon()) {
+			bVisible = false;
+			return;
+		}
+
+		Right.Normalize();
+		Up = Up - Right * Right.Dot(Up);
+		if (Up.LengthSquared() <= std::numeric_limits<float>::epsilon()) {
+			Up = TargetWorld.Forward() - Right * Right.Dot(TargetWorld.Forward());
+		}
+		if (Up.LengthSquared() <= std::numeric_limits<float>::epsilon()) {
+			bVisible = false;
+			return;
+		}
+		Up.Normalize();
+
+		FVector3 Forward = Right.Cross(Up);
+		if (Forward.LengthSquared() <= std::numeric_limits<float>::epsilon()) {
+			bVisible = false;
+			return;
+		}
+		Forward.Normalize();
+
+		GizmoWorldTransform.m[0][0] = Right.x;
+		GizmoWorldTransform.m[0][1] = Right.y;
+		GizmoWorldTransform.m[0][2] = Right.z;
+		GizmoWorldTransform.m[1][0] = Up.x;
+		GizmoWorldTransform.m[1][1] = Up.y;
+		GizmoWorldTransform.m[1][2] = Up.z;
+		GizmoWorldTransform.m[2][0] = Forward.x;
+		GizmoWorldTransform.m[2][1] = Forward.y;
+		GizmoWorldTransform.m[2][2] = Forward.z;
 	}
-
-	GizmoWorldTransform = FMatrix::CreateFromQuaternion(TargetRotation) * FMatrix::CreateTranslation(TargetTranslation);
-	// 월드축 기준 GizmoWorldTransform = FMatrix::CreateTranslation(TargetTranslation);
+	GizmoWorldTransform.Translation(TargetWorld.Translation());
 
 	FVector3 BoundsExtent{};
-	UpdateBoundsInGizmoSpace(Selection, BoundsCenterInGizmoSpace, BoundsExtent);
+	UpdateBoundsInGizmoSpace(*Collider, BoundsCenterInGizmoSpace, BoundsExtent);
 
 	const RenderWindowInfo& WindowInfo = WindowInfoReader.Read();
 	const float ViewportHeight = WindowInfo.Viewport.Height;
@@ -299,19 +335,20 @@ void FTransformGizmo::SetScale(const FVector3& Pivot, float WorldUnitsPerPixel) 
 	};
 }
 
-void FTransformGizmo::UpdateBoundsInGizmoSpace(const FEditorSelectionState& Selection, FVector3& OutCenter, FVector3& OutExtent) const {
+void FTransformGizmo::UpdateBoundsInGizmoSpace(const UCollisionComponent& Collider, FVector3& OutCenter, FVector3& OutExtent) const {
 	DirectX::BoundingOrientedBox LocalBounds{};
-	LocalBounds.Center = Selection.BoundsCenter.ToSimpleMath();
-	LocalBounds.Extents = Selection.BoundsExtent.ToSimpleMath();
-	LocalBounds.Orientation.x = Selection.BoundsOrientation.x;
-	LocalBounds.Orientation.y = Selection.BoundsOrientation.y;
-	LocalBounds.Orientation.z = Selection.BoundsOrientation.z;
-	LocalBounds.Orientation.w = Selection.BoundsOrientation.w;
+	LocalBounds.Center = Collider.GetBoundsCenter().ToSimpleMath();
+	LocalBounds.Extents = Collider.GetExtent().ToSimpleMath();
+	const FQuat BoundsOrientation = Collider.GetBoundsOrientation();
+	LocalBounds.Orientation.x = BoundsOrientation.x;
+	LocalBounds.Orientation.y = BoundsOrientation.y;
+	LocalBounds.Orientation.z = BoundsOrientation.z;
+	LocalBounds.Orientation.w = BoundsOrientation.w;
 
 	std::array<DirectX::XMFLOAT3, DirectX::BoundingOrientedBox::CORNER_COUNT> Corners{};
 	LocalBounds.GetCorners(Corners.data());
 
-	const FMatrix ColliderToGizmo = Selection.ColliderWorld * GizmoWorldTransform.Invert();
+	const FMatrix ColliderToGizmo = Collider.GetComponentToWorld() * GizmoWorldTransform.Invert();
 	FVector3 Minimum{
 		std::numeric_limits<float>::max(),
 		std::numeric_limits<float>::max(),
@@ -424,8 +461,8 @@ std::optional<FTransformGizmo::FAxisHit> FTransformGizmo::HitTest(const FRay& Wo
 
 bool FTransformGizmo::BeginDrag(EAxis Axis, const FRay& WorldRay) {
 
-	// 메시지를 보낼 수 없거나 유효한 축이 아니면 드래그를 시작하지 않는다.
-	if (!WorldCommandSender.has_value() || Axis == EAxis::None) 
+	// 선택 대상이나 유효한 축이 없으면 드래그를 시작하지 않는다.
+	if (EditorContext == nullptr || Axis == EAxis::None)
 	{
 		return false;
 	}
@@ -454,11 +491,16 @@ bool FTransformGizmo::BeginDrag(EAxis Axis, const FRay& WorldRay) {
 	// 우선 모든 모드에서 공통으로 사용하는 세션 정보를 저장한다.
 	FDragSession NewSession{};
 
-	NewSession.SessionId = AcquireTransformEditSessionId();
-	NewSession.TargetHandle = CurrentSelection.TransformTargetHandle;
-	NewSession.InitialWorld = CurrentSelection.TargetWorld;
-	NewSession.InitialTransformRevision = CurrentSelection.TransformRevision;
+	USceneComponent* Target = EditorContext->GetSelectedTransformTarget();
+	if (Target == nullptr) {
+		return false;
+	}
+
+	NewSession.Target.Set(Target);
 	NewSession.ModifyMode = CurrentMode;
+	NewSession.CoordinateSpace = GizmoCoordinateSpace.HasValue()
+		? static_cast<EGizmoCoordinateSpace>(GizmoCoordinateSpace.Peek())
+		: EGizmoCoordinateSpace::World;
 	NewSession.DragAxis = Axis;
 	NewSession.AxisWorld = AxisWorld;
 	NewSession.InteractionPivotWorld = InteractionPivotWorld;
@@ -500,7 +542,7 @@ bool FTransformGizmo::BeginDrag(EAxis Axis, const FRay& WorldRay) {
 
 		InitialDirection.Normalize();
 
-		NewSession.InitialRotationDirection = InitialDirection;
+		NewSession.PreviousRotationDirection = InitialDirection;
 	}
 	//Translate와 Scale은 기존 축 드래그 평면을 사용한다.
 	else {
@@ -528,8 +570,8 @@ bool FTransformGizmo::BeginDrag(EAxis Axis, const FRay& WorldRay) {
 
 		NewSession.DragPlaneNormal = PlaneNormal;
 
-		//Translate/Scale은 축 위의 시작 위치를 저장한다.
-		if (!GetAxisParameterOnDragPlane(WorldRay,NewSession,NewSession.InitialAxisParameter)) 
+		// Translate/Scale은 다음 프레임과의 증분을 계산할 축 위치를 저장한다.
+		if (!GetAxisParameterOnDragPlane(WorldRay,NewSession,NewSession.PreviousAxisParameter))
 		{
 			return false;
 		}
@@ -537,14 +579,6 @@ bool FTransformGizmo::BeginDrag(EAxis Axis, const FRay& WorldRay) {
 
 	// 모든 초기화가 성공한 뒤에만 실제 드래그 세션으로 확정한다.
 	DragSession = NewSession;
-
-	// World 쪽에 Transform 편집 시작을 알린다. World는 SessionId를 기억하고, 이후 같은 SessionId의 Update/Commit/Cancel만 받는다.
-	SendTransformEdit(
-		NewSession.SessionId,
-		ETransformEditPhase::Begin,
-		NewSession.TargetHandle,
-		NewSession.InitialWorld,
-		NewSession.InitialTransformRevision);
 
 	return true;
 }
@@ -557,8 +591,11 @@ void FTransformGizmo::UpdateDrag(const FRay& WorldRay) {
 	}
 	
 	auto& Session = *DragSession;
-
-	FMatrix DesiredWorld = Session.InitialWorld;
+	USceneComponent* Target = Session.Target.Get();
+	if (EditorContext == nullptr || Target == nullptr || EditorContext->GetSelectedTransformTarget() != Target) {
+		EndDrag();
+		return;
+	}
 
 	// Rotation은 방향 벡터 사이의 각도로 계산한다.
 	if (Session.ModifyMode == EModifyMode::Rotate) {
@@ -598,21 +635,41 @@ void FTransformGizmo::UpdateDrag(const FRay& WorldRay) {
 
 		CurrentDirection.Normalize();
 
-		// 시작 방향에서 현재 방향까지의 signed angle 계산.
+		// 이전 프레임 방향에서 현재 방향까지의 증분 회전을 계산한다.
 		// Cross → 회전 방향
 		// Dot   → 회전 각도
-		const float SinAngle = Session.AxisWorld.Dot(Session.InitialRotationDirection.Cross(CurrentDirection));
-		const float CosAngle = std::clamp(Session.InitialRotationDirection.Dot(CurrentDirection),-1.0f,1.0f);
+		const float SinAngle = Session.AxisWorld.Dot(Session.PreviousRotationDirection.Cross(CurrentDirection));
+		const float CosAngle = std::clamp(Session.PreviousRotationDirection.Dot(CurrentDirection),-1.0f,1.0f);
 		const float AngleDelta = std::atan2(SinAngle,CosAngle);
+		if (Session.CoordinateSpace == EGizmoCoordinateSpace::Local) {
+			FVector3 LocalAxis{};
+			switch (Session.DragAxis) {
+			case EAxis::X: LocalAxis = FVector3::UnitX; break;
+			case EAxis::Y: LocalAxis = FVector3::UnitY; break;
+			case EAxis::Z: LocalAxis = FVector3::UnitZ; break;
+			default: return;
+			}
 
-		const FQuat Rotation = FQuat::CreateFromAxisAngle(FVector(Session.AxisWorld.ToSimpleMath().x, Session.AxisWorld.ToSimpleMath().y, Session.AxisWorld.ToSimpleMath().z),AngleDelta);
-		const FMatrix RotationMatrix = FMatrix::CreateFromQuaternion(Rotation);
-		const FVector3 Pivot = Session.InteractionPivotWorld;
+			FTransform RelativeTransform = Target->GetRelativeTransform();
+			RelativeTransform.SetRotation(FQuat::Concatenate(
+				RelativeTransform.GetRotationQuaternion(),
+				FQuat::CreateFromAxisAngle(LocalAxis, AngleDelta)));
+			Target->SetRelativeTransform(RelativeTransform);
+			Session.PreviousRotationDirection = CurrentDirection;
+			return;
+		}
 
-		// 오브젝트를 Pivot 원점으로 옮김
-		//→ 회전
-		// → 원래 Pivot 위치로 되돌림
-		DesiredWorld = Session.InitialWorld * FMatrix::CreateTranslation(-Pivot) * RotationMatrix* FMatrix::CreateTranslation(Pivot);
+		// FTransform의 quaternion은 source Y-up 축을 사용하므로, 월드 Z-up
+		// Gizmo 축을 source 축으로 바꾼 뒤 world transform에 적용한다.
+		const FVector3 TransformSpaceAxis = FMatrix::CreateYUpToZUp().TransformDirection(Session.AxisWorld);
+		FTransform DesiredWorldTransform = Target->GetComponentTransform();
+		DesiredWorldTransform.SetRotation(FQuat::Concatenate(
+			DesiredWorldTransform.GetRotationQuaternion(),
+			FQuat::CreateFromAxisAngle(TransformSpaceAxis, AngleDelta)));
+		if (Target->SetWorldTransform(DesiredWorldTransform)) {
+			Session.PreviousRotationDirection = CurrentDirection;
+		}
+		return;
 	}
 	// Translate와 Scale은 축 위의 이동량으로 계산한다.
 	else {
@@ -623,66 +680,75 @@ void FTransformGizmo::UpdateDrag(const FRay& WorldRay) {
 			return;
 		}
 
-		const float Delta = CurrentAxisParameter- Session.InitialAxisParameter;
+		const float Delta = CurrentAxisParameter - Session.PreviousAxisParameter;
+		FTransform DesiredWorldTransform = Target->GetComponentTransform();
 
 		if (Session.ModifyMode == EModifyMode::Translate) 
 		{
-			const FVector3 NewPosition =Session.InitialWorld.Translation()+ Session.AxisWorld * Delta;
-			DesiredWorld.Translation(NewPosition);
+			DesiredWorldTransform.SetPosition(DesiredWorldTransform.GetPosition() + Session.AxisWorld * Delta);
 		}
 		else if (Session.ModifyMode== EModifyMode::Scale)
 		{
 			const float ScaleSpeed = std::max(100.0f * Session.WorkUnitsPerPixel, 0.0001f);
 			const float ScaleFactor = std::max(0.01f,1.0f + Delta / ScaleSpeed);
 
-			FVector3 InitialScale{};
-			FQuat InitialRotation{};
-			FVector3 InitialTranslation{};
+			if (Session.CoordinateSpace == EGizmoCoordinateSpace::Local) {
+				FVector3 RelativeScale = Target->GetRelativeScale3D();
+				switch (Session.DragAxis) {
+				case EAxis::X:
+					RelativeScale.x *= ScaleFactor;
+					break;
+				case EAxis::Y:
+					RelativeScale.y *= ScaleFactor;
+					break;
+				case EAxis::Z:
+					RelativeScale.z *= ScaleFactor;
+					break;
+				default:
+					return;
+				}
 
-			if (!Session.InitialWorld.Decompose(InitialScale,InitialRotation,InitialTranslation))
-			{
+				Target->SetRelativeScale3D(RelativeScale);
+				Session.PreviousAxisParameter = CurrentAxisParameter;
 				return;
 			}
 
+			FVector3 CurrentScale = DesiredWorldTransform.GetScale();
+
 			switch (Session.DragAxis) {
 			case EAxis::X:
-				InitialScale.x *= ScaleFactor;
+				CurrentScale.x *= ScaleFactor;
 				break;
 
 			case EAxis::Y:
-				InitialScale.y *= ScaleFactor;
+				CurrentScale.y *= ScaleFactor;
 				break;
 
 			case EAxis::Z:
-				InitialScale.z *= ScaleFactor;
+				CurrentScale.z *= ScaleFactor;
 				break;
 
 			default:
 				return;
 			}
 
-			DesiredWorld = FMatrix::CreateScale(InitialScale) * FMatrix::CreateFromQuaternion(InitialRotation) * FMatrix::CreateTranslation(InitialTranslation);
+			DesiredWorldTransform.SetScale(CurrentScale);
 		}
 		else {
 			return;
 		}
-	}
 
-	// 계산한 월드 행렬을 World로 전송한다.
-	SendTransformEdit(
-		Session.SessionId,
-		ETransformEditPhase::Update,
-		Session.TargetHandle,
-		DesiredWorld,
-		Session.InitialTransformRevision);
+		if (Target->SetWorldTransform(DesiredWorldTransform)) {
+			Session.PreviousAxisParameter = CurrentAxisParameter;
+		}
+	}
 }
 
-void FTransformGizmo::EndDrag(bool bCancel) {
+void FTransformGizmo::EndDrag() {
 	if (!DragSession.has_value()) {
 		return;
 	}
 
-	SendTransformEdit(DragSession->SessionId, bCancel ? ETransformEditPhase::Cancel : ETransformEditPhase::Commit, DragSession->TargetHandle, DragSession->InitialWorld, DragSession->InitialTransformRevision);
 	DragSession.reset();
 }
 
@@ -709,14 +775,6 @@ FVector3 FTransformGizmo::GetWorldAxis(EAxis Axis) const {
 	default:
 		return FVector3::Zero;
 	}
-}
-
-void FTransformGizmo::SendTransformEdit(std::uint64_t SessionId, ETransformEditPhase Phase, FObjectHandle TargetHandle, const FMatrix& DesiredWorld, std::uint64_t ExpectedTransformRevision) {
-	if (!WorldCommandSender.has_value()) {
-		return;
-	}
-
-	WorldCommandSender->TryEmplace<FTransformEditRequestMessage>(SessionId, Phase, TargetHandle, DesiredWorld, ExpectedTransformRevision);
 }
 
 void FTransformGizmo::Render(FRenderProbe& Probe) {

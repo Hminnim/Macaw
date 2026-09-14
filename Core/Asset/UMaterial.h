@@ -9,8 +9,6 @@
 
 #include <d3d11.h>
 
-class FMaterialBuffer;
-
 class UMaterial : public UAsset {
 public:
     UMaterial() = default;

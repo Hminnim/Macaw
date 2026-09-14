@@ -1,5 +1,5 @@
 ﻿#include "PCH.h"
-#include "../doctest/doctest.h"
+#include "doctest.h"
 
 #include <memory>
 #include "../Core/Base/UObject.h"
@@ -9,9 +9,9 @@
 
 #include <fstream>
 #include <sstream>
-#include "../rapidjson/document.h"
-#include "../rapidjson/stringbuffer.h"
-#include "../rapidjson/writer.h"
+#include "rapidjson/document.h"
+#include "rapidjson/stringbuffer.h"
+#include "rapidjson/writer.h"
 
 #include <filesystem>
 
@@ -76,7 +76,7 @@ TEST_SUITE("Serialize Tests") {
         FGuid BeforeGuid = TestObject->GetGuid();
 
         // --- SAVE ---
-        std::vector<uint8> SavedData;
+        TArray<uint8> SavedData;
         FArchiveMemory ArchiveSave(SavedData);
         TestObject->Save(ArchiveSave);
 
@@ -95,7 +95,7 @@ TEST_SUITE("Serialize Tests") {
         //CHECK_EQ(TestObject->GetGuid(), AfterGuid);
 
         // --- LOAD ---
-        const std::vector<uint8> CopyData = SavedData;
+        const TArray<uint8> CopyData = SavedData;
         FArchiveMemory ArchiveLoad(CopyData);
         TestObject->Load(ArchiveLoad);
 
@@ -121,7 +121,9 @@ TEST_SUITE("Serialize Tests") {
         UObjectSystem::Register(TestObject.get());
         FGuid BeforeGuid = TestObject->GetGuid();
 
-        const char* FilePath = "C:\\Users\\JUNGLE\\Desktop\\Week2\\Macaw\\test.json";
+        const std::filesystem::path FilePath =
+            std::filesystem::temp_directory_path() /
+            "MacawSerializeTests.json";
 
         // --- SAVE ---
         {
@@ -137,7 +139,7 @@ TEST_SUITE("Serialize Tests") {
 
             std::string JsonString = Buffer.GetString();
 
-            std::ofstream OutFile(std::filesystem::current_path() / "test.json");
+            std::ofstream OutFile(FilePath);
             REQUIRE(OutFile.is_open());
             OutFile << JsonString;
             OutFile.close();
@@ -159,7 +161,7 @@ TEST_SUITE("Serialize Tests") {
 
         // --- LOAD ---
         {
-            std::ifstream InFile(std::filesystem::current_path() / "test.json");
+            std::ifstream InFile(FilePath);
             REQUIRE(InFile.is_open());
 
             std::stringstream Buffer;
@@ -186,5 +188,7 @@ TEST_SUITE("Serialize Tests") {
         CHECK_EQ(TestObject->Inventory[0], 101);
         CHECK_EQ(TestObject->Inventory[3], 404);
         CHECK_EQ(TestObject->GetGuid(), BeforeGuid);
+
+        std::filesystem::remove(FilePath);
     }
 }

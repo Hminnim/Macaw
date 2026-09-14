@@ -195,11 +195,6 @@ void FMouseInput::DispatchPendingWorldCommands(
                 ViewportWidth,
                 ViewportHeight);
         }
-        else if (KeyStates[Left] == EKeyState::Released)
-        {
-            WorldCommandSender
-                ->TryEmplace<FMousePickReleaseRequestMessage>();
-        }
     }
 
     if (DragOwners[Right] == EDragOwner::World &&

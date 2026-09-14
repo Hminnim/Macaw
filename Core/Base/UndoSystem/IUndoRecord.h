@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-class IUndoContext;
+#include "IUndoContext.h"
 
 class IUndoRecord
 {

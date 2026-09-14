@@ -1,6 +1,15 @@
 ﻿#pragma once 
 #include "../Asset/FAssetHandle.h"
 
+enum class ERenderObjectFlags : uint32 {
+	None = 0,
+	Selected = 1u << 0
+};
+
+constexpr uint32 operator|(ERenderObjectFlags Left, ERenderObjectFlags Right) {
+	return static_cast<uint32>(Left) | static_cast<uint32>(Right);
+}
+
 struct FActorProbe {
 	FMatrix World;
 	FAssetHandle MeshHandle;

@@ -2,9 +2,8 @@
 
 #include <cstdint>
 #include "FObjectHandle.h"
-
-class UObject;
-struct FGuid;
+#include "FGuid.h"
+#include "UObject.h"
 
 namespace UObjectSystem
 {

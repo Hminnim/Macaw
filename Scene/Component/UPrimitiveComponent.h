@@ -5,8 +5,7 @@
 
 #include "../../Core/Base/FRenderProbe.h"
 
-class UPrimitiveComponent : public USceneComponent
-{
+class UPrimitiveComponent : public USceneComponent {
 public:
     UPrimitiveComponent() = default;
     ~UPrimitiveComponent() override = default;

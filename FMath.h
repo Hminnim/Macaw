@@ -3,17 +3,9 @@
 
 struct FQuat;
 struct FMatrix;
-struct FVector;
-struct FVector2;
-struct FVector4;
 
 using FPlane = DirectX::SimpleMath::Plane;
 using FRay = DirectX::SimpleMath::Ray;
-using FVector3 = FVector;
-using FRotator = FVector;
-using FVector2D = FVector2;
-using FColor4 = FVector4;
-
 struct FVector2
 {
 	float x = 0.0f;
@@ -229,6 +221,31 @@ struct FVector4
 		return *this;
 	}
 };
+
+using FVector3 = FVector;
+using FVector2D = FVector2;
+using FColor4 = FVector4;
+
+// Euler angles are an editor-facing representation. Runtime transforms keep
+// their authoritative rotation in FQuat.
+struct FRotator
+{
+    float x = 0.0f; // pitch
+    float y = 0.0f; // yaw
+    float z = 0.0f; // roll
+
+    constexpr FRotator() = default;
+    constexpr FRotator(float InPitch, float InYaw, float InRoll) : x(InPitch), y(InYaw), z(InRoll) {}
+    constexpr FRotator(const FVector& InEuler) : x(InEuler.x), y(InEuler.y), z(InEuler.z) {}
+
+    constexpr operator FVector() const { return { x, y, z }; }
+    constexpr bool operator==(const FRotator&) const = default;
+    constexpr bool operator==(const FVector& Other) const { return x == Other.x && y == Other.y && z == Other.z; }
+
+    static const FRotator Zero;
+};
+
+inline const FRotator FRotator::Zero{};
 
 struct FMatrix
 {
@@ -629,13 +646,40 @@ struct FQuat {
 
     DirectX::SimpleMath::Quaternion ToSimpleMath() const { return { x, y, z, w }; }
 
+    static FQuat FromRotator(const FRotator& Rotation) {
+        return FQuat(DirectX::SimpleMath::Quaternion::CreateFromYawPitchRoll(
+            Rotation.y, Rotation.x, Rotation.z));
+    }
+
+    FRotator ToRotator() const {
+        const DirectX::SimpleMath::Vector3 Euler = ToSimpleMath().ToEuler();
+        return { Euler.x, Euler.y, Euler.z };
+    }
+
     void Normalize() {
         float d = sqrt(x * x + y * y + z * z + w * w);
+        if (d <= 1e-8f) {
+            *this = FQuat{};
+            return;
+        }
         x /= d;
         y /= d;
         z /= d;
         w /= d;
     };
+
+    FQuat Inverse() const {
+        DirectX::SimpleMath::Quaternion Result;
+        ToSimpleMath().Inverse(Result);
+        return FQuat(Result);
+    }
+
+    // Applies First, then Second. This matches the engine's row-vector
+    // matrix convention and is the order used for local-to-parent rotation.
+    static FQuat Concatenate(const FQuat& First, const FQuat& Second) {
+        return FQuat(DirectX::SimpleMath::Quaternion::Concatenate(
+            First.ToSimpleMath(), Second.ToSimpleMath()));
+    }
 
     const static FQuat CreateFromRotationMatrix(const FMatrix& M) {
         FQuat result;

@@ -4,15 +4,13 @@
 
 #include "../../Core/Asset/FAssetRegistry.h"
 #include "../../Core/Base/FRenderProbe.h"
-#include "../../Core/Channel/FMessageChannel.h"
 #include "../../Core/Channel/FStateChannel.h"
-#include "../../FEditorSelectionState.h"
+#include "../../Scene/FWorldEditorContext.h"
+#include "../../FMouseInput.h"
 #include "../RenderWindowInfo.h"
 
 #include "FLineRenderer.h"
 #include "FTransformGizmo.h"
-
-class FMouseInput;
 
 class EditorViewport {
 	constexpr static float OrientationAxisSize = 200.0f;
@@ -28,7 +26,7 @@ public:
 	EditorViewport& operator=(EditorViewport&&) noexcept = default;
 
 public:
-	void Initialize(ID3D11Device* Device, FAssetRegistry& AssetRegistry, FStateChannel<RenderWindowInfo>::FReader WindowReader, FStateChannel<FEditorSelectionState>::FReader SelectionReader, FMessageChannel::FSender WorldCommandSender);
+	void Initialize(ID3D11Device* Device, FAssetRegistry& AssetRegistry, FStateChannel<RenderWindowInfo>::FReader WindowReader, FWorldEditorContext& EditorContext);
 
 	void ProcessInput(FKeyboardInput& KeyboardInput, FMouseInput& MouseInput, bool bMouseCapturedByUI);
 	void RenderInProbe(FRenderProbe& Probe);
@@ -38,6 +36,7 @@ public:
 	void RenderOrientationAxis(ID3D11DeviceContext* Context, CameraProbe& Probe);
 
 	FStateChannel<uint8>::FReadWriter GetGizmoMode() { return TransformGizmo.GetGizmoMode(); }
+	FStateChannel<uint8>::FReadWriter GetGizmoCoordinateSpace() { return TransformGizmo.GetGizmoCoordinateSpace(); }
 private:
 	void RenderGrid(ELineDepthMode DepthMode);
 	void RenderAxis(ELineDepthMode DepthMode);
