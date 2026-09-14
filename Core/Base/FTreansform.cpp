@@ -11,7 +11,7 @@ namespace {
 
         FMatrix TranslationMatrix = FMatrix::CreateTranslation(Position);
         FMatrix SourceYUpToWorldZUp = FMatrix::CreateYUpToZUp();
-        return ScaleMatrix * RotationMatrix * SourceYUpToWorldZUp * TranslationMatrix;
+        return ScaleMatrix * RotationMatrix * TranslationMatrix;
     }
 }
 

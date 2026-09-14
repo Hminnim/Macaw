@@ -17,7 +17,7 @@ class UWorld;
 struct FWorldEditorSharedState {
     std::optional<FMessageEditorCameraState> Camera;
     float GridSize{1.0f};
-    size_t ModeIndex{ 1 };
+    size_t ModeIndex{ 0 };
 };
 
 class FWorldEditorContext {

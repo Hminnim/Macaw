@@ -117,11 +117,14 @@ void FTransformGizmo::Update(const CameraProbe& Camera) {
 	const EGizmoCoordinateSpace CoordinateSpace = GizmoCoordinateSpace.HasValue()
 		? static_cast<EGizmoCoordinateSpace>(GizmoCoordinateSpace.Peek())
 		: EGizmoCoordinateSpace::World;
+	const EModifyMode CurrentMode = GizmoMode.HasValue() ? static_cast<EModifyMode>(GizmoMode.Peek()) : EModifyMode::None;
+
+
 
 	// Gizmo는 scale 없이 회전 축과 위치만 사용한다. World 모드에서는
 	// 축을 월드 그리드에 고정하고, Local 모드에서만 대상 회전을 따른다.
 	GizmoWorldTransform = FMatrix::Identity;
-	if (CoordinateSpace == EGizmoCoordinateSpace::Local) {
+	if (CoordinateSpace == EGizmoCoordinateSpace::Local || CurrentMode == EModifyMode::Scale) {
 		FVector3 Right = TargetWorld.Right();
 		FVector3 Up = TargetWorld.Up();
 		if (Right.LengthSquared() <= std::numeric_limits<float>::epsilon() ||
@@ -148,15 +151,15 @@ void FTransformGizmo::Update(const CameraProbe& Camera) {
 		}
 		Forward.Normalize();
 
-		GizmoWorldTransform.m[0][0] = Right.x;
-		GizmoWorldTransform.m[0][1] = Right.y;
-		GizmoWorldTransform.m[0][2] = Right.z;
-		GizmoWorldTransform.m[1][0] = Up.x;
-		GizmoWorldTransform.m[1][1] = Up.y;
-		GizmoWorldTransform.m[1][2] = Up.z;
-		GizmoWorldTransform.m[2][0] = Forward.x;
-		GizmoWorldTransform.m[2][1] = Forward.y;
-		GizmoWorldTransform.m[2][2] = Forward.z;
+		GizmoWorldTransform.m[0][0] = -Right.x;
+		GizmoWorldTransform.m[0][1] = -Right.y;
+		GizmoWorldTransform.m[0][2] = -Right.z;
+		GizmoWorldTransform.m[1][0] = Forward.x;
+		GizmoWorldTransform.m[1][1] = Forward.y;
+		GizmoWorldTransform.m[1][2] = Forward.z;
+		GizmoWorldTransform.m[2][0] = Up.x;
+		GizmoWorldTransform.m[2][1] = Up.y;
+		GizmoWorldTransform.m[2][2] = Up.z;
 	}
 	GizmoWorldTransform.Translation(TargetWorld.Translation());
 
@@ -176,8 +179,6 @@ void FTransformGizmo::Update(const CameraProbe& Camera) {
 
 	const float WorldUnitsPerPixel = (2.0f * ViewDepth) / (ViewportHeight * ProjectionYScale);
 	CurrentWorkUnitsPerPixel = WorldUnitsPerPixel;
-
-	const EModifyMode CurrentMode =GizmoMode.HasValue() ? static_cast<EModifyMode>(GizmoMode.Peek()) : EModifyMode::None;
 
 	switch (CurrentMode) {
 	case EModifyMode::Translate:
@@ -219,15 +220,15 @@ void FTransformGizmo::SetTranslate(const FVector3& Pivot, float WorldUnitsPerPix
 
 	CylinderXAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength, ShaftRadius) * FMatrix::CreateRotationZ(DirectX::XMConvertToRadians(-90.0f)) * FMatrix::CreateTranslation(StartX + HalfShaftLength, Pivot.y, Pivot.z);
 
-	CylinderYAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength, ShaftRadius) * FMatrix::CreateTranslation(Pivot.x, StartY + HalfShaftLength, Pivot.z);
+	CylinderZAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength, ShaftRadius) * FMatrix::CreateTranslation(Pivot.x, StartY + HalfShaftLength, Pivot.z);
 
-	CylinderZAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength, ShaftRadius) * FMatrix::CreateRotationX(DirectX::XMConvertToRadians(90.0f)) * FMatrix::CreateTranslation(Pivot.x, Pivot.y, StartZ + HalfShaftLength);
+	CylinderYAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength, ShaftRadius) * FMatrix::CreateRotationX(DirectX::XMConvertToRadians(90.0f)) * FMatrix::CreateTranslation(Pivot.x, Pivot.y, StartZ + HalfShaftLength);
 
 	ConeXAxisTransform = FMatrix::CreateScale(ConeRadius, ConeLength, ConeRadius) * FMatrix::CreateRotationZ(DirectX::XMConvertToRadians(-90.0f)) * FMatrix::CreateTranslation(StartX + ShaftLength + HalfConeLength, Pivot.y, Pivot.z);
 
-	ConeYAxisTransform = FMatrix::CreateScale(ConeRadius, ConeLength, ConeRadius) * FMatrix::CreateTranslation(Pivot.x, StartY + ShaftLength + HalfConeLength, Pivot.z);
+	ConeZAxisTransform = FMatrix::CreateScale(ConeRadius, ConeLength, ConeRadius) * FMatrix::CreateTranslation(Pivot.x, StartY + ShaftLength + HalfConeLength, Pivot.z);
 
-	ConeZAxisTransform = FMatrix::CreateScale(ConeRadius, ConeLength, ConeRadius) * FMatrix::CreateRotationX(DirectX::XMConvertToRadians(90.0f)) * FMatrix::CreateTranslation(Pivot.x, Pivot.y, StartZ + ShaftLength + HalfConeLength);
+	ConeYAxisTransform = FMatrix::CreateScale(ConeRadius, ConeLength, ConeRadius) * FMatrix::CreateRotationX(DirectX::XMConvertToRadians(90.0f)) * FMatrix::CreateTranslation(Pivot.x, Pivot.y, StartZ + ShaftLength + HalfConeLength);
 
 	AxisHitProxies = {
 		FAxisHitProxy{
@@ -270,10 +271,10 @@ void FTransformGizmo::SetRotate(const FVector3& Pivot, float WorldUnitsPerPixel)
 		* FMatrix::CreateRotationZ(DirectX::XMConvertToRadians(-90.0f))
 		* FMatrix::CreateTranslation(Pivot);
 
-	TorusYAxisTransform =FMatrix::CreateScale(TorusScale,TorusScale,TorusScale)
+	TorusZAxisTransform =FMatrix::CreateScale(TorusScale,TorusScale,TorusScale)
 		* FMatrix::CreateTranslation(Pivot);
 
-	TorusZAxisTransform =FMatrix::CreateScale(TorusScale,TorusScale,TorusScale)
+	TorusYAxisTransform =FMatrix::CreateScale(TorusScale,TorusScale,TorusScale)
 		* FMatrix::CreateRotationX(DirectX::XMConvertToRadians(90.0f))
 		* FMatrix::CreateTranslation(Pivot);
 
@@ -301,20 +302,20 @@ void FTransformGizmo::SetScale(const FVector3& Pivot, float WorldUnitsPerPixel) 
 		* FMatrix::CreateRotationZ(DirectX::XMConvertToRadians(-90.0f))
 		* FMatrix::CreateTranslation(StartX + HalfShaftLength,Pivot.y,Pivot.z);
 
-	CylinderYAxisTransform = FMatrix::CreateScale(ShaftRadius,ShaftLength,ShaftRadius)
+	CylinderZAxisTransform = FMatrix::CreateScale(ShaftRadius,ShaftLength,ShaftRadius)
 		* FMatrix::CreateTranslation(Pivot.x, StartY + HalfShaftLength, Pivot.z);
 
-	CylinderZAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength,ShaftRadius)
+	CylinderYAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength,ShaftRadius)
 		* FMatrix::CreateRotationX(DirectX::XMConvertToRadians(90.0f))
 		* FMatrix::CreateTranslation(Pivot.x,Pivot.y,StartZ + HalfShaftLength);
 
 	CubeXAxisTransform = FMatrix::CreateScale(BoxSize, BoxSize, BoxSize)
 		* FMatrix::CreateTranslation(StartX + ShaftLength + HalfBoxSize,Pivot.y,Pivot.z);
 
-	CubeYAxisTransform =FMatrix::CreateScale(BoxSize, BoxSize, BoxSize)
+	CubeZAxisTransform =FMatrix::CreateScale(BoxSize, BoxSize, BoxSize)
 		* FMatrix::CreateTranslation(Pivot.x,StartY + ShaftLength + HalfBoxSize,Pivot.z);
 
-	CubeZAxisTransform =FMatrix::CreateScale(BoxSize, BoxSize, BoxSize)
+	CubeYAxisTransform =FMatrix::CreateScale(BoxSize, BoxSize, BoxSize)
 		* FMatrix::CreateTranslation(Pivot.x,Pivot.y,StartZ + ShaftLength + HalfBoxSize);
 
 	AxisHitProxies = {FAxisHitProxy{
@@ -663,9 +664,13 @@ void FTransformGizmo::UpdateDrag(const FRay& WorldRay) {
 		// Gizmo 축을 source 축으로 바꾼 뒤 world transform에 적용한다.
 		const FVector3 TransformSpaceAxis = FMatrix::CreateYUpToZUp().TransformDirection(Session.AxisWorld);
 		FTransform DesiredWorldTransform = Target->GetComponentTransform();
-		DesiredWorldTransform.SetRotation(FQuat::Concatenate(
-			DesiredWorldTransform.GetRotationQuaternion(),
-			FQuat::CreateFromAxisAngle(TransformSpaceAxis, AngleDelta)));
+		if (Session.CoordinateSpace == EGizmoCoordinateSpace::Local) {
+			DesiredWorldTransform.SetRotation(FQuat::Concatenate(DesiredWorldTransform.GetRotationQuaternion(), FQuat::CreateFromAxisAngle(TransformSpaceAxis, AngleDelta)));
+		}
+		else {
+			DesiredWorldTransform.SetRotation(FQuat::Concatenate(FQuat::CreateFromAxisAngle(TransformSpaceAxis, AngleDelta), DesiredWorldTransform.GetRotationQuaternion()));
+		}
+
 		if (Target->SetWorldTransform(DesiredWorldTransform)) {
 			Session.PreviousRotationDirection = CurrentDirection;
 		}

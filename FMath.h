@@ -302,7 +302,7 @@ struct FMatrix
     {
         FMatrix result;
 
-        result.m[0][0] = 1.0f;
+        result.m[0][0] = -1.0f;
         result.m[0][1] = 0.0f;
         result.m[0][2] = 0.0f;
 
