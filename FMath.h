@@ -230,6 +230,7 @@ using FColor4 = FVector4;
 // their authoritative rotation in FQuat.
 struct FRotator
 {
+    // Z-up convention: pitch rotates around X, yaw around Z, and roll around Y.
     float x = 0.0f; // pitch
     float y = 0.0f; // yaw
     float z = 0.0f; // roll
@@ -249,6 +250,8 @@ inline const FRotator FRotator::Zero{};
 
 struct FMatrix
 {
+    // The engine world is Z-up.  FTransform applies the mesh-source basis at
+    // the boundary; matrices, vectors, and quaternions otherwise stay Z-up.
     // Value-returning compatibility API. Singular input produces non-finite values.
     // Use TryInverse when the caller needs to handle failure.
     FMatrix Invert() const
@@ -294,27 +297,6 @@ struct FMatrix
                 }
             }
         }
-
-        return result;
-    }
-
-    static FMatrix CreateYUpToZUp()
-    {
-        FMatrix result;
-
-        result.m[0][0] = -1.0f;
-        result.m[0][1] = 0.0f;
-        result.m[0][2] = 0.0f;
-
-        result.m[1][0] = 0.0f;
-        result.m[1][1] = 0.0f;
-        result.m[1][2] = 1.0f;
-
-        result.m[2][0] = 0.0f;
-        result.m[2][1] = 1.0f;
-        result.m[2][2] = 0.0f;
-
-        result.m[3][3] = 1.0f;
 
         return result;
     }
@@ -386,10 +368,10 @@ struct FMatrix
     static FMatrix CreateFromYawPitchRoll(
         float yaw, float pitch, float roll)
     {
-
-        return CreateRotationZ(roll)
+        // Z-up Euler convention: roll(Y) -> pitch(X) -> yaw(Z).
+        return CreateRotationY(roll)
             * CreateRotationX(pitch)
-            * CreateRotationY(yaw);
+            * CreateRotationZ(yaw);
     }
 
 
@@ -647,13 +629,28 @@ struct FQuat {
     DirectX::SimpleMath::Quaternion ToSimpleMath() const { return { x, y, z, w }; }
 
     static FQuat FromRotator(const FRotator& Rotation) {
-        return FQuat(DirectX::SimpleMath::Quaternion::CreateFromYawPitchRoll(
-            Rotation.y, Rotation.x, Rotation.z));
+        const FQuat Roll = CreateFromAxisAngle(FVector::UnitY, Rotation.z);
+        const FQuat Pitch = CreateFromAxisAngle(FVector::UnitX, Rotation.x);
+        const FQuat Yaw = CreateFromAxisAngle(FVector::UnitZ, Rotation.y);
+        return Concatenate(Concatenate(Roll, Pitch), Yaw);
     }
 
     FRotator ToRotator() const {
-        const DirectX::SimpleMath::Vector3 Euler = ToSimpleMath().ToEuler();
-        return { Euler.x, Euler.y, Euler.z };
+        const FMatrix RotationMatrix = FMatrix::CreateFromQuaternion(*this);
+        const float Pitch = std::asin(std::clamp(RotationMatrix.m[1][2], -1.0f, 1.0f));
+        const float CosPitch = std::cos(Pitch);
+
+        if (std::abs(CosPitch) > 1e-6f) {
+            return {
+                Pitch,
+                std::atan2(-RotationMatrix.m[1][0], RotationMatrix.m[1][1]),
+                std::atan2(-RotationMatrix.m[0][2], RotationMatrix.m[2][2])
+            };
+        }
+
+        // At gimbal lock, preserve the combined yaw/roll angle and choose a
+        // zero roll; it is the stable representative for this Euler order.
+        return { Pitch, std::atan2(RotationMatrix.m[0][1], RotationMatrix.m[0][0]), 0.0f };
     }
 
     void Normalize() {

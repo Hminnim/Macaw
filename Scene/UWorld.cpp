@@ -505,16 +505,37 @@ void UWorld::HandleMouseCameraRotateRequest(const FMouseCameraRotateRequestMessa
 	constexpr float MaximumPitch = 1.5f;
 
 	FTransform& CameraTransform = Camera->GetRelativeTransform();
-	FRotator Rotation = CameraTransform.GetRotation();
+	const FQuat CurrentRotation = CameraTransform.GetRotationQuaternion();
+	const FMatrix CurrentWorld = Camera->GetComponentToWorld();
 
-	Rotation.y += Message.DeltaX * RotationSensitivity;
+	// Both rotations use the camera's current local axes.  The axes are
+	// expressed in world space only because the quaternion is post-concatenated.
+	FVector3 YawAxis = CurrentWorld.Up();
+	YawAxis.Normalize();
+	const FQuat YawDelta = FQuat::CreateFromAxisAngle(
+		YawAxis,
+		Message.DeltaX * RotationSensitivity);
+	const FQuat YawedRotation = FQuat::Concatenate(CurrentRotation, YawDelta);
 
-	Rotation.x = std::clamp(
-		Rotation.x - Message.DeltaY * RotationSensitivity,
+	// Rotate the current local right axis by yaw before applying pitch.  This
+	// keeps vertical mouse motion aligned with the camera screen after yaw.
+	const FMatrix YawMatrix = FMatrix::CreateFromQuaternion(YawDelta);
+	FVector3 PitchAxis = YawMatrix.TransformDirection(CurrentWorld.Right());
+	PitchAxis.Normalize();
+
+	FVector3 Forward = YawMatrix.TransformDirection(CurrentWorld.Forward());
+	Forward.Normalize();
+	const float CurrentPitch = std::asin(std::clamp(Forward.z, -1.0f, 1.0f));
+	const float TargetPitch = std::clamp(
+		CurrentPitch - Message.DeltaY * RotationSensitivity,
 		-MaximumPitch,
 		MaximumPitch);
+	const float AppliedPitch = TargetPitch - CurrentPitch;
 
-	CameraTransform.SetRotation(Rotation);
+	// FTransform's source-to-Z-up basis reverses its visible right vector, so
+	// negate the mathematical pitch angle to keep drag-up looking upward.
+	const FQuat PitchDelta = FQuat::CreateFromAxisAngle(PitchAxis, -AppliedPitch);
+	CameraTransform.SetRotation(FQuat::Concatenate(YawedRotation, PitchDelta));
 
 	PublishEditorCameraState();
 

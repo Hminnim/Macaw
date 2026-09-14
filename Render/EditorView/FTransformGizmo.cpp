@@ -151,6 +151,8 @@ void FTransformGizmo::Update(const CameraProbe& Camera) {
 		}
 		Forward.Normalize();
 
+		// TargetWorld contains the source-to-Z-up basis.  Remove that basis
+		// when orienting a local-space gizmo so its axes remain world Z-up.
 		GizmoWorldTransform.m[0][0] = -Right.x;
 		GizmoWorldTransform.m[0][1] = -Right.y;
 		GizmoWorldTransform.m[0][2] = -Right.z;
@@ -220,15 +222,15 @@ void FTransformGizmo::SetTranslate(const FVector3& Pivot, float WorldUnitsPerPix
 
 	CylinderXAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength, ShaftRadius) * FMatrix::CreateRotationZ(DirectX::XMConvertToRadians(-90.0f)) * FMatrix::CreateTranslation(StartX + HalfShaftLength, Pivot.y, Pivot.z);
 
-	CylinderZAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength, ShaftRadius) * FMatrix::CreateTranslation(Pivot.x, StartY + HalfShaftLength, Pivot.z);
+	CylinderYAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength, ShaftRadius) * FMatrix::CreateTranslation(Pivot.x, StartY + HalfShaftLength, Pivot.z);
 
-	CylinderYAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength, ShaftRadius) * FMatrix::CreateRotationX(DirectX::XMConvertToRadians(90.0f)) * FMatrix::CreateTranslation(Pivot.x, Pivot.y, StartZ + HalfShaftLength);
+	CylinderZAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength, ShaftRadius) * FMatrix::CreateRotationX(DirectX::XMConvertToRadians(90.0f)) * FMatrix::CreateTranslation(Pivot.x, Pivot.y, StartZ + HalfShaftLength);
 
 	ConeXAxisTransform = FMatrix::CreateScale(ConeRadius, ConeLength, ConeRadius) * FMatrix::CreateRotationZ(DirectX::XMConvertToRadians(-90.0f)) * FMatrix::CreateTranslation(StartX + ShaftLength + HalfConeLength, Pivot.y, Pivot.z);
 
-	ConeZAxisTransform = FMatrix::CreateScale(ConeRadius, ConeLength, ConeRadius) * FMatrix::CreateTranslation(Pivot.x, StartY + ShaftLength + HalfConeLength, Pivot.z);
+	ConeYAxisTransform = FMatrix::CreateScale(ConeRadius, ConeLength, ConeRadius) * FMatrix::CreateTranslation(Pivot.x, StartY + ShaftLength + HalfConeLength, Pivot.z);
 
-	ConeYAxisTransform = FMatrix::CreateScale(ConeRadius, ConeLength, ConeRadius) * FMatrix::CreateRotationX(DirectX::XMConvertToRadians(90.0f)) * FMatrix::CreateTranslation(Pivot.x, Pivot.y, StartZ + ShaftLength + HalfConeLength);
+	ConeZAxisTransform = FMatrix::CreateScale(ConeRadius, ConeLength, ConeRadius) * FMatrix::CreateRotationX(DirectX::XMConvertToRadians(90.0f)) * FMatrix::CreateTranslation(Pivot.x, Pivot.y, StartZ + ShaftLength + HalfConeLength);
 
 	AxisHitProxies = {
 		FAxisHitProxy{
@@ -271,10 +273,10 @@ void FTransformGizmo::SetRotate(const FVector3& Pivot, float WorldUnitsPerPixel)
 		* FMatrix::CreateRotationZ(DirectX::XMConvertToRadians(-90.0f))
 		* FMatrix::CreateTranslation(Pivot);
 
-	TorusZAxisTransform =FMatrix::CreateScale(TorusScale,TorusScale,TorusScale)
+	TorusYAxisTransform =FMatrix::CreateScale(TorusScale,TorusScale,TorusScale)
 		* FMatrix::CreateTranslation(Pivot);
 
-	TorusYAxisTransform =FMatrix::CreateScale(TorusScale,TorusScale,TorusScale)
+	TorusZAxisTransform =FMatrix::CreateScale(TorusScale,TorusScale,TorusScale)
 		* FMatrix::CreateRotationX(DirectX::XMConvertToRadians(90.0f))
 		* FMatrix::CreateTranslation(Pivot);
 
@@ -302,20 +304,20 @@ void FTransformGizmo::SetScale(const FVector3& Pivot, float WorldUnitsPerPixel) 
 		* FMatrix::CreateRotationZ(DirectX::XMConvertToRadians(-90.0f))
 		* FMatrix::CreateTranslation(StartX + HalfShaftLength,Pivot.y,Pivot.z);
 
-	CylinderZAxisTransform = FMatrix::CreateScale(ShaftRadius,ShaftLength,ShaftRadius)
+	CylinderYAxisTransform = FMatrix::CreateScale(ShaftRadius,ShaftLength,ShaftRadius)
 		* FMatrix::CreateTranslation(Pivot.x, StartY + HalfShaftLength, Pivot.z);
 
-	CylinderYAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength,ShaftRadius)
+	CylinderZAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength,ShaftRadius)
 		* FMatrix::CreateRotationX(DirectX::XMConvertToRadians(90.0f))
 		* FMatrix::CreateTranslation(Pivot.x,Pivot.y,StartZ + HalfShaftLength);
 
 	CubeXAxisTransform = FMatrix::CreateScale(BoxSize, BoxSize, BoxSize)
 		* FMatrix::CreateTranslation(StartX + ShaftLength + HalfBoxSize,Pivot.y,Pivot.z);
 
-	CubeZAxisTransform =FMatrix::CreateScale(BoxSize, BoxSize, BoxSize)
+	CubeYAxisTransform =FMatrix::CreateScale(BoxSize, BoxSize, BoxSize)
 		* FMatrix::CreateTranslation(Pivot.x,StartY + ShaftLength + HalfBoxSize,Pivot.z);
 
-	CubeYAxisTransform =FMatrix::CreateScale(BoxSize, BoxSize, BoxSize)
+	CubeZAxisTransform =FMatrix::CreateScale(BoxSize, BoxSize, BoxSize)
 		* FMatrix::CreateTranslation(Pivot.x,Pivot.y,StartZ + ShaftLength + HalfBoxSize);
 
 	AxisHitProxies = {FAxisHitProxy{
@@ -660,9 +662,8 @@ void FTransformGizmo::UpdateDrag(const FRay& WorldRay) {
 			return;
 		}
 
-		// FTransform의 quaternion은 source Y-up 축을 사용하므로, 월드 Z-up
-		// Gizmo 축을 source 축으로 바꾼 뒤 world transform에 적용한다.
-		const FVector3 TransformSpaceAxis = FMatrix::CreateYUpToZUp().TransformDirection(Session.AxisWorld);
+		// Transform과 gizmo는 동일한 Z-up 축을 사용한다.
+		const FVector3 TransformSpaceAxis = Session.AxisWorld;
 		FTransform DesiredWorldTransform = Target->GetComponentTransform();
 		if (Session.CoordinateSpace == EGizmoCoordinateSpace::Local) {
 			DesiredWorldTransform.SetRotation(FQuat::Concatenate(DesiredWorldTransform.GetRotationQuaternion(), FQuat::CreateFromAxisAngle(TransformSpaceAxis, AngleDelta)));
@@ -802,30 +803,28 @@ void FTransformGizmo::Render(FRenderProbe& Probe) {
 	switch (CurrentMode) {
 	case EModifyMode::Translate:
 		Submit(CylinderXAxisTransform, CylinderMesh, RedMaterial);
-		// Source transforms are Y-up, while the editor world is Z-up.  Keep the
-		// gizmo's colors aligned with the world-space axis each handle moves.
-		Submit(CylinderYAxisTransform, CylinderMesh, BlueMaterial);
-		Submit(CylinderZAxisTransform, CylinderMesh, GreenMaterial);
+		Submit(CylinderYAxisTransform, CylinderMesh, GreenMaterial);
+		Submit(CylinderZAxisTransform, CylinderMesh, BlueMaterial);
 
 		Submit(ConeXAxisTransform, ConeMesh, RedMaterial); // 해당 위치에 Cone 메쉬 사용
-		Submit(ConeYAxisTransform, ConeMesh, BlueMaterial);
-		Submit(ConeZAxisTransform, ConeMesh, GreenMaterial);
+		Submit(ConeYAxisTransform, ConeMesh, GreenMaterial);
+		Submit(ConeZAxisTransform, ConeMesh, BlueMaterial);
 		break;
 
 	case EModifyMode::Scale:
 		Submit(CylinderXAxisTransform, CylinderMesh, RedMaterial);
-		Submit(CylinderYAxisTransform, CylinderMesh, BlueMaterial);
-		Submit(CylinderZAxisTransform, CylinderMesh, GreenMaterial);
+		Submit(CylinderYAxisTransform, CylinderMesh, GreenMaterial);
+		Submit(CylinderZAxisTransform, CylinderMesh, BlueMaterial);
 
 		Submit(CubeXAxisTransform, CubeMesh, RedMaterial); // 해당 위치에 Cube 메쉬 사용
-		Submit(CubeYAxisTransform, CubeMesh, BlueMaterial);
-		Submit(CubeZAxisTransform, CubeMesh, GreenMaterial);
+		Submit(CubeYAxisTransform, CubeMesh, GreenMaterial);
+		Submit(CubeZAxisTransform, CubeMesh, BlueMaterial);
 		break;
 
 	case EModifyMode::Rotate:
 		Submit(TorusXAxisTransform, GizmoTorusMesh, RedMaterial);
-		Submit(TorusYAxisTransform, GizmoTorusMesh, BlueMaterial);
-		Submit(TorusZAxisTransform, GizmoTorusMesh, GreenMaterial);
+		Submit(TorusYAxisTransform, GizmoTorusMesh, GreenMaterial);
+		Submit(TorusZAxisTransform, GizmoTorusMesh, BlueMaterial);
 		break;
 
 	default:
