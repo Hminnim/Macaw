@@ -214,6 +214,13 @@ public:
 			return FNameEntryId();
 		}
 
+		if (NameString.length() >= NAME_SIZE)
+		{
+			assert(false && "FName string too long! FName is only meant for identifiers (<= 1023 chars).");
+
+			NameString = NameString.substr(0, NAME_SIZE - 1);
+		}
+
 		FNameDisplayValue DisplayValue(NameString);
 		FNameEntryId Existing = FNamePool::FindValue(DisplayHashBuckets, DisplayValue, true);
 		if (Existing.ToUnstableInt() != 0)
