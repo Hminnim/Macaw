@@ -1,4 +1,4 @@
-﻿#include "PCH.h"
+#include "PCH.h"
 #include "FWorldEditorContext.h"
 
 #include "AActor.h"
@@ -29,6 +29,9 @@ void FWorldEditorContext::InitializeChannels(FAssetRegistry& AssetRegistry, ID3D
     EditorToWorld.TryBind<FMessageLoadScene>([this, &AssetRegistry, Device](const FMessageLoadScene& Message) {
         World->LoadScene(std::filesystem::path(Message.FilePath.c_str()), Device, &AssetRegistry);
     });
+    EditorToWorld.TryBind<FMessageSetEditorCameraRequest>([this](const FMessageSetEditorCameraRequest& Message) {
+        World->HandleEditorCameraRequest(Message);
+    });
 }
 
 void FWorldEditorContext::Dispatch() {
@@ -39,12 +42,12 @@ void FWorldEditorContext::Dispatch() {
 FMessageChannel::FSender FWorldEditorContext::GetEditorToWorldSender() { return EditorToWorld.GetSender(); }
 FMessageChannel::FSender FWorldEditorContext::GetWorldToEditorSender() { return WorldToEditor.GetSender(); }
 
-const FMessageEditorCameraState* FWorldEditorContext::GetCameraState() const noexcept {
+const FCameraSnapshot* FWorldEditorContext::GetCameraState() const noexcept {
     const auto Reader = SharedState.GetReader();
     return Reader.Peek().Camera ? &*Reader.Peek().Camera : nullptr;
 }
 
-void FWorldEditorContext::SetCameraState(const FMessageEditorCameraState& State) {
+void FWorldEditorContext::PublishCameraState(const FCameraSnapshot& State) {
     SharedState.GetWriter().Modify([&State](FWorldEditorSharedState& Shared) { Shared.Camera = State; });
 }
 

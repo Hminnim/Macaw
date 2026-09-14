@@ -10,10 +10,6 @@ namespace {
         FMatrix RotationMatrix = FMatrix::CreateFromQuaternion(Rotation);
         FMatrix Result = ScaleMatrix * RotationMatrix;
 
-        // Mesh vertices are authored Y-up, but the engine world is Z-up.
-        // Apply the source basis before the world scale and rotation:
-        // source -> Z-up world -> scale/rotation.  Applying it afterwards
-        // would make a Z-up yaw rotate around the camera's forward axis.
         const float Row0[3]{ Result.m[0][0], Result.m[0][1], Result.m[0][2] };
         const float Row1[3]{ Result.m[1][0], Result.m[1][1], Result.m[1][2] };
         const float Row2[3]{ Result.m[2][0], Result.m[2][1], Result.m[2][2] };

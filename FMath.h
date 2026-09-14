@@ -1,4 +1,6 @@
-﻿#pragma once 
+#pragma once
+#include <algorithm>
+
 #include "SimpleMath/SimpleMath.h"
 
 struct FQuat;
@@ -230,7 +232,6 @@ using FColor4 = FVector4;
 // their authoritative rotation in FQuat.
 struct FRotator
 {
-    // Z-up convention: pitch rotates around X, yaw around Z, and roll around Y.
     float x = 0.0f; // pitch
     float y = 0.0f; // yaw
     float z = 0.0f; // roll
@@ -250,8 +251,6 @@ inline const FRotator FRotator::Zero{};
 
 struct FMatrix
 {
-    // The engine world is Z-up.  FTransform applies the mesh-source basis at
-    // the boundary; matrices, vectors, and quaternions otherwise stay Z-up.
     // Value-returning compatibility API. Singular input produces non-finite values.
     // Use TryInverse when the caller needs to handle failure.
     FMatrix Invert() const
@@ -368,7 +367,6 @@ struct FMatrix
     static FMatrix CreateFromYawPitchRoll(
         float yaw, float pitch, float roll)
     {
-        // Z-up Euler convention: roll(Y) -> pitch(X) -> yaw(Z).
         return CreateRotationY(roll)
             * CreateRotationX(pitch)
             * CreateRotationZ(yaw);
@@ -648,8 +646,6 @@ struct FQuat {
             };
         }
 
-        // At gimbal lock, preserve the combined yaw/roll angle and choose a
-        // zero roll; it is the stable representative for this Euler order.
         return { Pitch, std::atan2(RotationMatrix.m[0][1], RotationMatrix.m[0][0]), 0.0f };
     }
 
@@ -671,8 +667,6 @@ struct FQuat {
         return FQuat(Result);
     }
 
-    // Applies First, then Second. This matches the engine's row-vector
-    // matrix convention and is the order used for local-to-parent rotation.
     static FQuat Concatenate(const FQuat& First, const FQuat& Second) {
         return FQuat(DirectX::SimpleMath::Quaternion::Concatenate(
             First.ToSimpleMath(), Second.ToSimpleMath()));
