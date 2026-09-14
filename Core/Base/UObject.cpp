@@ -3,7 +3,7 @@
 #include "Memory.h"
 
 UObject::UObject()
-	: Guid(FGuid::NewGuid()), Name(GetTypeInfo()->TypeName)
+	: Guid(FGuid::NewGuid()), Name()
 {
 }
 
