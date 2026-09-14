@@ -61,6 +61,8 @@
 #include "Scene/Component/UTextRenderComponent.h"
 #include "Scene/Component/UKTextRenderComponent.h"
 
+#include "FName.h"
+
 #define MAX_LOADSTRING 100
 
 
@@ -364,6 +366,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     auto LastTickTime = std::chrono::steady_clock::now();
 
+    char BufferA[256] = "Player";
+    char BufferB[256] = "player";
+
     while (true) {
         if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
             if (msg.message == WM_QUIT) {
@@ -415,6 +420,32 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             EditorView.RenderSceneGuides(Renderer.GetDeviceContext(),Probe);
             Renderer.RenderGizmos(Probe);
             EditorView.RenderOrientationAxis(Renderer.GetDeviceContext(),Probe.MainCameraProbe);
+            
+            ImGui::Begin("FName Test");
+
+      
+            ImGui::Separator();
+            
+            ImGui::InputText("String A", BufferA, sizeof(BufferA));
+            ImGui::InputText("String B", BufferB, sizeof(BufferB));
+
+            FName NameA(BufferA);
+            FName NameB(BufferB);
+
+            bool bIsEqual = (NameA == NameB);
+            if (bIsEqual)
+            {
+                ImGui::Text("operator== : true");               
+            }
+            else
+            {
+                ImGui::Text("operator== : false");            
+            }
+
+            ImGui::Text("=== 2. Display Result (Case Preservation) ===");
+            ImGui::Text("A.ToString() : \"%s\"", NameA.ToString().c_str());
+            ImGui::Text("B.ToString() : \"%s\"", NameB.ToString().c_str());
+            ImGui::End();
 
             ImGui::Render();
             ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());

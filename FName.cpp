@@ -194,6 +194,18 @@ public:
 	}
 	FNameEntryId Find(std::string_view NameString) const
 	{
+		if (NameString.empty())
+		{
+			return FNameEntryId();
+		}
+
+		if (NameString.length() >= NAME_SIZE)
+		{
+			assert(false && "FName string too long! FName is only meant for identifiers (<= 1023 chars).");
+
+			NameString = NameString.substr(0, NAME_SIZE - 1);
+		}
+
 		// Display
 		FNameDisplayValue DisplayValue(NameString);
 		FNameEntryId Existing = FNamePool::FindValue(DisplayHashBuckets, DisplayValue, true);
@@ -209,7 +221,7 @@ public:
 	}
 	FNameEntryId Store(std::string_view NameString)
 	{
-		if (NameString.length() <= 0)
+		if (NameString.empty())
 		{
 			return FNameEntryId();
 		}
