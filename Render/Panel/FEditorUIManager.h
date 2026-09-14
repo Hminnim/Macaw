@@ -6,7 +6,7 @@
 #include "FPropertyPanel.h"
 #include "FConsolePanel.h"
 #include "FStatPanel.h"
-#include "Inspection.h" // FOutlinerPanel
+#include "Outliner.h"
 
 #include "Core/Channel/FStateChannel.h"
 #include "../../Scene/FWorldEditorContext.h"
@@ -52,7 +52,7 @@ public:
         );
 
 		Panels.emplace_back(
-			std::make_unique<FOutlinerPanel>(World)
+			std::make_unique<FOutlinerPanel>(World, EditorContext)
 		);
     }
 

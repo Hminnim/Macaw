@@ -59,8 +59,8 @@ public:
 			GizmoMode.Emplace(static_cast<uint8>(CurrentGizmoMode));
 		}
 
-		ImGui::SameLine();
-		ImGui::Text("Coordinate");
+		//ImGui::SameLine();
+		ImGui::Text("Coordinate Mode");
 		int CoordinateSpaceIndex = static_cast<int>(GizmoCoordinateSpace.Read());
 		bool bCoordinateSpaceChanged = false;
 		

@@ -186,6 +186,7 @@ protected:
 private:
     std::vector<std::unique_ptr<UActorComponent>> Components{};
     USceneComponent* RootComponent = nullptr;
+
     FGuid PendingRootComponentGuid{};
     FGuid FolderGuid{};
 
