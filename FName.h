@@ -43,6 +43,7 @@ struct FNameEntry
 {
 private:
 	FNameEntryHeader Header;
+	FNameEntryId ComparisonId;
 	uint8 NameData[0];
 
 public:
@@ -53,6 +54,8 @@ public:
 
 	bool IsWide() const { return Header.bIsWide; }
 	int32 GetNameLength() const { return Header.Len; }
+	FNameEntryId GetComparisonId() const { return ComparisonId; }
+	void SetComparisonId(FNameEntryId NewId) { ComparisonId = NewId; }
 
 	const char* GetName() const { return (char*)NameData; }
 };
@@ -60,11 +63,13 @@ public:
 class FName
 {
 public:
+	constexpr FName() = default;
 	FName(const char* pStr);
 	FName(FString str);
 
 	int32 Compare(const FName& Rhs) const;
 	bool operator==(const FName& Rhs) const;
+	bool operator<(const FName& Rhs) const;
 
 	FString ToString() const;
 

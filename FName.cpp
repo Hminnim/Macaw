@@ -194,20 +194,38 @@ public:
 	}
 	FNameEntryId Find(std::string_view NameString) const
 	{
+		// Display
+		FNameDisplayValue DisplayValue(NameString);
+		FNameEntryId Existing = FNamePool::FindValue(DisplayHashBuckets, DisplayValue, true);
+		if (Existing.ToUnstableInt() != 0)
+		{
+			return Existing;
+		}
+
 		// Comparison
 		FNameComparisonValue ComparisonValue(NameString);
 
 		return FNamePool::FindValue(ComparisonHashBuckets, ComparisonValue, false);
 	}
-	void Store(std::string_view NameString, FNameEntryId& OutComparison, FNameEntryId& OutDisplay)
+	FNameEntryId Store(std::string_view NameString)
 	{
-		// Store Comparison
-		FNameComparisonValue ComparisonValue(NameString);
-		OutComparison = StoreValue(ComparisonHashBuckets, ComparisonValue, false);
+		if (NameString.length() <= 0)
+		{
+			return FNameEntryId();
+		}
 
-		// Store Display
 		FNameDisplayValue DisplayValue(NameString);
-		OutDisplay = StoreValue(DisplayHashBuckets, DisplayValue, true);
+		FNameEntryId Existing = FNamePool::FindValue(DisplayHashBuckets, DisplayValue, true);
+		if (Existing.ToUnstableInt() != 0)
+		{
+			return Existing;
+		}
+
+		bool bAdded = false;
+		FNameComparisonValue ComparisonValue(NameString);
+		FNameEntryId ComparisonId = StoreComparisonValue(ComparisonValue, bAdded);
+
+		return StoreDisplayValue(DisplayValue, ComparisonId, bAdded);
 	}
 	const FNameEntry& Resolve(FNameEntryId Id) const
 	{
@@ -306,6 +324,83 @@ private:
 
 		return NewHandle;
 	}
+	FNameEntryId StoreComparisonValue(const FNameValue& InValue, bool& bOutAdded)
+	{
+		FNameEntryId ExistingId = FNamePool::FindValue(ComparisonHashBuckets, InValue, false);
+		if (ExistingId.ToUnstableInt() != 0)
+		{
+			return ExistingId;
+		}
+
+		bOutAdded = true;
+
+		// Write Memory
+		uint32 NeededByte = static_cast<uint32>(sizeof(FNameEntry) + InValue.Name.length() + 1); // 1 : null terminator
+		FNameEntryHandle NewHandle = Entries.Allocate(NeededByte);
+
+		// Set header
+		FNameEntry& NewEntry = Entries.Resolve(NewHandle);
+		uint16* HeaderPtr = reinterpret_cast<uint16*>(&NewEntry);
+		*HeaderPtr = static_cast<uint16>(InValue.Name.length()) << 1;
+		// Set string
+		char* DataPtr = const_cast<char*>(NewEntry.GetName());
+		std::memcpy(DataPtr, InValue.Name.data(), InValue.Name.length());
+		DataPtr[InValue.Name.length()] = '\0'; // null terminator
+
+		NewEntry.SetComparisonId(NewHandle);
+
+		InsertSlot(ComparisonHashBuckets, InValue, NewHandle);
+
+		return NewHandle;
+	}
+
+	FNameEntryId StoreDisplayValue(const FNameValue& InValue, FNameEntryId InComparisonId, bool bWasAdded)
+	{
+		if (bWasAdded)
+		{
+			InsertSlot(DisplayHashBuckets, InValue, InComparisonId);
+			return InComparisonId;
+		}
+
+		// Write Memory
+		uint32 NeededByte = static_cast<uint32>(sizeof(FNameEntry) + InValue.Name.length() + 1); // 1 : null terminator
+		FNameEntryHandle NewHandle = Entries.Allocate(NeededByte);
+
+		// Set header
+		FNameEntry& NewEntry = Entries.Resolve(NewHandle);
+		uint16* HeaderPtr = reinterpret_cast<uint16*>(&NewEntry);
+		*HeaderPtr = static_cast<uint16>(InValue.Name.length()) << 1;
+		// Set string
+		char* DataPtr = const_cast<char*>(NewEntry.GetName());
+		std::memcpy(DataPtr, InValue.Name.data(), InValue.Name.length());
+		DataPtr[InValue.Name.length()] = '\0'; // null terminator
+
+		NewEntry.SetComparisonId(InComparisonId);
+
+		InsertSlot(DisplayHashBuckets, InValue, NewHandle);
+
+		return NewHandle;
+	}
+	void InsertSlot(TArray<FNameSlot>& Buckets, const FNameValue& InValue, FNameEntryId InEntryId)
+	{
+		uint32 CapacityMask = static_cast<uint32>(Buckets.size() - 1);
+		uint32 SlotIndex = InValue.Hash.Hash & CapacityMask;
+		uint32 Probes = 0;
+		const uint32 MaxProbes = static_cast<uint32>(Buckets.size());
+
+		while (Buckets[SlotIndex].Used())
+		{
+			if (++Probes >= MaxProbes)
+			{
+				assert(false && "FNamePool out of memory!");
+				std::abort();
+			}
+
+			SlotIndex = (SlotIndex + 1) & CapacityMask;
+		}
+
+		Buckets[SlotIndex] = FNameSlot(InEntryId, InValue.Hash.ProbeHash);
+	}
 
 	FNameEntryAllocator Entries;
 
@@ -317,7 +412,8 @@ FName::FName(const char* pStr)
 {
 	if (pStr)
 	{
-		FNamePool::Get().Store(pStr,ComparisonId, DisplayId);
+		DisplayId = FNamePool::Get().Store(pStr);
+		ComparisonId = FNamePool::Get().Resolve(DisplayId).GetComparisonId();
 	}
 }
 
@@ -325,7 +421,8 @@ FName::FName(FString str)
 {
 	if (str.length() > 0)
 	{
-		FNamePool::Get().Store(str, ComparisonId, DisplayId);
+		DisplayId = FNamePool::Get().Store(str);
+		ComparisonId = FNamePool::Get().Resolve(DisplayId).GetComparisonId();
 	}
 }
 
@@ -337,6 +434,11 @@ int32 FName::Compare(const FName& Rhs) const
 bool FName::operator==(const FName& Rhs) const
 {
 	return this->ComparisonId == Rhs.ComparisonId;
+}
+
+bool FName::operator<(const FName& Rhs) const
+{
+	return this->ComparisonId.ToUnstableInt() < Rhs.ComparisonId.ToUnstableInt();
 }
 
 FString FName::ToString() const
