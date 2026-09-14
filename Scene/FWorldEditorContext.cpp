@@ -67,6 +67,16 @@ void FWorldEditorContext::SetSelectedCollider(UCollisionComponent* Collider) {
     SelectedActor.Set(Collider->GetOwner());
 }
 
+void FWorldEditorContext::SetSelectedActor(AActor* Actor) {
+    if (Actor == nullptr) {
+        ClearSelection();
+        return;
+    }
+
+    SelectedCollider.Reset();
+    SelectedActor.Set(Actor);
+}
+
 void FWorldEditorContext::ClearSelection() {
     SelectedCollider.Reset();
     SelectedActor.Reset();

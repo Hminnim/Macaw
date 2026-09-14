@@ -35,6 +35,7 @@ public:
     void SetRenderModeState(const size_t State);
 
     void SetSelectedCollider(UCollisionComponent* Collider);
+    void SetSelectedActor(AActor* Actor);
     void ClearSelection();
 
     AActor* GetSelectedActor() const noexcept;
