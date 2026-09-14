@@ -1,4 +1,4 @@
-﻿#include "PCH.h"
+#include "PCH.h"
 #include "FControlPanel.h"
 
 #include <windows.h>
@@ -147,7 +147,10 @@ void FControlPanel::DrawPanel()
 
     if (bCameraChanged)
     {
-        EditorContext->SetCameraState(FMessageEditorCameraState{ CachedCamPos, CachedCamRot, CachedFOV });
+        EditorToWorldSender.TryEmplace<FMessageSetEditorCameraRequest>(
+            CachedCamPos,
+            CachedCamRot,
+            CachedFOV);
     }
 
     ImGui::Separator();

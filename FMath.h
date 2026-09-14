@@ -1,4 +1,6 @@
-﻿#pragma once 
+#pragma once
+#include <algorithm>
+
 #include "SimpleMath/SimpleMath.h"
 
 struct FQuat;
@@ -298,27 +300,6 @@ struct FMatrix
         return result;
     }
 
-    static FMatrix CreateYUpToZUp()
-    {
-        FMatrix result;
-
-        result.m[0][0] = 1.0f;
-        result.m[0][1] = 0.0f;
-        result.m[0][2] = 0.0f;
-
-        result.m[1][0] = 0.0f;
-        result.m[1][1] = 0.0f;
-        result.m[1][2] = 1.0f;
-
-        result.m[2][0] = 0.0f;
-        result.m[2][1] = 1.0f;
-        result.m[2][2] = 0.0f;
-
-        result.m[3][3] = 1.0f;
-
-        return result;
-    }
-
     static FMatrix CreateScale(const FVector& scale)
     {
         FMatrix result;
@@ -386,10 +367,9 @@ struct FMatrix
     static FMatrix CreateFromYawPitchRoll(
         float yaw, float pitch, float roll)
     {
-
-        return CreateRotationZ(roll)
+        return CreateRotationY(roll)
             * CreateRotationX(pitch)
-            * CreateRotationY(yaw);
+            * CreateRotationZ(yaw);
     }
 
 
@@ -647,13 +627,26 @@ struct FQuat {
     DirectX::SimpleMath::Quaternion ToSimpleMath() const { return { x, y, z, w }; }
 
     static FQuat FromRotator(const FRotator& Rotation) {
-        return FQuat(DirectX::SimpleMath::Quaternion::CreateFromYawPitchRoll(
-            Rotation.y, Rotation.x, Rotation.z));
+        const FQuat Roll = CreateFromAxisAngle(FVector::UnitY, Rotation.z);
+        const FQuat Pitch = CreateFromAxisAngle(FVector::UnitX, Rotation.x);
+        const FQuat Yaw = CreateFromAxisAngle(FVector::UnitZ, Rotation.y);
+        return Concatenate(Concatenate(Roll, Pitch), Yaw);
     }
 
     FRotator ToRotator() const {
-        const DirectX::SimpleMath::Vector3 Euler = ToSimpleMath().ToEuler();
-        return { Euler.x, Euler.y, Euler.z };
+        const FMatrix RotationMatrix = FMatrix::CreateFromQuaternion(*this);
+        const float Pitch = std::asin(std::clamp(RotationMatrix.m[1][2], -1.0f, 1.0f));
+        const float CosPitch = std::cos(Pitch);
+
+        if (std::abs(CosPitch) > 1e-6f) {
+            return {
+                Pitch,
+                std::atan2(-RotationMatrix.m[1][0], RotationMatrix.m[1][1]),
+                std::atan2(-RotationMatrix.m[0][2], RotationMatrix.m[2][2])
+            };
+        }
+
+        return { Pitch, std::atan2(RotationMatrix.m[0][1], RotationMatrix.m[0][0]), 0.0f };
     }
 
     void Normalize() {
@@ -674,8 +667,6 @@ struct FQuat {
         return FQuat(Result);
     }
 
-    // Applies First, then Second. This matches the engine's row-vector
-    // matrix convention and is the order used for local-to-parent rotation.
     static FQuat Concatenate(const FQuat& First, const FQuat& Second) {
         return FQuat(DirectX::SimpleMath::Quaternion::Concatenate(
             First.ToSimpleMath(), Second.ToSimpleMath()));

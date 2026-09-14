@@ -23,12 +23,13 @@ TEST_SUITE("CH4 Scene Attachment") {
         const FMatrix MatrixNoScale = Transform.ToMatrixNoScale();
         const FMatrix InverseMatrixWithScale = Transform.ToInverseMatrixWithScale();
 
-        CHECK(MatrixWithScale.m[0][0] == doctest::Approx(2.0f));
-        CHECK(MatrixWithScale.m[1][2] == doctest::Approx(3.0f));
-        CHECK(MatrixWithScale.m[2][1] == doctest::Approx(4.0f));
-        CHECK(MatrixNoScale.m[0][0] == doctest::Approx(1.0f));
+        CHECK(MatrixWithScale.m[0][0] == doctest::Approx(-2.0f));
+        CHECK(MatrixWithScale.m[1][2] == doctest::Approx(4.0f));
+        CHECK(MatrixWithScale.m[2][1] == doctest::Approx(3.0f));
+        CHECK(MatrixNoScale.m[0][0] == doctest::Approx(-1.0f));
         CHECK(MatrixNoScale.m[1][2] == doctest::Approx(1.0f));
         CHECK(MatrixNoScale.m[2][1] == doctest::Approx(1.0f));
+        CHECK(MatrixWithScale.Translation() == FVector3(3.0f, 4.0f, 5.0f));
 
         const FMatrix Identity = MatrixWithScale * InverseMatrixWithScale;
         for (uint32 Row = 0; Row < 4; ++Row) {
@@ -36,6 +37,58 @@ TEST_SUITE("CH4 Scene Attachment") {
                 CHECK(Identity.m[Row][Column] == doctest::Approx(Row == Column ? 1.0f : 0.0f).epsilon(0.0001f));
             }
         }
+    }
+
+    TEST_CASE("FMatrix rotation axes and FRotator yaw use the engine Z-up basis") {
+        const FMatrix RotateX = FMatrix::CreateRotationX(DirectX::XM_PIDIV2);
+        const FMatrix RotateY = FMatrix::CreateRotationY(DirectX::XM_PIDIV2);
+        const FMatrix RotateZ = FMatrix::CreateRotationZ(DirectX::XM_PIDIV2);
+
+        const FVector3 XRotatedY = RotateX.TransformDirection(FVector3::UnitY);
+        const FVector3 YRotatedX = RotateY.TransformDirection(FVector3::UnitX);
+        const FVector3 YRotatedZ = RotateY.TransformDirection(FVector3::UnitZ);
+        const FVector3 ZRotatedX = RotateZ.TransformDirection(FVector3::UnitX);
+        CHECK(XRotatedY.x == doctest::Approx(0.0f));
+        CHECK(XRotatedY.y == doctest::Approx(0.0f));
+        CHECK(XRotatedY.z == doctest::Approx(1.0f));
+        CHECK(YRotatedX.x == doctest::Approx(0.0f));
+        CHECK(YRotatedX.z == doctest::Approx(-1.0f));
+        CHECK(YRotatedZ.x == doctest::Approx(1.0f));
+        CHECK(YRotatedZ.z == doctest::Approx(0.0f));
+        CHECK(ZRotatedX.x == doctest::Approx(0.0f));
+        CHECK(ZRotatedX.y == doctest::Approx(1.0f));
+        CHECK(ZRotatedX.z == doctest::Approx(0.0f));
+
+        const FMatrix YawMatrix = FMatrix::CreateFromQuaternion(
+            FQuat::FromRotator({ 0.0f, DirectX::XM_PIDIV2, 0.0f }));
+        const FVector3 YawRotatedX = YawMatrix.TransformDirection(FVector3::UnitX);
+        CHECK(YawRotatedX.x == doctest::Approx(0.0f));
+        CHECK(YawRotatedX.y == doctest::Approx(1.0f));
+        CHECK(YawRotatedX.z == doctest::Approx(0.0f));
+    }
+
+    TEST_CASE("Z-up yaw rotates the camera forward direction in the ground plane") {
+        const FTransform CameraAtRest({ 0.0f, 0.0f, 0.0f }, FRotator::Zero, { 1.0f, 1.0f, 1.0f });
+        const FTransform CameraYawed({ 0.0f, 0.0f, 0.0f }, { 0.0f, DirectX::XM_PIDIV2, 0.0f }, { 1.0f, 1.0f, 1.0f });
+
+        const FVector3 RestForward = CameraAtRest.ToMatrixNoScale().Forward();
+        const FVector3 YawedForward = CameraYawed.ToMatrixNoScale().Forward();
+        CHECK(RestForward == FVector3(0.0f, 1.0f, 0.0f));
+        CHECK(YawedForward.x == doctest::Approx(-1.0f));
+        CHECK(YawedForward.y == doctest::Approx(0.0f));
+        CHECK(YawedForward.z == doctest::Approx(0.0f));
+    }
+
+    TEST_CASE("Camera pitch follows the yawed local-right quaternion axis") {
+        const FQuat Yaw = FQuat::CreateFromAxisAngle(FVector3::UnitZ, DirectX::XM_PIDIV2);
+        const FQuat YawedRotation = FQuat::Concatenate(FQuat{}, Yaw);
+        const FVector3 PitchAxis = FMatrix::CreateFromQuaternion(YawedRotation).Right();
+        const FQuat Pitch = FQuat::CreateFromAxisAngle(PitchAxis, 0.25f);
+        const FQuat CameraRotation = FQuat::Concatenate(YawedRotation, Pitch);
+        const FTransform Camera({ 0.0f, 0.0f, 0.0f }, CameraRotation, { 1.0f, 1.0f, 1.0f });
+
+        const FVector3 Forward = Camera.ToMatrixNoScale().Forward();
+        CHECK(Forward.z > 0.0f);
     }
 
     TEST_CASE("KeepWorldTransform preserves world location through attach and detach") {

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "PCH.h"
 
@@ -7,7 +7,7 @@
 // =========================================================
 // [State] 양방향 상태 데이터 (TStateChannel 용)
 // =========================================================
-struct FMessageEditorCameraState
+struct FCameraSnapshot
 {
     FVector3 Position;
     FRotator Rotation;
@@ -23,6 +23,25 @@ struct FMessageEditorCameraState
     MessageType& operator=(const MessageType&) = default; \
     MessageType(MessageType&&) noexcept = default; \
     MessageType& operator=(MessageType&&) noexcept = default
+
+struct FMessageSetEditorCameraRequest
+{
+    FVector3 Position;
+    FRotator Rotation;
+    float FOV;
+
+    JG_DECLARE_EDITOR_MESSAGE(FMessageSetEditorCameraRequest);
+
+    FMessageSetEditorCameraRequest(
+        const FVector3& InPosition,
+        const FRotator& InRotation,
+        float InFOV) noexcept
+        : Position(InPosition)
+        , Rotation(InRotation)
+        , FOV(InFOV)
+    {
+    }
+};
 
 // =========================================================
 // [Event] 단방향 메시지 데이터 (FMessageChannel 용)
