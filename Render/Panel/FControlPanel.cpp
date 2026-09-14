@@ -175,7 +175,25 @@ void FControlPanel::DrawPanel()
     {
         EditorContext->SetGridSizeState(gridSize);
     }
+    
+    ImGui::Separator();
 
+    // =====================================================
+    // RenderMode
+    // =====================================================
+    bool bRenderModeChanged = false;
+    int renderIndex = EditorContext->GetRenderModeState();
+
+    const char* renderMode[] = { "Solid", "Lit", "Unlit", "Wireframe" };
+
+    if (ImGui::Combo("Render Mode", &renderIndex, renderMode, IM_ARRAYSIZE(renderMode))) {
+        bRenderModeChanged = true;
+    }
+
+    if (bRenderModeChanged)
+    {
+        EditorContext->SetRenderModeState(static_cast<size_t>(renderIndex));
+    }
     ImGui::End();
 }
 

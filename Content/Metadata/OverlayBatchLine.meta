@@ -1,3 +1,5 @@
 {
-	"FilePath" : "./Pipeline/BatchLineOverlay.json",
+	"SolidFilePath" : "./Pipeline/BatchLineOverlay.json",
+	"Primary" : 0,
 }
+

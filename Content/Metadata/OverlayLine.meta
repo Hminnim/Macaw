@@ -1,3 +1,4 @@
 {
-	"FilePath" : "./Pipeline/LineOverlay.json",
+	"SolidFilePath" : "./Pipeline/LineOverlay.json",
+	"Primary" : 0,
 }

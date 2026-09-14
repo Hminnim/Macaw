@@ -43,5 +43,7 @@ private:
 
     float GridSize{};
 
+    size_t RenderModeIndex = 0;
+
     HWND WindowHandle;
 };

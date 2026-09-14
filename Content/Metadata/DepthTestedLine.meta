@@ -1,3 +1,4 @@
 {
-	"FilePath" : "./Pipeline/LineDepthTested.json",
+	"SolidFilePath" : "./Pipeline/LineDepthTested.json",
+	"Primary" : 0,
 }

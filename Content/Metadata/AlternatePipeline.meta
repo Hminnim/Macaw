@@ -1,3 +1,7 @@
 {
-	"FilePath" : "./Pipeline/Alternate.json",
+	"SolidFilePath" : "./Pipeline/AlternateSolid.json",
+	"LitFilePath" : "./Pipeline/AlternateLit.json",
+	"UnlitFilePath" : "./Pipeline/AlternateUnlit.json",
+	"WireframeFilePath" : "./Pipeline/AlternateWireframe.json",
+	"Primary" : 0,
 }
