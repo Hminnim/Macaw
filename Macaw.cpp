@@ -354,11 +354,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         TextComponent->SetFontHandle(KFontHandle);
         TextComponent->SetPipelineHandle(TextPipelineHandle);
         TextComponent->SetCharacterHeight(0.5f);
-        TextComponent->SetLetterSpacing(0.05f);
-        TextComponent->SetLineSpacing(0.01f);
+        TextComponent->SetLetterSpacing(0.0f);
+        TextComponent->SetLineSpacing(0.0f);
         TextComponent->SetColor( FVector4{1.0f,1.0f,1.0f, 1.0f});
-        TextComponent->SetText(FString{ "크래프톤 정글\nKraftonJungle\n크래프톤 정글\n1234567890\n껣깷꺢꺟힣"});
-        TextComponent->GetTransform().SetPosition(FVector3{5.0f, 5.0f, 5.0f});
+        TextComponent->SetText(FString{ "크래프톤 정글3주차"});
+        TextComponent->GetTransform().SetPosition(FVector3{0.0f, 0.0f, 0.0f});
     }
 
 	World.SpawnActor(AssetRegistry.GetAsset("SphereMesh"), AssetRegistry.GetAsset("TexturedPipeline"), AssetRegistry.GetAsset("TexturedMaterial"), FVector3{ 0.0f, 0.0f, 5.0f }, AssetRegistry.ResolveAsset<UMesh>(AssetRegistry.GetAsset("SphereMesh")), &AssetRegistry);

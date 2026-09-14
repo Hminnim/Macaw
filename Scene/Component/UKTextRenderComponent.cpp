@@ -138,7 +138,34 @@ void UKTextRenderComponent::RebuildTextGeometry()
 
             Vertices.push_back(Vertex);
         }
-
         PenX += Glyph->AdvanceX * PixelToWorld + LetterSpacing;
+    }
+    if (Vertices.empty())
+    {
+        return;
+    }
+    // 셰이더가 사용하는 실제 Glyph Quad들의 경계로 텍스트 중심을 계산한다.
+    // FreeType의 Bearing 때문에 첫 글자의 Left/Top이 0이라는 보장이 없다.
+    const FTextVertex& FirstVertex = Vertices.front();
+    float MinLeft = FirstVertex.LocalPosition.x;
+    float MaxRight = FirstVertex.LocalPosition.x + FirstVertex.Size.x;
+    float MaxTop = FirstVertex.LocalPosition.y;
+    float MinBottom = FirstVertex.LocalPosition.y - FirstVertex.Size.y;
+
+    for (const FTextVertex& Vertex : Vertices)
+    {
+        MinLeft = std::min(MinLeft, Vertex.LocalPosition.x);
+        MaxRight = std::max(MaxRight, Vertex.LocalPosition.x + Vertex.Size.x);
+        MaxTop = std::max(MaxTop, Vertex.LocalPosition.y);
+        MinBottom = std::min(MinBottom, Vertex.LocalPosition.y - Vertex.Size.y);
+    }
+
+    const float CenterX = (MinLeft + MaxRight) * 0.5f;
+    const float CenterY = (MinBottom + MaxTop) * 0.5f;
+
+    for (FTextVertex& Vertex : Vertices)
+    {
+        Vertex.LocalPosition.x -= CenterX;
+        Vertex.LocalPosition.y -= CenterY;
     }
 }
