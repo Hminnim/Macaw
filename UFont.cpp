@@ -20,8 +20,8 @@ void UFont::BuildFixedGrid(FAssetHandle InAtlasTextureHandle, uint32_t InAtlasWi
 	AtlasHeight = InAtlasHeight;
 	AtlasWidth = InAtlasWidth;
 
-	uint32_t RowCount = AtlasHeight / InCellHeight;
-	uint32_t ColumnCount = AtlasWidth / InCellWidth;
+	uint32_t RowCount = static_cast<uint32_t>(AtlasHeight / InCellHeight);
+	uint32_t ColumnCount = static_cast<uint32_t>(AtlasWidth / InCellWidth);
 
 	for (uint32_t Character = InFirstCharacter; Character <= InLastCharacter; Character++)
 	{

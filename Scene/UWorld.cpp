@@ -155,22 +155,18 @@ FRenderProbe& UWorld::BuildRenderProbe()
     Probe.GizmoProbes.clear();
     Probe.TextProbes.clear();
 
-    for (const UStaticMeshComponent* Component : RenderableComponents)
+ /*   for (const UStaticMeshComponent* Component : RenderableComponents)
     {
 		FActorProbe ActorProbe{};
 		Component->MakeRender(ActorProbe);
 
-		
-		UCollisionComponent* SelectedCollision = SelectedCollider.Get();
+		UCollisionComponent* SelectedCollision = EditorContext->GetSelectedCollider();
 		if (SelectedCollision != nullptr && Component->GetOwner() == SelectedCollision->GetOwner()) {
 			ActorProbe.Flags |= 0x0000'0001; 
 		}
+	}*/
 
-        if (Component->MakeTextRender(TextProbe))
-        {
-            Probe.TextProbes.push_back(std::move(TextProbe));
-        }
-    }
+	RenderSubsystem->BuildRenderProbes(Probe);
 
     for (const UTextRenderComponent* Component : TextRenderableComponents)
     {
@@ -187,8 +183,11 @@ FRenderProbe& UWorld::BuildRenderProbe()
         }
     }
 
-    if (Camera != nullptr)
+	
+    if (CameraSubsystem->GetMainCamera() != nullptr)
     {
+		auto Camera = CameraSubsystem->GetMainCamera();
+
         Probe.MainCameraProbe.View =
             Camera->GetViewMatrix();
 
@@ -199,6 +198,18 @@ FRenderProbe& UWorld::BuildRenderProbe()
 			Camera->GetViewProjectionMatrix();
 	}
 	return Probe;
+}
+
+void UWorld::SetEditorContext(FWorldEditorContext* InEditorContext) {
+	if (InEditorContext == EditorContext) {
+		return;
+	}
+	
+	EditorContext = InEditorContext;
+}
+
+FWorldEditorContext* UWorld::GetEditorContext() const noexcept {
+	return EditorContext;
 }
 
 void UWorld::Tick(float DeltaTime) {
@@ -215,7 +226,7 @@ void UWorld::Tick(float DeltaTime) {
 		Actor->Tick(DeltaTime);
 	}
 
-    // FlushPendingDestroyActors();
+    FlushPendingDestroyActors();
 }
 
 URenderSubsystem& UWorld::GetRenderSubsystem() {
@@ -638,6 +649,10 @@ void UWorld::ResetWorld(FAssetRegistry* AssetRegistry, ID3D11Device* Device)
 
 	AssetRegistry->Reset();
 	AssetRegistry->Initialize(Device);
+}
+
+void UWorld::UpdateEditorCameraState() {
+
 }
 
 void UWorld::SetAssetRegistry(FAssetRegistry* InAssetRegistry) {

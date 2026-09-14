@@ -89,8 +89,8 @@ HWND gHWND;
 FRenderer Renderer;
 
 namespace {
-    constexpr bool bLoadTestScene = true;
-    constexpr bool bEnableSceneSave = true;
+    constexpr bool bLoadTestScene = false;
+    constexpr bool bEnableSceneSave = false;
 
     void ConfigureTestStaticMesh(UStaticMeshComponent* MeshComponent, const FAssetHandle& MeshHandle, const FAssetHandle& PipelineHandle, const FAssetHandle& MaterialHandle, const FVector3& Location) {
         MeshComponent->SetMeshHandle(MeshHandle);

@@ -169,7 +169,7 @@ struct FNameComparisonValue : public FNameValue
 			LowerBuffer[i] = static_cast<char>(std::tolower(InName[i]));
 		}
 
-		Hash = FNameHash(LowerBuffer, Len);
+		Hash = FNameHash(LowerBuffer, static_cast<int32>(Len));
 	}
 };
 // FNameDisplayValue
@@ -178,7 +178,7 @@ struct FNameDisplayValue : public FNameValue
 	FNameDisplayValue(std::string_view InName)
 		: FNameValue(InName)
 	{
-		Hash = FNameHash(InName.data(), InName.length());
+		Hash = FNameHash(InName.data(), static_cast<int32>(InName.length()));
 	}
 };
 
@@ -228,7 +228,7 @@ private:
 
 	FNameEntryId FindValue(const TArray<FNameSlot>& Buckets, const FNameValue& InValue, bool bIsCaseSensitive) const
 	{
-		uint32 CapacityMask = Buckets.size() - 1;
+		uint32 CapacityMask = static_cast<uint32>(Buckets.size() - 1);
 		uint32 SlotIndex = InValue.Hash.Hash & CapacityMask;
 
 		while (Buckets[SlotIndex].Used())
@@ -274,7 +274,7 @@ private:
 		}
 
 		// Write Memory
-		uint32 NeededByte = sizeof(FNameEntryHeader) + InValue.Name.length() + 1; // 1 : null terminator
+		uint32 NeededByte = static_cast<uint32>(sizeof(FNameEntryHeader) + InValue.Name.length() + 1); // 1 : null terminator
 		FNameEntryHandle NewHandle = Entries.Allocate(NeededByte);
 
 		// Set header
@@ -286,7 +286,7 @@ private:
 		std::memcpy(DataPtr, InValue.Name.data(), InValue.Name.length());
 		DataPtr[InValue.Name.length()] = '\0'; // null terminator
 
-		uint32 CapacityMask = Buckets.size() - 1;
+		uint32 CapacityMask = static_cast<uint32>(Buckets.size() - 1);
 		uint32 SlotIndex = InValue.Hash.Hash & CapacityMask;
 
 		while (Buckets[SlotIndex].Used())
