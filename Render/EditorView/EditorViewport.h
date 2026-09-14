@@ -28,7 +28,7 @@ public:
 	EditorViewport& operator=(EditorViewport&&) noexcept = default;
 
 public:
-	void Initialize(ID3D11Device* Device, FAssetRegistry& AssetRegistry, FStateChannel<RenderWindowInfo>::FReader WindowReader, FWorldEditorContext& EditorContext);
+	void Initialize(ID3D11Device* Device, FAssetRegistry& AssetRegistry, FStateChannel<RenderWindowInfo>::FReader WindowReader, FWorldEditorContext& InEditorContext);
 
 	void ProcessInput(FKeyboardInput& KeyboardInput, FMouseInput& MouseInput, bool bMouseCapturedByUI);
 	void RenderInProbe(FRenderProbe& Probe);
@@ -42,13 +42,15 @@ public:
 private:
 	void RenderGrid(ELineDepthMode DepthMode);
 	void RenderAxis(ELineDepthMode DepthMode);
-	void RenderBoundingBox(ELineDepthMode DepthMode);
+	void RenderBounds(ELineDepthMode DepthMode);
 
 private:
 	FStateChannel<RenderWindowInfo>::FReader WindowInfoReader{};
 
-	std::unique_ptr<ILineRenderer> LineRenderer = std::make_unique<FBatchLineRenderer>();
+	std::unique_ptr<ILineRenderer> LineRenderer = std::make_unique<FLineRenderer>();
 	FTransformGizmo TransformGizmo{};
 
 	D3D11_VIEWPORT OrientationAxisViewport{ 5.0f, 5.0f, OrientationAxisSize, OrientationAxisSize, 0.0f, 1.0f };
+
+	FWorldEditorContext* EditorContext = nullptr;
 };

@@ -16,6 +16,7 @@ class UWorld;
 
 struct FWorldEditorSharedState {
     std::optional<FMessageEditorCameraState> Camera;
+    float GridSize{1.0f};
 };
 
 class FWorldEditorContext {
@@ -29,6 +30,9 @@ public:
 
     const FMessageEditorCameraState* GetCameraState() const noexcept;
     void SetCameraState(const FMessageEditorCameraState& State);
+
+    const float GetGridSizeState() const noexcept;
+    void SetGridSizeState(const float State);
 
     void SetSelectedCollider(UCollisionComponent* Collider);
     void ClearSelection();

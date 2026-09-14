@@ -150,6 +150,32 @@ void FControlPanel::DrawPanel()
         EditorContext->SetCameraState(FMessageEditorCameraState{ CachedCamPos, CachedCamRot, CachedFOV });
     }
 
+    ImGui::Separator();
+
+    // =====================================================
+    // Grid
+    // =====================================================
+
+    ImGui::Text("Grid");
+
+    bool bGridChanged = false;
+
+    float gridSize = EditorContext->GetGridSizeState();
+
+    if (ImGui::SliderFloat(
+        "GridSize",
+        &gridSize,
+        0.1f,
+        100.0f))
+    {
+        bGridChanged = true;
+    }
+
+    if (bGridChanged)
+    {
+        EditorContext->SetGridSizeState(gridSize);
+    }
+
     ImGui::End();
 }
 
