@@ -97,9 +97,21 @@ void FRenderer::RenderOutline(const TArray<FActorProbe>& ActorProbes, const Came
 }
 
 void FRenderer::RenderActorList(TArray<FActorProbe>& ActorProbes, const CameraProbe& MainCameraProbe, bool bOutline) {
-	if (ActorProbes.empty()) {
-		return;
-	}
+    if (ActorProbes.empty() || AssetRegistry == nullptr) {
+        return;
+    }
+
+    // A component may outlive an asset that was removed from the registry. Do
+    // not let one stale probe make the entire frame dereference a nullptr.
+    std::erase_if(ActorProbes, [this](const FActorProbe& Probe) {
+        return AssetRegistry->ResolveAsset<UMaterial>(Probe.MaterialHandle) == nullptr ||
+            AssetRegistry->ResolveAsset<UPipeline>(Probe.PipelineHandle) == nullptr ||
+            AssetRegistry->ResolveAsset<UMesh>(Probe.MeshHandle) == nullptr;
+    });
+
+    if (ActorProbes.empty()) {
+        return;
+    }
 
 	auto GetRenderChunkKey = [this](const FActorProbe& Data) {
 		const FMaterialChunkSignature Signature = AssetRegistry->ResolveAsset<UMaterial>(Data.MaterialHandle)->BuildChunkSignature();

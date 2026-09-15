@@ -14,7 +14,9 @@
 #include "../Scene/UWorld.h"
 
 #include "../Core/Asset/UMesh.h"
+#include "../Core/Asset/UMaterial.h"
 #include "../Core/Asset/BasicGeometry/Plane.h"
+#include "../Render/Pipeline/UPipeline.h"
 
 namespace {
     template<typename T>
@@ -100,6 +102,32 @@ TEST_SUITE("CH6 World Subsystems") {
         CHECK_FALSE(World.GetCollisionSubsystem().ContainsComponent(Collision));
         CHECK_FALSE(World.GetPickingSubsystem().ContainsComponent(Mesh));
         CHECK_EQ(World.GetCameraSubsystem().GetMainCamera(), nullptr);
+    }
+
+    TEST_CASE("Static mesh components receive fallback material and pipeline assets") {
+        Microsoft::WRL::ComPtr<ID3D11Device> Device = CreateTestDevice();
+        REQUIRE(Device != nullptr);
+
+        FAssetRegistry AssetRegistry;
+        REQUIRE(AssetRegistry.Initialize(Device.Get()));
+
+        UWorld World;
+        World.SetAssetRegistry(&AssetRegistry);
+
+        AActor* Actor = World.AdoptActor<AActor>();
+        REQUIRE(Actor != nullptr);
+
+        UStaticMeshComponent* Mesh = Actor->AddComponent<UStaticMeshComponent>();
+        REQUIRE(Mesh != nullptr);
+
+        CHECK(AssetRegistry.ResolveAsset<UMaterial>(Mesh->GetMaterialHandle()) != nullptr);
+        CHECK(AssetRegistry.ResolveAsset<UPipeline>(Mesh->GetPipelineHandle()) != nullptr);
+
+        FRenderProbe Probe;
+        World.GetRenderSubsystem().BuildRenderProbes(&AssetRegistry, Probe);
+        REQUIRE_EQ(Probe.ActorProbes.size(), 1);
+        CHECK(Probe.ActorProbes[0].MaterialHandle == Mesh->GetMaterialHandle());
+        CHECK(Probe.ActorProbes[0].PipelineHandle == Mesh->GetPipelineHandle());
     }
 
     TEST_CASE("Editor context owns selection state and selected render flags") {
