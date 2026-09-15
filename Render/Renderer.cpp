@@ -1,4 +1,4 @@
-﻿#include "PCH.h"
+#include "PCH.h"
 
 #include "Renderer.h"
 #include "../ErrorHandler.h"
@@ -23,8 +23,12 @@ void FRenderer::Create(HWND WindowHandle, UINT width, UINT height) {
 	});
 
 	FRenderer::CreateDeviceAndSwapChain(WindowHandle);
-	FRenderer::CreateRTV();
-	FRenderer::CreateDSV();
+	auto BackBuffer = std::make_unique<FSceneRenderSurface>();
+	BackBuffer->InitializeSwapChain(Device.Get(), SwapChain.Get());
+	BackBufferSurface = std::move(BackBuffer);
+	auto Scene = std::make_unique<FSceneRenderSurface>();
+	Scene->InitializeOffscreen(Device.Get(), width, height);
+	SceneSurface = std::move(Scene);
 	FRenderer::CreateSamplerStates();
 
 	ModelContextArray.Initialize(Device.Get(), DeviceContext.Get(), 128);
@@ -37,14 +41,17 @@ void FRenderer::Create(HWND WindowHandle, UINT width, UINT height) {
 #endif
 }
 
-void FRenderer::BeginFrame() {
-	DeviceContext->ClearRenderTargetView(RenderTargetView.Get(), ClearColor);
-	DeviceContext->ClearDepthStencilView(DepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+void FRenderer::BeginSceneRender() {
+	SceneSurface->Bind(DeviceContext.Get());
+	SceneSurface->Clear(DeviceContext.Get(), ClearColor);
+}
 
-	DeviceContext->OMSetRenderTargets(1, RenderTargetView.GetAddressOf(), DepthStencilView.Get());
-	
-	DeviceContext->RSSetViewports(1, &WindowInfoReader.Read().Viewport);
+void FRenderer::BeginUiRender() {
+	BackBufferSurface->Bind(DeviceContext.Get());
+	BackBufferSurface->Clear(DeviceContext.Get(), ClearColor);
+}
 
+void FRenderer::BindSamplerStates() {
 	std::array<ID3D11SamplerState*, 6> RawSamplerStates{};
 	std::ranges::transform(SamplerStates, RawSamplerStates.begin(), [](const auto& Sampler) {
 		return Sampler.Get();
@@ -77,7 +84,7 @@ void FRenderer::RenderGizmos(FRenderProbe& Probe) {
 		return;
 	}
 
-	DeviceContext->ClearDepthStencilView(DepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0 );
+	SceneSurface->ClearDepth(DeviceContext.Get());
 
 	RenderActorList(Probe.GizmoProbes,Probe.MainCameraProbe);
 }
@@ -106,8 +113,7 @@ void FRenderer::RenderActorList(TArray<FActorProbe>& ActorProbes, const CameraPr
         return;
     }
 
-    // A component may outlive an asset that was removed from the registry. Do
-    // not let one stale probe make the entire frame dereference a nullptr.
+ 
     std::erase_if(ActorProbes, [this](const FActorProbe& Probe) {
         return AssetRegistry->ResolveAsset<UMaterial>(Probe.MaterialHandle) == nullptr ||
             AssetRegistry->ResolveAsset<UPipeline>(Probe.PipelineHandle) == nullptr ||
@@ -177,6 +183,8 @@ void FRenderer::RenderActorList(TArray<FActorProbe>& ActorProbes, const CameraPr
 	FMaterialChunkSignature BoundTextureSet{};
 	bool bTextureSetBound{ false };
 
+	BindSamplerStates();
+
 	for (auto g : Groups) {
 		const FActorProbe& First = g.front();
 		const FMaterialChunkSignature Signature = AssetRegistry->ResolveAsset<UMaterial>(First.MaterialHandle)->BuildChunkSignature();
@@ -237,61 +245,39 @@ void FRenderer::RenderActorList(TArray<FActorProbe>& ActorProbes, const CameraPr
 }
 
 void FRenderer::ReSize(uint32 width, uint32 height) {
-	WindowInfoWriter.Modify([&](RenderWindowInfo& Info) {
-		Info.ScreenWidth = width;
-		Info.ScreenHeight = height;
-		Info.Viewport = { 0.0f, 0.0f, (float)width, (float)height, 0.0f, 1.0f };
-		}
-	);
-
-	// 최소화되었을 때는 0x0이 들어올 수 있음
 	if (!SwapChain || width == 0 || height == 0) {
 		return;
 	}
 
-	// ResizeBuffers 전에 백 버퍼를 참조하는 모든 리소스를 해제해야 함
 	DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
+	BackBufferSurface->Resize(Device.Get(), width, height);
+}
 
-	RenderTargetView.Reset();
-	BackBuffer.Reset();
+void FRenderer::ResizeSceneSurface(uint32 Width, uint32 Height, float Left, float Top) {
+	if (Width == 0 || Height == 0) {
+		return;
+	}
 
-	DepthStencilView.Reset();
-	DepthStencilBuffer.Reset();
-
-	DXGI_SWAP_CHAIN_DESC SwapChainDesc{};
-	ErrorHandler::ReportHRESULT(SwapChain->GetDesc(&SwapChainDesc), "[ FRenderer ]", "Failed to get swap chain description.", ErrorHandler::EErrorLevel::Critical);
-
-	ErrorHandler::ReportHRESULT(SwapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, SwapChainDesc.Flags), "[ FRenderer ]", "Failed to resize swap chain buffers.", ErrorHandler::EErrorLevel::Critical);
-
-	const D3D11_VIEWPORT Viewport{
-		0.0f,
-		0.0f,
-		static_cast<float>(width),
-		static_cast<float>(height),
-		0.0f,
-		1.0f
-	};
-
+	SceneSurface->Resize(Device.Get(), Width, Height);
 	WindowInfoWriter.Modify([&](RenderWindowInfo& Info) {
-		Info.ScreenWidth = width;
-		Info.ScreenHeight = height;
-		Info.Viewport = Viewport;
-		});
-
-	CreateRTV();
-	CreateDSV();
-
-	DeviceContext->RSSetViewports(1, &Viewport);
+		Info.ScreenWidth = Width;
+		Info.ScreenHeight = Height;
+		Info.Viewport = { Left, Top, static_cast<float>(Width), static_cast<float>(Height), 0.0f, 1.0f };
+	});
 }
 
 void FRenderer::Terminate() {
 	DeviceContext->ClearState();
 
+	if (SceneSurface != nullptr) {
+		SceneSurface->Reset();
+	}
+	if (BackBufferSurface != nullptr) {
+		BackBufferSurface->Reset();
+	}
+	SceneSurface.reset();
+	BackBufferSurface.reset();
 	SwapChain.Reset();
-	DepthStencilView.Reset();
-	DepthStencilBuffer.Reset();
-	RenderTargetView.Reset();
-	BackBuffer.Reset();
 }
 
 void FRenderer::ReportLiveObjects() const {
@@ -332,46 +318,6 @@ void FRenderer::CreateDeviceAndSwapChain(HWND WindowHandle) {
 	// 생성된 스왑 체인의 정보 가져오기
 	SwapChain->GetDesc(&swapchaindesc);
 
-	// 뷰포트 정보 설정
-	WindowInfoWriter.Modify([&](RenderWindowInfo& Info) {
-		Info.Viewport = { 0.0f, 0.0f, (float)swapchaindesc.BufferDesc.Width, (float)swapchaindesc.BufferDesc.Height, 0.0f, 1.0f };
-	});
-}
-
-void FRenderer::CreateRTV() {
-	// 스왑 체인으로부터 백 버퍼 텍스처 가져오기
-	SwapChain->GetBuffer(0, IID_PPV_ARGS(BackBuffer.GetAddressOf()));
-
-	// 렌더 타겟 뷰 생성
-	D3D11_RENDER_TARGET_VIEW_DESC framebufferRTVdesc = {};
-	framebufferRTVdesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB; // 색상 포맷
-	framebufferRTVdesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D; // 2D 텍스처
-
-	ErrorHandler::ReportHRESULT(Device->CreateRenderTargetView(BackBuffer.Get(), &framebufferRTVdesc, &RenderTargetView), "[ FRenderer ]", "Failed to create render target view.", ErrorHandler::EErrorLevel::Critical);
-}
-
-void FRenderer::CreateDSV() {
-	D3D11_TEXTURE2D_DESC TextureDesc{};
-	TextureDesc.Width = WindowInfoReader.Read().ScreenWidth;
-	TextureDesc.Height = WindowInfoReader.Read().ScreenHeight;
-	TextureDesc.MipLevels = 1;
-	TextureDesc.ArraySize = 1;
-	TextureDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	TextureDesc.SampleDesc.Count = 1;
-	TextureDesc.SampleDesc.Quality = 0;
-	TextureDesc.Usage = D3D11_USAGE_DEFAULT;
-	TextureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-	TextureDesc.CPUAccessFlags = 0;
-	TextureDesc.MiscFlags = 0;
-
-	ErrorHandler::ReportHRESULT(Device->CreateTexture2D(&TextureDesc, nullptr, DepthStencilBuffer.GetAddressOf()), "[ FRenderer ]", "Failed to create depth stencil buffer.", ErrorHandler::EErrorLevel::Critical);
-
-	D3D11_DEPTH_STENCIL_VIEW_DESC ViewDesc{};
-	ViewDesc.Format = TextureDesc.Format;
-	ViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-	ViewDesc.Texture2D.MipSlice = 0;
-
-	ErrorHandler::ReportHRESULT(Device->CreateDepthStencilView(DepthStencilBuffer.Get(), &ViewDesc, DepthStencilView.GetAddressOf()), "[ FRenderer ]", "Failed to create depth stencil view.", ErrorHandler::EErrorLevel::Critical);
 }
 
 void FRenderer::CreateSamplerStates() {

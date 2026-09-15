@@ -162,8 +162,7 @@ void FControlPanel::DrawPanel()
 
 
 
-FString FControlPanel::OpenFileDialog()
-{
+FString FControlPanel::OpenFileDialog() {
     char FileName[MAX_PATH] = { 0 };
     OPENFILENAMEA OpenFileName = { 0 };
 

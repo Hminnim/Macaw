@@ -1,4 +1,4 @@
-﻿#include "PCH.h"
+#include "PCH.h"
 #include "UWorld.h"
 
 #include <algorithm>
@@ -133,136 +133,6 @@ void UWorld::FlushPendingDestroyActors()
 const TArray<std::unique_ptr<AActor>>& UWorld::GetActors() const
 {
 	return Actors;
-}
-
-Folder* UWorld::CreateFolder(FString InName, FGuid InParentFolderGuid) {
-	if (InParentFolderGuid.IsValid() && FindFolder(InParentFolderGuid) == nullptr) {
-		return nullptr;
-	}
-
-	std::unique_ptr<Folder> NewFolder = std::make_unique<Folder>(std::move(InName));
-	NewFolder->SetParentFolderGuid(InParentFolderGuid);
-	Folder* FolderPtr = NewFolder.get();
-
-	if (!AdoptFolder(std::move(NewFolder))) {
-		return nullptr;
-	}
-
-	return FolderPtr;
-}
-
-bool UWorld::DestroyFolder(FGuid FolderGuid) {
-	auto It = std::ranges::find_if(Folders, [FolderGuid](const std::unique_ptr<Folder>& CandidateFolder) {
-		return CandidateFolder->GetID() == FolderGuid;
-	});
-
-	if (It == Folders.end()) {
-		return false;
-	}
-
-	const FGuid ParentFolderGuid = (*It)->GetParentFolderGuid();
-	for (const std::unique_ptr<Folder>& CandidateFolder : Folders) {
-		if (CandidateFolder->GetID() != FolderGuid && CandidateFolder->GetParentFolderGuid() == FolderGuid) {
-			CandidateFolder->SetParentFolderGuid(ParentFolderGuid);
-		}
-	}
-
-	for (const std::unique_ptr<AActor>& Actor : Actors) {
-		if (Actor->GetFolderGuid() == FolderGuid) {
-			Actor->SetFolderGuid(ParentFolderGuid);
-		}
-	}
-
-	Folders.erase(It);
-	return true;
-}
-
-bool UWorld::SetFolderParent(FGuid FolderGuid, FGuid InParentFolderGuid) {
-	Folder* FolderRecord = FindFolder(FolderGuid);
-	if (FolderRecord == nullptr) {
-		return false;
-	}
-
-	if (!InParentFolderGuid.IsValid()) {
-		FolderRecord->ClearParentFolder();
-		return true;
-	}
-
-	if (FolderGuid == InParentFolderGuid) {
-		return false;
-	}
-
-	const Folder* ParentFolder = FindFolder(InParentFolderGuid);
-	if (ParentFolder == nullptr) {
-		return false;
-	}
-
-	TSet<FGuid> VisitedFolderGuids;
-	for (const Folder* CurrentFolder = ParentFolder; CurrentFolder != nullptr; CurrentFolder = FindFolder(CurrentFolder->GetParentFolderGuid())) {
-		if (CurrentFolder->GetID() == FolderGuid || !VisitedFolderGuids.insert(CurrentFolder->GetID()).second) {
-			return false;
-		}
-	}
-
-	FolderRecord->SetParentFolderGuid(InParentFolderGuid);
-	return true;
-}
-
-Folder* UWorld::FindFolder(FGuid FolderGuid) {
-	const auto It = std::ranges::find_if(Folders, [FolderGuid](const std::unique_ptr<Folder>& CandidateFolder) {
-		return CandidateFolder->GetID() == FolderGuid;
-	});
-	return It != Folders.end() ? It->get() : nullptr;
-}
-
-const Folder* UWorld::FindFolder(FGuid FolderGuid) const {
-	const auto It = std::ranges::find_if(Folders, [FolderGuid](const std::unique_ptr<Folder>& CandidateFolder) {
-		return CandidateFolder->GetID() == FolderGuid;
-	});
-	return It != Folders.end() ? It->get() : nullptr;
-}
-
-const TArray<std::unique_ptr<Folder>>& UWorld::GetFolders() const {
-	return Folders;
-}
-
-bool UWorld::SetActorFolder(AActor* Actor, FGuid FolderGuid) {
-	const bool bIsWorldActor = std::ranges::any_of(Actors, [Actor](const std::unique_ptr<AActor>& Candidate) {
-		return Candidate.get() == Actor;
-	});
-
-	if (!bIsWorldActor || (FolderGuid.IsValid() && FindFolder(FolderGuid) == nullptr)) {
-		return false;
-	}
-
-	Actor->SetFolderGuid(FolderGuid);
-	return true;
-}
-
-bool UWorld::AdoptFolder(std::unique_ptr<Folder> InFolder) {
-	if (InFolder == nullptr || !InFolder->GetID().IsValid() || FindFolder(InFolder->GetID()) != nullptr) {
-		return false;
-	}
-
-	Folders.push_back(std::move(InFolder));
-	return true;
-}
-
-bool UWorld::ValidateFolderHierarchy() const {
-	for (const std::unique_ptr<Folder>& FolderRecord : Folders) {
-		TSet<FGuid> VisitedFolderGuids;
-		for (const Folder* CurrentFolder = FolderRecord.get(); CurrentFolder != nullptr; CurrentFolder = FindFolder(CurrentFolder->GetParentFolderGuid())) {
-			if (!VisitedFolderGuids.insert(CurrentFolder->GetID()).second) {
-				return false;
-			}
-
-			if (CurrentFolder->GetParentFolderGuid().IsValid() && FindFolder(CurrentFolder->GetParentFolderGuid()) == nullptr) {
-				return false;
-			}
-		}
-	}
-
-	return true;
 }
 
 void UWorld::InitializeSubsystems() {
@@ -428,15 +298,6 @@ bool UWorld::SaveScene(const FString& SceneName, FAssetRegistry* AssetRegistry)
 
 	ArchiveSave.EndArrayScope();
 
-	ArraySize = static_cast<size_t>(Folders.size());
-	ArchiveSave.BeginArrayScope("Folders", ArraySize);
-	for (size_t CurrentIndex = 0, EndIndex = Folders.size(); CurrentIndex < EndIndex; ++CurrentIndex) {
-		ArchiveSave.BeginObjectScope(std::to_string(CurrentIndex));
-		Folders[CurrentIndex]->Serialize(ArchiveSave);
-		ArchiveSave.EndObjectScope();
-	}
-	ArchiveSave.EndArrayScope();
-
 	ArraySize = static_cast<size_t>(Actors.size());
 	ArchiveSave.BeginArrayScope("Actors", ArraySize);
 	for (size_t CurrentIndex = 0, EndIndex = Actors.size(); CurrentIndex < EndIndex; ++CurrentIndex)
@@ -478,8 +339,7 @@ bool UWorld::LoadScene(const std::filesystem::path& ScenePath, ID3D11Device* Dev
 		!LoadDocument.HasMember("Assets") ||
 		!LoadDocument["Assets"].IsArray() ||
 		!LoadDocument.HasMember("Actors") ||
-		!LoadDocument["Actors"].IsArray() ||
-		(LoadDocument.HasMember("Folders") && !LoadDocument["Folders"].IsArray())) {
+		!LoadDocument["Actors"].IsArray()) {
 		return false;
 	}
 
@@ -532,34 +392,6 @@ bool UWorld::LoadScene(const std::filesystem::path& ScenePath, ID3D11Device* Dev
 
 	AssetRegistry->Finalize();
 
-	if (LoadDocument.HasMember("Folders")) {
-		for (rapidjson::Value& FolderJson : LoadDocument["Folders"].GetArray()) {
-			if (!FolderJson.IsObject() ||
-				!FolderJson.HasMember("Guid") || !FolderJson["Guid"].IsString() ||
-				!FolderJson.HasMember("Name") || !FolderJson["Name"].IsString() ||
-				!FolderJson.HasMember("ParentGuid") || !FolderJson["ParentGuid"].IsString()) {
-				return FailLoad();
-			}
-
-			FGuid FolderGuid;
-			FGuid ParentFolderGuid;
-			if (!FolderGuid.Parse(FolderJson["Guid"].GetString()) || !FolderGuid.IsValid() || !ParentFolderGuid.Parse(FolderJson["ParentGuid"].GetString())) {
-				return FailLoad();
-			}
-
-			std::unique_ptr<Folder> FolderPtr = std::make_unique<Folder>();
-			FArchiveJson FolderArchive(FolderJson);
-			FolderPtr->Serialize(FolderArchive);
-			if (!AdoptFolder(std::move(FolderPtr))) {
-				return FailLoad();
-			}
-		}
-
-		if (!ValidateFolderHierarchy()) {
-			return FailLoad();
-		}
-	}
-
 	// actor and component shells
 	for (rapidjson::Value& ActorJson : LoadDocument["Actors"].GetArray()) {
 		if (!ActorJson.IsObject() ||
@@ -571,17 +403,6 @@ bool UWorld::LoadScene(const std::filesystem::path& ScenePath, ID3D11Device* Dev
 		FGuid ActorGuid;
 		if (!ActorGuid.Parse(ActorJson["Guid"].GetString())) {
 			return FailLoad();
-		}
-
-		if (ActorJson.HasMember("FolderGuid")) {
-			if (!ActorJson["FolderGuid"].IsString()) {
-				return FailLoad();
-			}
-
-			FGuid FolderGuid;
-			if (!FolderGuid.Parse(ActorJson["FolderGuid"].GetString())) {
-				return FailLoad();
-			}
 		}
 
 		FString TypeName = ActorJson["TypeName"].GetString();
@@ -614,9 +435,6 @@ bool UWorld::LoadScene(const std::filesystem::path& ScenePath, ID3D11Device* Dev
 		FArchiveJson ArchiveLoad(ActorJson);
 		ArchiveLoad.SetAssetRegistry(AssetRegistry);
 		Actors[ActorIndex]->Load(ArchiveLoad);
-		if (Actors[ActorIndex]->GetFolderGuid().IsValid() && FindFolder(Actors[ActorIndex]->GetFolderGuid()) == nullptr) {
-			return FailLoad();
-		}
 	}
 
 	// object references
@@ -637,19 +455,10 @@ bool UWorld::LoadScene(const std::filesystem::path& ScenePath, ID3D11Device* Dev
 void UWorld::HandleMousePickRequest(const FMousePickRequestMessage& Message) {
 	UCameraComponent* Camera = GetCameraSubsystem().GetMainCamera();
 
-	if (Camera != nullptr &&
-		WindowInfoReader.Read().Viewport.Width != 0 &&
-		WindowInfoReader.Read().Viewport.Height != 0)
-	{
-		const float NdcX =
-			(2.0f * static_cast<float>(Message.ScreenX) /
-				static_cast<float>(WindowInfoReader.Read().Viewport.Width)) -
-			1.0f;
-
-		const float NdcY =
-			1.0f -
-			(2.0f * static_cast<float>(Message.ScreenY) /
-				static_cast<float>(WindowInfoReader.Read().Viewport.Height));
+	const RenderWindowInfo& WindowInfo = WindowInfoReader.Read();
+	if (Camera != nullptr && Message.ViewportWidth != 0 && Message.ViewportHeight != 0 && WindowInfo.Viewport.Width != 0.0f && WindowInfo.Viewport.Height != 0.0f) {
+		const float NdcX = (2.0f * (static_cast<float>(Message.ScreenX) - WindowInfo.Viewport.TopLeftX) / static_cast<float>(Message.ViewportWidth)) - 1.0f;
+		const float NdcY = 1.0f - (2.0f * (static_cast<float>(Message.ScreenY) - WindowInfo.Viewport.TopLeftY) / static_cast<float>(Message.ViewportHeight));
 
 		FMatrix InverseViewProjection;
 		if (!Camera->GetViewProjectionMatrix().TryInverse(InverseViewProjection)) return;
@@ -658,8 +467,7 @@ void UWorld::HandleMousePickRequest(const FMousePickRequestMessage& Message) {
 			|| !InverseViewProjection.TransformCoord({NdcX, NdcY, 1.0f}, RayEnd)) return;
 		FVector3 RayDirection = RayEnd - RayOrigin;
 
-		if (RayDirection.LengthSquared() > 0.0f)
-		{
+		if (RayDirection.LengthSquared() > 0.0f) {
 			RayDirection.Normalize();
 
 			UPrimitiveComponent* NearestPrimitive = nullptr;
@@ -873,7 +681,6 @@ void UWorld::ResetWorld(FAssetRegistry* AssetRegistry, ID3D11Device* Device)
 		DestroyActor(CurrentActor.get());
 	}
 	FlushPendingDestroyActors();
-	Folders.clear();
 
 	AssetRegistry->Reset();
 	AssetRegistry->Initialize(Device);

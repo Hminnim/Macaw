@@ -1,4 +1,4 @@
-﻿// Macaw.cpp : 애플리케이션에 대한 진입점을 정의합니다.
+// Macaw.cpp : 애플리케이션에 대한 진입점을 정의합니다.
 //
 #include "PCH.h"
  
@@ -379,42 +379,45 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             const float DeltaTime = std::chrono::duration<float>(CurrentTickTime - LastTickTime).count();
             LastTickTime = CurrentTickTime;
 
-            Renderer.BeginFrame();
+			ImGui_ImplDX11_NewFrame();
+			ImGui_ImplWin32_NewFrame();
+			ImGui::NewFrame();
+			const ImGuiID DockSpaceId = ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+			EditorUIManager.Tick();
 
+			ImGui::SetNextWindowDockID(DockSpaceId, ImGuiCond_FirstUseEver);
+			ImGui::Begin("Viewport###SceneViewport");
+			const ImVec2 SceneViewportPosition = ImGui::GetCursorScreenPos();
+			const ImVec2 SceneViewportSize = ImGui::GetContentRegionAvail();
+			const ImVec2 MainViewportPosition = ImGui::GetMainViewport()->Pos;
+			const bool bSceneViewportHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem);
+			const bool bSceneViewportFocused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
+			const uint32 SceneViewportWidth = static_cast<uint32>(std::max(0.0f, SceneViewportSize.x));
+			const uint32 SceneViewportHeight = static_cast<uint32>(std::max(0.0f, SceneViewportSize.y));
+			Renderer.ResizeSceneSurface(SceneViewportWidth, SceneViewportHeight, SceneViewportPosition.x - MainViewportPosition.x, SceneViewportPosition.y - MainViewportPosition.y);
 
-            ImGui_ImplDX11_NewFrame();
-            ImGui_ImplWin32_NewFrame();
-            ImGui::NewFrame();
-            ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+			// 입력 상태는 WndProc의 ProcessWindowMessage에서 갱신한다.
+			EditorView.ProcessInput(GKeyboardInput, GMouseInput, !bSceneViewportHovered);
 
-            // 입력 상태는 WndProc의 ProcessWindowMessage에서 갱신한다.
-			EditorView.ProcessInput(GKeyboardInput, GMouseInput, ImGui::GetIO().WantCaptureMouse);
-
-            EditorUIManager.Tick();
-
-            GMouseInput.DispatchPendingWorldCommands(
-                DEFAULT_WINDOW_WIDTH,
-                DEFAULT_WINDOW_HEIGHT,
-                ImGui::GetIO().WantCaptureMouse);
-
-            GKeyboardInput.DispatchPendingWorldCommands(
-                DeltaTime,
-                ImGui::GetIO().WantCaptureKeyboard);
+			GMouseInput.DispatchPendingWorldCommands(SceneViewportWidth, SceneViewportHeight, !bSceneViewportHovered);
+			GKeyboardInput.DispatchPendingWorldCommands(DeltaTime, !bSceneViewportFocused || ImGui::GetIO().WantCaptureKeyboard);
 
             WorldCommandChannel.Dispatch();
             World.Tick(DeltaTime);
 
-            EditorContext.Dispatch();
+			EditorContext.Dispatch();
 
-            //UndoCommandChannel.Dispatch();
+			//UndoCommandChannel.Dispatch();
 
 			FRenderProbe& Probe{ World.BuildRenderProbe() };
-            
+			Renderer.BeginSceneRender();
 			EditorView.RenderInProbe(Probe);
-            Renderer.RenderScene(Probe);
+			Renderer.RenderScene(Probe);
             EditorView.RenderSceneGuides(Renderer.GetDeviceContext(),Probe);
-            Renderer.RenderGizmos(Probe);
-            EditorView.RenderOrientationAxis(Renderer.GetDeviceContext(),Probe.MainCameraProbe);
+			Renderer.RenderGizmos(Probe);
+			EditorView.RenderOrientationAxis(Renderer.GetDeviceContext(),Probe.MainCameraProbe);
+			ImGui::Image(reinterpret_cast<ImTextureID>(Renderer.GetSceneShaderResourceView()), SceneViewportSize);
+			ImGui::End();
             
             //ImGui::Begin("FName Test");      
             //ImGui::Separator();
@@ -440,8 +443,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             //ImGui::Text("B.ToString() : \"%s\"", NameB.ToString().c_str());
             //ImGui::End();
 
-            ImGui::Render();
-            ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+			ImGui::Render();
+			Renderer.BeginUiRender();
+			ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
             
             Renderer.EndFrame();
 
