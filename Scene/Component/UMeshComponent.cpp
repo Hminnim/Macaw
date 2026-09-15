@@ -1,5 +1,6 @@
 ﻿#include "PCH.h"
 #include "UMeshComponent.h"
+#include "Render/Panel/FPropertyEditorContext.h"
 
 #include "Scene/AActor.h"
 #include "Scene/UWorld.h"
@@ -12,6 +13,11 @@ FAssetHandle UMeshComponent::GetMeshHandle() const {
 
 void UMeshComponent::SetMeshHandle(FAssetHandle InHandle) {
     MeshHandle = InHandle;
+}
+
+void UMeshComponent::DrawPanels(FPropertyEditorContext& Context) {
+    UPrimitiveComponent::DrawPanels(Context);
+    Context.DrawMeshComponentProperties(*this);
 }
 
 UMesh* UMeshComponent::ResolveMesh() const {

@@ -174,7 +174,7 @@ void FOutlinerPanel::DrawActor(AActor& Actor) {
         return;
     }
 
-    const FString Label = Actor.GetGuid().ToString();
+    const FString Label = Actor.GetGuid().ToString(); // FNAME
     const std::string_view TypeName = Actor.GetTypeInfo()->TypeName;
     const bool bHasChildren = HasActorChildren(Actor);
     ImGui::TableNextRow();

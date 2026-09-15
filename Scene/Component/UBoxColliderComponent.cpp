@@ -1,5 +1,6 @@
 ﻿#include "PCH.h"
 #include "UBoxColliderComponent.h"
+#include "Render/Panel/FPropertyEditorContext.h"
 
 #include "UMeshComponent.h"
 #include "Core/Asset/UMesh.h"
@@ -59,6 +60,11 @@ FQuat UBoxColliderComponent::GetBoundsOrientation() const {
 
 void UBoxColliderComponent::SetExtent(const FVector3& InExtent) {
     OBB.Extents = DirectX::XMFLOAT3(InExtent.x, InExtent.y, InExtent.z);
+}
+
+void UBoxColliderComponent::DrawPanels(FPropertyEditorContext& Context) {
+    UCollisionComponent::DrawPanels(Context);
+    Context.DrawBoxColliderComponentProperties(*this);
 }
 
 bool UBoxColliderComponent::ResolveLoadedReferences() {

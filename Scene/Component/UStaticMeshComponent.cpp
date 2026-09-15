@@ -1,5 +1,6 @@
 ﻿#include "PCH.h"
 #include "UStaticMeshComponent.h"
+#include "Render/Panel/FPropertyEditorContext.h"
 
 #include "Core/Base/FRenderProbe.h"
 #include "Scene/AActor.h"
@@ -20,6 +21,12 @@ void UStaticMeshComponent::SetMaterialHandle(FAssetHandle InHandle)
 void UStaticMeshComponent::SetPipelineHandle(FAssetHandle InHandle)
 {
     PipelineHandle = InHandle;
+}
+
+void UStaticMeshComponent::DrawPanels(FPropertyEditorContext& Context)
+{
+    UMeshComponent::DrawPanels(Context);
+    Context.DrawStaticMeshComponentProperties(*this);
 }
 
 void UStaticMeshComponent::OnRegister()

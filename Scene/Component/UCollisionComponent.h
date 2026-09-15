@@ -14,6 +14,7 @@ public:
 
     bool IsCollisionEnabled() const;
     void SetCollisionEnabled(bool bEnabled);
+    void DrawPanels(FPropertyEditorContext& Context) override;
 
     bool Raycast(const FRay& Ray, float& OutDistance) const;
 

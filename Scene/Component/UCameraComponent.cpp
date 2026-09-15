@@ -1,5 +1,6 @@
 ﻿#include "PCH.h"
 #include "UCameraComponent.h"
+#include "Render/Panel/FPropertyEditorContext.h"
 
 #include "Scene/AActor.h"
 #include "Scene/UWorld.h"
@@ -56,6 +57,11 @@ void UCameraComponent::SetNearPlane(float InNearPlane) {
 
 void UCameraComponent::SetFarPlane(float InFarPlane) {
     FarPlane = InFarPlane;
+}
+
+void UCameraComponent::DrawPanels(FPropertyEditorContext& Context) {
+    USceneComponent::DrawPanels(Context);
+    Context.DrawCameraComponentProperties(*this);
 }
 
 void UCameraComponent::OnRegister() {

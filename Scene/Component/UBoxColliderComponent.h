@@ -20,6 +20,7 @@ public:
     FVector3 GetExtent() const override;
     FQuat GetBoundsOrientation() const override;
     void SetExtent(const FVector3& InExtent) override;
+    void DrawPanels(FPropertyEditorContext& Context) override;
 
     bool ResolveLoadedReferences() override;
     void InitializeComponent() override;

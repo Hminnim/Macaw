@@ -22,9 +22,15 @@ public:
 	void SetCharacterHeight(float InCharacterHeight);
 	void SetLetterSpacing(float InLetterSpacing);
 	void SetLineSpacing(float InLineSpacing);
+	void DrawPanels(FPropertyEditorContext& Context) override;
 	
 	const FAssetHandle GetFontHandle() const;
+	const FAssetHandle GetPipelineHandle() const;
 	const FString& GetText() const;
+	const FVector4& GetColor() const;
+	float GetCharacterHeight() const;
+	float GetLetterSpacing() const;
+	float GetLineSpacing() const;
 	const TArray<FTextVertex>& GetVertex() const;
 
 	void OnRegister() override;
@@ -35,6 +41,8 @@ public:
 	bool MakeTextRender(FTextProbe& OutProbe) const;
 
 protected:
+	void Serialize(FArchive& Archive) override;
+
 	FAssetHandle FontHandle{};
 	FAssetHandle PipelineHandle{};
 	FString Text = {};

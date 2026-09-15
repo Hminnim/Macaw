@@ -248,13 +248,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     FEditorUIManager EditorUIManager;
 
-    EditorUIManager.Initialize(
-        World,
-        EditorContext,
-        gHWND,
-        EditorView.GetGizmoMode(),
-        EditorView.GetGizmoCoordinateSpace()
-    );
+    EditorUIManager.Initialize(World, EditorContext, gHWND, EditorView.GetGizmoMode(), EditorView.GetGizmoCoordinateSpace());
 
     GMouseInput.InitializeWorldCommandSender(WorldCommandChannel.GetSender());
     GKeyboardInput.InitializeWorldCommandSender(WorldCommandChannel.GetSender());
@@ -358,6 +352,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     auto& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; 
+
+    io.Fonts->AddFontFromFileTTF("./Content/Font/NotoSansKR-Medium.ttf", 16.0f, nullptr, io.Fonts->GetGlyphRangesKorean());
 
     auto LastTickTime = std::chrono::steady_clock::now();
 
@@ -556,17 +552,13 @@ extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam);
+    if (const auto result = ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam)) {
+        return result;
+    }
 
-    GMouseInput.ProcessWindowMessage(
-        message,
-        wParam,
-        lParam);
+    GMouseInput.ProcessWindowMessage(message, wParam, lParam);
 
-    GKeyboardInput.ProcessWindowMessage(
-        message,
-        wParam,
-        lParam);
+    GKeyboardInput.ProcessWindowMessage(message, wParam, lParam);
 
     switch (message)
     {

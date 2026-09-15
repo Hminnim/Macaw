@@ -1,5 +1,6 @@
 #include "PCH.h"
 #include "Scene/Component/UTextRenderComponent.h"
+#include "Render/Panel/FPropertyEditorContext.h"
 
 #include "Scene/AActor.h"
 #include "Scene/UWorld.h"
@@ -48,9 +49,34 @@ const FAssetHandle UTextRenderComponent::GetFontHandle() const
 {
 	return FontHandle;
 }
+void UTextRenderComponent::DrawPanels(FPropertyEditorContext& Context)
+{
+	UPrimitiveComponent::DrawPanels(Context);
+	Context.DrawTextRenderComponentProperties(*this);
+}
+const FAssetHandle UTextRenderComponent::GetPipelineHandle() const
+{
+	return PipelineHandle;
+}
 const FString& UTextRenderComponent::GetText() const
 {
 	return Text;
+}
+const FVector4& UTextRenderComponent::GetColor() const
+{
+	return Color;
+}
+float UTextRenderComponent::GetCharacterHeight() const
+{
+	return CharacterHeight;
+}
+float UTextRenderComponent::GetLetterSpacing() const
+{
+	return LetterSpacing;
+}
+float UTextRenderComponent::GetLineSpacing() const
+{
+	return LineSpacing;
 }
 const TArray<FTextVertex>& UTextRenderComponent::GetVertex() const
 {
@@ -94,6 +120,36 @@ bool UTextRenderComponent::MakeTextRender(FTextProbe& OutProbe) const
 	OutProbe.Vertices = Vertices;
 
 	return true;
+}
+void UTextRenderComponent::Serialize(FArchive& Archive)
+{
+	UPrimitiveComponent::Serialize(Archive);
+
+	auto SerializeAssetHandle = [&Archive](std::string_view Name, FAssetHandle& Handle) {
+		FString Guid;
+		FAssetRegistry* Registry = Archive.GetAssetRegistry();
+		if (Archive.IsSaving() && Registry != nullptr && Handle) {
+			if (UAsset* Asset = Registry->ResolveAsset<UAsset>(Handle)) {
+				Guid = Asset->GetGuid().ToString();
+			}
+		}
+		Archive.Serialize(Name, Guid);
+		if (Archive.IsLoading()) {
+			Handle = {};
+			FGuid AssetGuid;
+			if (Registry != nullptr && AssetGuid.Parse(Guid)) {
+				Handle = Registry->GetAsset(AssetGuid);
+			}
+		}
+	};
+
+	SerializeAssetHandle("GuidFontHandle", FontHandle);
+	SerializeAssetHandle("GuidPipelineHandle", PipelineHandle);
+	Archive.Serialize("Text", Text);
+	Archive.Serialize("Color", Color);
+	Archive.Serialize("CharacterHeight", CharacterHeight);
+	Archive.Serialize("LetterSpacing", LetterSpacing);
+	Archive.Serialize("LineSpacing", LineSpacing);
 }
 void UTextRenderComponent::RebuildTextGeometry()
 {

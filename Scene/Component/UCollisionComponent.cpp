@@ -1,5 +1,6 @@
 ﻿#include "PCH.h"
 #include "UCollisionComponent.h"
+#include "Render/Panel/FPropertyEditorContext.h"
 #include "UMeshComponent.h"
 #include "Scene/AActor.h"
 #include "Scene/UWorld.h"
@@ -18,6 +19,12 @@ bool UCollisionComponent::IsCollisionEnabled() const
 void UCollisionComponent::SetCollisionEnabled(bool bEnabled)
 {
     bCollisionEnabled = bEnabled;
+}
+
+void UCollisionComponent::DrawPanels(FPropertyEditorContext& Context)
+{
+    UPrimitiveComponent::DrawPanels(Context);
+    Context.DrawCollisionComponentProperties(*this);
 }
 
 void UCollisionComponent::OnRegister()

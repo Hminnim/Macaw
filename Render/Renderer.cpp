@@ -58,8 +58,7 @@ void FRenderer::EndFrame() {
 void FRenderer::RenderScene(FRenderProbe& Probe) {
 	RenderActorList(Probe.ActorProbes,Probe.MainCameraProbe);
 
-	if (AssetRegistry != nullptr)
-	{
+	if (AssetRegistry != nullptr) {
 		TextRenderer.Render(DeviceContext.Get(),Probe.TextProbes,Probe.MainCameraProbe, AssetRegistry);
 	}
 }

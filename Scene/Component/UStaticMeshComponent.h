@@ -15,6 +15,7 @@ public:
 
     void SetMaterialHandle(FAssetHandle InHandle);
     void SetPipelineHandle(FAssetHandle InHandle);
+    void DrawPanels(FPropertyEditorContext& Context) override;
 
     void OnRegister() override;
     void OnUnregister() override;
