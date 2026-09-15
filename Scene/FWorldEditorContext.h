@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <d3d11.h>
 #include <optional>
@@ -15,9 +15,9 @@ class USceneComponent;
 class UWorld;
 
 struct FWorldEditorSharedState {
-    std::optional<FMessageEditorCameraState> Camera;
+    std::optional<FCameraSnapshot> Camera;
     float GridSize{1.0f};
-    size_t ModeIndex{ 1 };
+    size_t ModeIndex{ 0 };
 };
 
 class FWorldEditorContext {
@@ -29,8 +29,8 @@ public:
     FMessageChannel::FSender GetEditorToWorldSender();
     FMessageChannel::FSender GetWorldToEditorSender();
 
-    const FMessageEditorCameraState* GetCameraState() const noexcept;
-    void SetCameraState(const FMessageEditorCameraState& State);
+    const FCameraSnapshot* GetCameraState() const noexcept;
+    void PublishCameraState(const FCameraSnapshot& State);
 
     const float GetGridSizeState() const noexcept;
     void SetGridSizeState(const float State);

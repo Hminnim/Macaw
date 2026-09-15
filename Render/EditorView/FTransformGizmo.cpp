@@ -117,11 +117,14 @@ void FTransformGizmo::Update(const CameraProbe& Camera) {
 	const EGizmoCoordinateSpace CoordinateSpace = GizmoCoordinateSpace.HasValue()
 		? static_cast<EGizmoCoordinateSpace>(GizmoCoordinateSpace.Peek())
 		: EGizmoCoordinateSpace::World;
+	const EModifyMode CurrentMode = GizmoMode.HasValue() ? static_cast<EModifyMode>(GizmoMode.Peek()) : EModifyMode::None;
+
+
 
 	// Gizmo는 scale 없이 회전 축과 위치만 사용한다. World 모드에서는
 	// 축을 월드 그리드에 고정하고, Local 모드에서만 대상 회전을 따른다.
 	GizmoWorldTransform = FMatrix::Identity;
-	if (CoordinateSpace == EGizmoCoordinateSpace::Local) {
+	if (CoordinateSpace == EGizmoCoordinateSpace::Local || CurrentMode == EModifyMode::Scale) {
 		FVector3 Right = TargetWorld.Right();
 		FVector3 Up = TargetWorld.Up();
 		if (Right.LengthSquared() <= std::numeric_limits<float>::epsilon() ||
@@ -148,15 +151,17 @@ void FTransformGizmo::Update(const CameraProbe& Camera) {
 		}
 		Forward.Normalize();
 
-		GizmoWorldTransform.m[0][0] = Right.x;
-		GizmoWorldTransform.m[0][1] = Right.y;
-		GizmoWorldTransform.m[0][2] = Right.z;
-		GizmoWorldTransform.m[1][0] = Up.x;
-		GizmoWorldTransform.m[1][1] = Up.y;
-		GizmoWorldTransform.m[1][2] = Up.z;
-		GizmoWorldTransform.m[2][0] = Forward.x;
-		GizmoWorldTransform.m[2][1] = Forward.y;
-		GizmoWorldTransform.m[2][2] = Forward.z;
+		// TargetWorld contains the source-to-Z-up basis.  Remove that basis
+		// when orienting a local-space gizmo so its axes remain world Z-up.
+		GizmoWorldTransform.m[0][0] = -Right.x;
+		GizmoWorldTransform.m[0][1] = -Right.y;
+		GizmoWorldTransform.m[0][2] = -Right.z;
+		GizmoWorldTransform.m[1][0] = Forward.x;
+		GizmoWorldTransform.m[1][1] = Forward.y;
+		GizmoWorldTransform.m[1][2] = Forward.z;
+		GizmoWorldTransform.m[2][0] = Up.x;
+		GizmoWorldTransform.m[2][1] = Up.y;
+		GizmoWorldTransform.m[2][2] = Up.z;
 	}
 	GizmoWorldTransform.Translation(TargetWorld.Translation());
 
@@ -176,8 +181,6 @@ void FTransformGizmo::Update(const CameraProbe& Camera) {
 
 	const float WorldUnitsPerPixel = (2.0f * ViewDepth) / (ViewportHeight * ProjectionYScale);
 	CurrentWorkUnitsPerPixel = WorldUnitsPerPixel;
-
-	const EModifyMode CurrentMode =GizmoMode.HasValue() ? static_cast<EModifyMode>(GizmoMode.Peek()) : EModifyMode::None;
 
 	switch (CurrentMode) {
 	case EModifyMode::Translate:
@@ -659,13 +662,16 @@ void FTransformGizmo::UpdateDrag(const FRay& WorldRay) {
 			return;
 		}
 
-		// FTransform의 quaternion은 source Y-up 축을 사용하므로, 월드 Z-up
-		// Gizmo 축을 source 축으로 바꾼 뒤 world transform에 적용한다.
-		const FVector3 TransformSpaceAxis = FMatrix::CreateYUpToZUp().TransformDirection(Session.AxisWorld);
+		// Transform과 gizmo는 동일한 Z-up 축을 사용한다.
+		const FVector3 TransformSpaceAxis = Session.AxisWorld;
 		FTransform DesiredWorldTransform = Target->GetComponentTransform();
-		DesiredWorldTransform.SetRotation(FQuat::Concatenate(
-			DesiredWorldTransform.GetRotationQuaternion(),
-			FQuat::CreateFromAxisAngle(TransformSpaceAxis, AngleDelta)));
+		if (Session.CoordinateSpace == EGizmoCoordinateSpace::Local) {
+			DesiredWorldTransform.SetRotation(FQuat::Concatenate(DesiredWorldTransform.GetRotationQuaternion(), FQuat::CreateFromAxisAngle(TransformSpaceAxis, AngleDelta)));
+		}
+		else {
+			DesiredWorldTransform.SetRotation(FQuat::Concatenate(FQuat::CreateFromAxisAngle(TransformSpaceAxis, AngleDelta), DesiredWorldTransform.GetRotationQuaternion()));
+		}
+
 		if (Target->SetWorldTransform(DesiredWorldTransform)) {
 			Session.PreviousRotationDirection = CurrentDirection;
 		}
@@ -797,30 +803,28 @@ void FTransformGizmo::Render(FRenderProbe& Probe) {
 	switch (CurrentMode) {
 	case EModifyMode::Translate:
 		Submit(CylinderXAxisTransform, CylinderMesh, RedMaterial);
-		// Source transforms are Y-up, while the editor world is Z-up.  Keep the
-		// gizmo's colors aligned with the world-space axis each handle moves.
-		Submit(CylinderYAxisTransform, CylinderMesh, BlueMaterial);
-		Submit(CylinderZAxisTransform, CylinderMesh, GreenMaterial);
+		Submit(CylinderYAxisTransform, CylinderMesh, GreenMaterial);
+		Submit(CylinderZAxisTransform, CylinderMesh, BlueMaterial);
 
 		Submit(ConeXAxisTransform, ConeMesh, RedMaterial); // 해당 위치에 Cone 메쉬 사용
-		Submit(ConeYAxisTransform, ConeMesh, BlueMaterial);
-		Submit(ConeZAxisTransform, ConeMesh, GreenMaterial);
+		Submit(ConeYAxisTransform, ConeMesh, GreenMaterial);
+		Submit(ConeZAxisTransform, ConeMesh, BlueMaterial);
 		break;
 
 	case EModifyMode::Scale:
 		Submit(CylinderXAxisTransform, CylinderMesh, RedMaterial);
-		Submit(CylinderYAxisTransform, CylinderMesh, BlueMaterial);
-		Submit(CylinderZAxisTransform, CylinderMesh, GreenMaterial);
+		Submit(CylinderYAxisTransform, CylinderMesh, GreenMaterial);
+		Submit(CylinderZAxisTransform, CylinderMesh, BlueMaterial);
 
 		Submit(CubeXAxisTransform, CubeMesh, RedMaterial); // 해당 위치에 Cube 메쉬 사용
-		Submit(CubeYAxisTransform, CubeMesh, BlueMaterial);
-		Submit(CubeZAxisTransform, CubeMesh, GreenMaterial);
+		Submit(CubeYAxisTransform, CubeMesh, GreenMaterial);
+		Submit(CubeZAxisTransform, CubeMesh, BlueMaterial);
 		break;
 
 	case EModifyMode::Rotate:
 		Submit(TorusXAxisTransform, GizmoTorusMesh, RedMaterial);
-		Submit(TorusYAxisTransform, GizmoTorusMesh, BlueMaterial);
-		Submit(TorusZAxisTransform, GizmoTorusMesh, GreenMaterial);
+		Submit(TorusYAxisTransform, GizmoTorusMesh, GreenMaterial);
+		Submit(TorusZAxisTransform, GizmoTorusMesh, BlueMaterial);
 		break;
 
 	default:

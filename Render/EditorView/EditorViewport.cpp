@@ -46,7 +46,7 @@ void EditorViewport::RenderGrid(ELineDepthMode DepthMode) {
 	if (EditorContext != nullptr) {
 		GridInterval = EditorContext->GetGridSizeState();
 	}
-	int GridSize = 50 / GridInterval;
+	int GridSize = (static_cast<int>(50 / GridInterval));
 	float LineLength = (float)GridSize * GridInterval;
 
 	for (auto x : std::views::iota(-GridSize, GridSize + 1)) {
@@ -86,51 +86,28 @@ void EditorViewport::RenderBounds(ELineDepthMode DepthMode)
 	LocalBounds.Center = Collider->GetBoundsCenter().ToSimpleMath();
 	LocalBounds.Extents = Collider->GetExtent().ToSimpleMath();
 	const FQuat BoundsOrientation = Collider->GetBoundsOrientation();
-	LocalBounds.Orientation.x = BoundsOrientation.x;
-	LocalBounds.Orientation.y = BoundsOrientation.y;
-	LocalBounds.Orientation.z = BoundsOrientation.z;
-	LocalBounds.Orientation.w = BoundsOrientation.w;
-
 	std::array<DirectX::XMFLOAT3, DirectX::BoundingOrientedBox::CORNER_COUNT> Corners{};
-	LocalBounds.GetCorners(Corners.data());
+	DirectX::BoundingOrientedBox WorldBox;
+	LocalBounds.Transform(WorldBox, Collider->GetComponentToWorld().ToSimpleMath());
+	WorldBox.GetCorners(Corners.data());
 
-	const FMatrix ColliderToActor = Collider->GetComponentToWorld() * Actor->GetActorTransform().ToInverseMatrixWithScale();
-
-	FVector3 Minimum{
-		std::numeric_limits<float>::max(),
-		std::numeric_limits<float>::max(),
-		std::numeric_limits<float>::max()
-	};
-	FVector3 Maximum{
-		std::numeric_limits<float>::lowest(),
-		std::numeric_limits<float>::lowest(),
-		std::numeric_limits<float>::lowest()
-	};
-
-	for (const DirectX::XMFLOAT3& Corner : Corners) {
-		const FVector3 PointInGizmoSpace = FVector3::Transform(FVector3{ Corner }, ColliderToActor);
-		Minimum = FVector3::Min(Minimum, PointInGizmoSpace);
-		Maximum = FVector3::Max(Maximum, PointInGizmoSpace);
-	}
-
-	Minimum = FVector::Transform(Minimum, Actor->GetActorTransform().ToMatrixWithScale());
-	Maximum = FVector::Transform(Maximum, Actor->GetActorTransform().ToMatrixWithScale());
 	const FVector4 LineColor = FVector4{ 1.0f, 1.0f, 0.0f, 1.0f };
 	const float Thickness = 3.0f;
 
-	LineRenderer->AddLine(FVector3{ Minimum.x, Minimum.y, Minimum.z }, FVector3{ Maximum.x, Minimum.y, Minimum.z }, LineColor, Thickness, DepthMode);
-	LineRenderer->AddLine(FVector3{ Maximum.x, Minimum.y, Minimum.z }, FVector3{ Maximum.x, Maximum.y, Minimum.z }, LineColor, Thickness, DepthMode);
-	LineRenderer->AddLine(FVector3{ Maximum.x, Maximum.y, Minimum.z }, FVector3{ Minimum.x, Maximum.y, Minimum.z }, LineColor, Thickness, DepthMode);
-	LineRenderer->AddLine(FVector3{ Minimum.x, Maximum.y, Minimum.z }, FVector3{ Minimum.x, Minimum.y, Minimum.z }, LineColor, Thickness, DepthMode);
-	LineRenderer->AddLine(FVector3{ Minimum.x, Minimum.y, Maximum.z }, FVector3{ Maximum.x, Minimum.y, Maximum.z }, LineColor, Thickness, DepthMode);
-	LineRenderer->AddLine(FVector3{ Maximum.x, Minimum.y, Maximum.z }, FVector3{ Maximum.x, Maximum.y, Maximum.z }, LineColor, Thickness, DepthMode);
-	LineRenderer->AddLine(FVector3{ Maximum.x, Maximum.y, Maximum.z }, FVector3{ Minimum.x, Maximum.y, Maximum.z }, LineColor, Thickness, DepthMode);
-	LineRenderer->AddLine(FVector3{ Minimum.x, Maximum.y, Maximum.z }, FVector3{ Minimum.x, Minimum.y, Maximum.z }, LineColor, Thickness, DepthMode);
-	LineRenderer->AddLine(FVector3{ Minimum.x, Minimum.y, Minimum.z }, FVector3{ Minimum.x, Minimum.y, Maximum.z }, LineColor, Thickness, DepthMode);
-	LineRenderer->AddLine(FVector3{ Maximum.x, Minimum.y, Minimum.z }, FVector3{ Maximum.x, Minimum.y, Maximum.z }, LineColor, Thickness, DepthMode);
-	LineRenderer->AddLine(FVector3{ Maximum.x, Maximum.y, Minimum.z }, FVector3{ Maximum.x, Maximum.y, Maximum.z }, LineColor, Thickness, DepthMode);
-	LineRenderer->AddLine(FVector3{ Minimum.x, Maximum.y, Minimum.z }, FVector3{ Minimum.x, Maximum.y, Maximum.z }, LineColor, Thickness, DepthMode);
+	LineRenderer->AddLine(FVector3{ Corners[0] }, FVector3{ Corners[1] }, LineColor, Thickness, DepthMode);
+	LineRenderer->AddLine(FVector3{ Corners[1] }, FVector3{ Corners[2] }, LineColor, Thickness, DepthMode);
+	LineRenderer->AddLine(FVector3{ Corners[2] }, FVector3{ Corners[3] }, LineColor, Thickness, DepthMode);
+	LineRenderer->AddLine(FVector3{ Corners[3] }, FVector3{ Corners[0] }, LineColor, Thickness, DepthMode);
 
+	LineRenderer->AddLine(FVector3{ Corners[4] }, FVector3{ Corners[5] }, LineColor, Thickness, DepthMode);
+	LineRenderer->AddLine(FVector3{ Corners[5] }, FVector3{ Corners[6] }, LineColor, Thickness, DepthMode);
+	LineRenderer->AddLine(FVector3{ Corners[6] }, FVector3{ Corners[7] }, LineColor, Thickness, DepthMode);
+	LineRenderer->AddLine(FVector3{ Corners[7] }, FVector3{ Corners[4] }, LineColor, Thickness, DepthMode);
+
+	LineRenderer->AddLine(FVector3{ Corners[0] }, FVector3{ Corners[4] }, LineColor, Thickness, DepthMode);
+	LineRenderer->AddLine(FVector3{ Corners[1] }, FVector3{ Corners[5] }, LineColor, Thickness, DepthMode);
+	LineRenderer->AddLine(FVector3{ Corners[2] }, FVector3{ Corners[6] }, LineColor, Thickness, DepthMode);
+	LineRenderer->AddLine(FVector3{ Corners[3] }, FVector3{ Corners[7] }, LineColor, Thickness, DepthMode);
 }
 
 void EditorViewport::RenderOrientationAxis(ID3D11DeviceContext* Context, CameraProbe& Probe) {

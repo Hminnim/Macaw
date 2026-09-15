@@ -4,18 +4,20 @@
 
 namespace {
     bool DecomposeWorldTransform(const FMatrix& WorldMatrix, FVector3& OutScale, FQuat& OutRotation, FVector3& OutTranslation) {
-        FMatrix SourceMatrix = WorldMatrix;
-        const FVector3 Translation = SourceMatrix.Translation();
-        SourceMatrix.Translation(FVector3::Zero);
+        FMatrix TransformMatrix = WorldMatrix;
 
-        FMatrix WorldZUpToSourceYUp;
-        if (!FMatrix::CreateYUpToZUp().TryInverse(WorldZUpToSourceYUp)) {
-            return false;
+        // Undo FTransform's mesh-source basis before extracting the Z-up
+        // transform quaternion and scale.  The basis is its own inverse.
+        const float Row0[3]{ TransformMatrix.m[0][0], TransformMatrix.m[0][1], TransformMatrix.m[0][2] };
+        const float Row1[3]{ TransformMatrix.m[1][0], TransformMatrix.m[1][1], TransformMatrix.m[1][2] };
+        const float Row2[3]{ TransformMatrix.m[2][0], TransformMatrix.m[2][1], TransformMatrix.m[2][2] };
+        for (uint32 Column = 0; Column < 3; ++Column) {
+            TransformMatrix.m[0][Column] = -Row0[Column];
+            TransformMatrix.m[1][Column] = Row2[Column];
+            TransformMatrix.m[2][Column] = Row1[Column];
         }
 
-        SourceMatrix = SourceMatrix * WorldZUpToSourceYUp;
-        SourceMatrix.Translation(Translation);
-        return SourceMatrix.Decompose(OutScale, OutRotation, OutTranslation);
+        return TransformMatrix.Decompose(OutScale, OutRotation, OutTranslation);
     }
 
     bool ApplyWorldMatrix(USceneComponent& Component, const FMatrix& DesiredWorld) {

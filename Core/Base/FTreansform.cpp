@@ -8,10 +8,18 @@ namespace {
         FMatrix ScaleMatrix = FMatrix::CreateScale(Scale);
 
         FMatrix RotationMatrix = FMatrix::CreateFromQuaternion(Rotation);
+        FMatrix Result = ScaleMatrix * RotationMatrix;
 
-        FMatrix TranslationMatrix = FMatrix::CreateTranslation(Position);
-        FMatrix SourceYUpToWorldZUp = FMatrix::CreateYUpToZUp();
-        return ScaleMatrix * RotationMatrix * SourceYUpToWorldZUp * TranslationMatrix;
+        const float Row0[3]{ Result.m[0][0], Result.m[0][1], Result.m[0][2] };
+        const float Row1[3]{ Result.m[1][0], Result.m[1][1], Result.m[1][2] };
+        const float Row2[3]{ Result.m[2][0], Result.m[2][1], Result.m[2][2] };
+        for (uint32 Column = 0; Column < 3; ++Column) {
+            Result.m[0][Column] = -Row0[Column];
+            Result.m[1][Column] = Row2[Column];
+            Result.m[2][Column] = Row1[Column];
+        }
+        Result.Translation(Position);
+        return Result;
     }
 }
 
