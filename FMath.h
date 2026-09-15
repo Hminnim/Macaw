@@ -77,6 +77,7 @@ struct FVector
 	static const FVector Zero, UnitX, UnitY, UnitZ;
 	bool operator==(const FVector&) const = default;
 	FVector operator-() const { return FVector(-x, -y, -z); }
+
 	static FVector Min(const FVector& a, const FVector& b)
 	{
 		return { a.x < b.x ? a.x : b.x, a.y < b.y ? a.y : b.y, a.z < b.z ? a.z : b.z };
