@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "ILineRenderer.h"
 class FBatchLineRenderer : public ILineRenderer {

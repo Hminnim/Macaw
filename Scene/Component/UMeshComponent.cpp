@@ -1,5 +1,6 @@
 ﻿#include "PCH.h"
 #include "UMeshComponent.h"
+#include "Render/Panel/FPropertyEditorContext.h"
 
 #include "Scene/AActor.h"
 #include "Scene/UWorld.h"
@@ -12,6 +13,20 @@ FAssetHandle UMeshComponent::GetMeshHandle() const {
 
 void UMeshComponent::SetMeshHandle(FAssetHandle InHandle) {
     MeshHandle = InHandle;
+}
+
+void UMeshComponent::DrawPanels(FPropertyEditorContext& Context) {
+    UPrimitiveComponent::DrawPanels(Context);
+    AActor* Owner = GetOwner();
+    UWorld* World = Owner != nullptr ? Owner->GetWorld() : nullptr;
+    FAssetRegistry* Registry = World != nullptr ? World->GetAssetRegistry() : nullptr;
+    if (Registry == nullptr) {
+        Context.DrawDisabledText("Mesh: Asset registry unavailable");
+        return;
+    }
+    Context.DrawAssetPicker("Mesh", *Registry, *UMesh::StaticTypeInfo(), GetMeshHandle(), [this](FAssetHandle Handle) {
+        SetMeshHandle(Handle);
+    });
 }
 
 UMesh* UMeshComponent::ResolveMesh() const {

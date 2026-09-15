@@ -163,6 +163,7 @@ void FTransformGizmo::Update(const CameraProbe& Camera) {
 		GizmoWorldTransform.m[2][1] = Up.y;
 		GizmoWorldTransform.m[2][2] = Up.z;
 	}
+
 	GizmoWorldTransform.Translation(TargetWorld.Translation());
 
 	FVector3 BoundsExtent{};

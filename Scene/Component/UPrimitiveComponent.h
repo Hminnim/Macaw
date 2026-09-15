@@ -14,6 +14,7 @@ public:
 
     bool IsVisible() const;
     void SetVisible(bool bInVisible);
+    void DrawPanels(FPropertyEditorContext& Context) override;
 
     virtual void MakeRender(FActorProbe& OutProbe) const {};
 

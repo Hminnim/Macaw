@@ -1,6 +1,7 @@
 ﻿#include "PCH.h"
 #include "UActorComponent.h"
 #include "../AActor.h"
+#include "Render/Panel/FPropertyEditorContext.h"
 #include "../../ErrorHandler.h"
 
 AActor* UActorComponent::GetOwner() const {
@@ -30,6 +31,12 @@ void UActorComponent::Tick(float /*DeltaTime*/) {
 }
 
 void UActorComponent::OnUnregister() {
+}
+
+void UActorComponent::DrawPanels(FPropertyEditorContext& Context) {
+    Context.DrawBool("Active", IsActive(), [this](bool bActive) {
+        SetActive(bActive);
+    });
 }
 
 bool UActorComponent::IsActive() const {

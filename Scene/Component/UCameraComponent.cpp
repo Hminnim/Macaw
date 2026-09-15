@@ -1,5 +1,6 @@
 ﻿#include "PCH.h"
 #include "UCameraComponent.h"
+#include "Render/Panel/FPropertyEditorContext.h"
 
 #include "Scene/AActor.h"
 #include "Scene/UWorld.h"
@@ -56,6 +57,22 @@ void UCameraComponent::SetNearPlane(float InNearPlane) {
 
 void UCameraComponent::SetFarPlane(float InFarPlane) {
     FarPlane = InFarPlane;
+}
+
+void UCameraComponent::DrawPanels(FPropertyEditorContext& Context) {
+    USceneComponent::DrawPanels(Context);
+    Context.DrawFloat("FOV (Degrees)", DirectX::XMConvertToDegrees(GetFOV()), 0.1f, 1.0f, 179.0f, [this](float FOVDegrees) {
+        SetFOV(DirectX::XMConvertToRadians(FOVDegrees));
+    });
+    Context.DrawFloat("Aspect Ratio", GetAspectRatio(), 0.01f, 0.01f, 100.0f, [this](float AspectRatio) {
+        SetAspectRatio(AspectRatio);
+    });
+    Context.DrawFloat("Near Plane", GetNearPlane(), 0.01f, 0.001f, GetFarPlane() - 0.001f, [this](float NearPlane) {
+        SetNearPlane(NearPlane);
+    });
+    Context.DrawFloat("Far Plane", GetFarPlane(), 1.0f, GetNearPlane() + 0.001f, 1000000.0f, [this](float FarPlane) {
+        SetFarPlane(FarPlane);
+    });
 }
 
 void UCameraComponent::OnRegister() {

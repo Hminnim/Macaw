@@ -1,4 +1,4 @@
-#include "PCH.h"
+﻿#include "PCH.h"
 #include "FControlPanel.h"
 
 #include <windows.h>
@@ -185,7 +185,7 @@ void FControlPanel::DrawPanel()
     // RenderMode
     // =====================================================
     bool bRenderModeChanged = false;
-    int renderIndex = EditorContext->GetRenderModeState();
+    int renderIndex = static_cast<int>(EditorContext->GetRenderModeState());
 
     const char* renderMode[] = { "Solid", "Lit", "Unlit", "Wireframe" };
 

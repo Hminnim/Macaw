@@ -62,7 +62,7 @@ PS_INPUT mainVS(VS_INPUT Input, uint InstanceID : SV_InstanceID)
    
     if ((ModelContext.Flags & 1) != 0)
     {
-        Output.ColorCoefficient = float3(1.0f, 0.0f, 0.0f);
+        Output.ColorCoefficient = float3(1.2f, 1.2f, 1.2f);
     }
     else
     {

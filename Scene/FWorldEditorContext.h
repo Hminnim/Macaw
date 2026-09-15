@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <d3d11.h>
 #include <optional>
@@ -10,6 +10,7 @@
 
 class AActor;
 class FAssetRegistry;
+class UActorComponent;
 class UCollisionComponent;
 class USceneComponent;
 class UWorld;
@@ -39,15 +40,19 @@ public:
     void SetRenderModeState(const size_t State);
 
     void SetSelectedCollider(UCollisionComponent* Collider);
+    void SetSelectedActor(AActor* Actor);
+    void SetSelectedComponent(UActorComponent* Component);
     void ClearSelection();
 
     AActor* GetSelectedActor() const noexcept;
+    UActorComponent* GetSelectedComponent() const noexcept;
     UCollisionComponent* GetSelectedCollider() const noexcept;
     USceneComponent* GetSelectedTransformTarget() const noexcept;
 
 private:
     UWorld* World = nullptr;
     TObjectRef<AActor> SelectedActor;
+    TObjectRef<UActorComponent> SelectedComponent;
     TObjectRef<UCollisionComponent> SelectedCollider;
     FStateChannel<FWorldEditorSharedState> SharedState{ std::in_place };
     FMessageChannel EditorToWorld{ 64 };

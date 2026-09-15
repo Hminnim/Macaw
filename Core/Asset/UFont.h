@@ -1,46 +1,49 @@
-#pragma once
+﻿#pragma once
 #include "UAsset.h"
 #include "FAssetHandle.h"
 #include "../../FVector.h"
 #include <array>
 #include <cstdint>
 
-struct FFontCharacter
+struct ID3D11DeviceContext;
+struct ID3D11ShaderResourceView;
+
+struct FFontGlyph
 {
-	uint32_t StartU = 0;
-	uint32_t StartV = 0;
+    uint32 GlyphIndex = 0;
 
-	uint32_t USize = 0;
-	uint32_t VSize = 0;
+    uint32 AtlasX = 0;
+    uint32 AtlasY = 0;
+    uint32 BitmapWidth = 0;
+    uint32 BitmapHeight = 0;
 
-	float Advance = 0.0f;
+    int32 BearingX = 0;
+    int32 BearingY = 0;
+    float AdvanceX = 0.0f;
+    float AdvanceY = 0.0f;
+
+    FVector2 UVMin{};
+    FVector2 UVMax{};
 };
 
-struct FFontUVRect
+struct FFontMetrics
 {
-	FVector2 UVMin{};
-	FVector2 UVMax{};
+    float BakePixelHeight = 0.0f;
+    float Ascender = 0.0f;
+    float Descender = 0.0f;
+    float LineHeight = 0.0f;
 };
 
 class UFont : public UAsset
 {
-private:
-	float AtlasHeight = 0.0f;
-	float AtlasWidth = 0.0f;
-	static constexpr uint32_t ASCIICharacterCount = 256;
-	std::array<FFontCharacter, ASCIICharacterCount> Characters{};
-	FAssetHandle AtlasTextureHandle{};
 public:
-	UFont() = default;
-	~UFont() override = default;
+    UFont() = default;
+    ~UFont() override = default;
 
-	JG_DECLARE_DERIVED_TYPEINFO(UFont, UAsset);
+    JG_DECLARE_ABSTRACT_DERIVED_TYPEINFO(UFont, UAsset)
 
-	void BuildFixedGrid(FAssetHandle InAtlasTextureHandle, uint32_t InAtlasWidth, uint32_t InAtlasHeight, uint32_t InCellWidth, uint32_t InCellHeight, uint8_t InFirstCharacter, uint8_t InLastCharacter, float InDefaultAdvance);
-	FFontCharacter* FindCharacter(uint8_t Character);
-	FFontUVRect GetUV(uint8_t Character);
-	FAssetHandle GetAtlasTextureHandle(){ return AtlasTextureHandle; }
-	virtual void FlushAtlas(ID3D11DeviceContext* Context) { }
-	virtual ID3D11ShaderResourceView* GetRuntimeAtlasSRV() const { return nullptr; }
-	FAssetHandle GetAtlasTextureHandle() const { return AtlasTextureHandle; }
+    virtual const FFontGlyph* GetOrCreateGlyph(char32_t CodePoint) = 0;
+    virtual const FFontMetrics& GetFontMetrics() const = 0;
+    virtual void FlushAtlas(ID3D11DeviceContext* Context) = 0;
+    virtual ID3D11ShaderResourceView* GetAtlasSRV() const = 0;
 };

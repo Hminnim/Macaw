@@ -1,4 +1,4 @@
-#include "PCH.h"
+﻿#include "PCH.h"
 #include "doctest.h"
 
 #include "../Scene/AActor.h"
@@ -120,7 +120,7 @@ TEST_SUITE("CH6 World Subsystems") {
         CHECK_EQ(Context.GetSelectedTransformTarget(), SelectedMesh);
 
         FRenderProbe Probe;
-        World.GetRenderSubsystem().BuildRenderProbes(Probe);
+        World.GetRenderSubsystem().BuildRenderProbes(World.GetAssetRegistry(), Probe);
         REQUIRE_EQ(Probe.ActorProbes.size(), 2);
         CHECK((Probe.ActorProbes[0].Flags & static_cast<uint32>(ERenderObjectFlags::Selected)) != 0);
         CHECK((Probe.ActorProbes[1].Flags & static_cast<uint32>(ERenderObjectFlags::Selected)) == 0);
@@ -153,10 +153,10 @@ TEST_SUITE("CH6 World Subsystems") {
         CHECK(Collider->GetExtent().x == doctest::Approx(1.0f));
         CHECK(Collider->GetExtent().z == doctest::Approx(1.0f));
         float MissDistance = 0.0f;
-        CHECK_FALSE(Collider->Raycast(FRay{ FVector3{ 0.75f, 0.75f, -1.0f }.ToSimpleMath(), FVector3{ 0.0f, 0.0f, 1.0f }.ToSimpleMath() }, MissDistance));
+        CHECK_FALSE(Collider->Raycast(FRay{ FVector3{ -0.75f, 0.75f, -1.0f }.ToSimpleMath(), FVector3{ 0.0f, 0.0f, 1.0f }.ToSimpleMath() }, MissDistance));
 
         float Distance = 0.0f;
-        CHECK(MeshComponent->RaycastMesh(FRay{ FVector3{ -0.5f, -0.5f, -1.0f }.ToSimpleMath(), FVector3{ 0.0f, 0.0f, 1.0f }.ToSimpleMath() }, Distance));
+        CHECK(MeshComponent->RaycastMesh(FRay{ FVector3{ 0.5f, -0.5f, -1.0f }.ToSimpleMath(), FVector3{ 0.0f, 0.0f, 1.0f }.ToSimpleMath() }, Distance));
 
         UBoxColliderComponent* BoundsOnly = Actor->AddComponent<UBoxColliderComponent>();
         REQUIRE(BoundsOnly != nullptr);

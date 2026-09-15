@@ -57,9 +57,10 @@
 #include "Render/EditorView/EditorViewport.h"
 
 #include "Core/Asset/UFont.h"
-#include "UKFont.h"
-#include "Scene/Component/UTextRenderComponent.h"
-#include "Scene/Component/UKTextRenderComponent.h"
+#include "Core/Asset/UFreeTypeFont.h"
+#include "Scene/Component/UBillBoardComponent.h"
+#include "Scene/Component/UBillBoardTextComponent.h"
+#include "Scene/Component/UNameTagComponent.h"
 
 #define MAX_LOADSTRING 100
 
@@ -179,8 +180,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	TypeRegistry::Register(UTexture::StaticTypeInfo());
     TypeRegistry::Register(AActor::StaticTypeInfo());
     TypeRegistry::Register(UFont::StaticTypeInfo());
-    TypeRegistry::Register(UKFont::StaticTypeInfo());
-
+    TypeRegistry::Register(UFreeTypeFont::StaticTypeInfo());
 
 	TypeRegistry::Register(UWorld::StaticTypeInfo());
 	TypeRegistry::Register(AActor::StaticTypeInfo());
@@ -191,8 +191,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	TypeRegistry::Register(UActorComponent::StaticTypeInfo());
 	TypeRegistry::Register(USceneComponent::StaticTypeInfo());
 	TypeRegistry::Register(UCollisionComponent::StaticTypeInfo());
-    TypeRegistry::Register(UTextRenderComponent::StaticTypeInfo());
-    TypeRegistry::Register(UKTextRenderComponent::StaticTypeInfo());
+    TypeRegistry::Register(UBillboardTextComponent::StaticTypeInfo());
+    TypeRegistry::Register(UNameTagComponent::StaticTypeInfo());
 	
 
 
@@ -248,16 +248,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     FEditorUIManager EditorUIManager;
 
-    EditorUIManager.Initialize(
-        World,
-
-        EditorContext,
-
-        gHWND,
-
-        EditorView.GetGizmoMode(),
-        EditorView.GetGizmoCoordinateSpace()
-    );
+    EditorUIManager.Initialize(World, EditorContext, gHWND, EditorView.GetGizmoMode(), EditorView.GetGizmoCoordinateSpace());
 
     GMouseInput.InitializeWorldCommandSender(WorldCommandChannel.GetSender());
     GKeyboardInput.InitializeWorldCommandSender(WorldCommandChannel.GetSender());
@@ -320,26 +311,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	AssetRegistry.EmplaceAsset<UTexturedMaterial>(Renderer.GetDevice(), "TexturedMaterial", "./Content/Metadata/TexturedTestMaterial.meta");
 
     FAssetHandle TextPipelineHandle = AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(),"TextPipeline", "./Content/Metadata/TextPipeline.meta");
-    FAssetHandle FontTextureHandle =AssetRegistry.EmplaceAsset<UTexture>( Renderer.GetDevice(), "AsciiFontTexture","./Content/Metadata/AsciiFontTexture.meta");
-    FAssetHandle FontHandle =AssetRegistry.EmplaceAsset<UFont>(Renderer.GetDevice(),"AsciiFont");
-    FAssetHandle KFontHandle = AssetRegistry.EmplaceAsset<UKFont>( Renderer.GetDevice(),"KoreanFont","./Content/Metadata/NotoSansKR.meta");
-
-    UFont* Font = AssetRegistry.ResolveAsset<UFont>(KFontHandle);
+    FAssetHandle FontHandle = AssetRegistry.EmplaceAsset<UFreeTypeFont>(Renderer.GetDevice(),"DefaultFont","./Content/Metadata/NotoSansKR.meta");
     AActor* TextActor = World.AdoptActor<AActor>();
-
-    if (TextActor != nullptr)
-    {
-        UKTextRenderComponent* TextComponent = TextActor->AddComponent<UKTextRenderComponent>();
-        TextActor->SetRootComponent(TextComponent);
-        TextComponent->SetFontHandle(KFontHandle);
-        TextComponent->SetPipelineHandle(TextPipelineHandle);
-        TextComponent->SetCharacterHeight(0.5f);
-        TextComponent->SetLetterSpacing(0.0f);
-        TextComponent->SetLineSpacing(0.0f);
-        TextComponent->SetColor( FVector4{1.0f,1.0f,1.0f, 1.0f});
-        TextComponent->SetText(FString{ "크래프톤 정글3주차"});
-        TextComponent->GetComponentTransform().SetPosition(FVector3{0.0f, 0.0f, 0.0f});
-    }
 
     const FAssetHandle MeshHandle = AssetRegistry.GetAsset("CubeMesh");
     const FAssetHandle PipelineHandle = AssetRegistry.GetAsset("BasePipeline");
@@ -361,6 +334,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     auto& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; 
+
+    io.Fonts->AddFontFromFileTTF("./Content/Font/NotoSansKR-Medium.ttf", 16.0f, nullptr, io.Fonts->GetGlyphRangesKorean());
 
     auto LastTickTime = std::chrono::steady_clock::now();
 
@@ -462,6 +437,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		World.SaveScene("test", &AssetRegistry);
     }
 
+    Renderer.Terminate();
+    Renderer.ReportLiveObjects(); 
     return (int) msg.wParam;
 }
 
@@ -584,17 +561,13 @@ extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam);
+    if (const auto result = ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam)) {
+        return result;
+    }
 
-    GMouseInput.ProcessWindowMessage(
-        message,
-        wParam,
-        lParam);
+    GMouseInput.ProcessWindowMessage(message, wParam, lParam);
 
-    GKeyboardInput.ProcessWindowMessage(
-        message,
-        wParam,
-        lParam);
+    GKeyboardInput.ProcessWindowMessage(message, wParam, lParam);
 
     switch (message)
     {

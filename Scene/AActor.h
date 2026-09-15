@@ -155,6 +155,8 @@ public:
 
     /// <summary>Actor가 BeginPlay 수명 주기를 완료했는지 반환합니다.</summary>
     bool HasBegunPlay() const;
+    const FGuid& GetFolderGuid() const { return FolderGuid; }
+    void SetFolderGuid(FGuid InFolderGuid) { FolderGuid = InFolderGuid; }
     /// <summary>활성 Component에 프레임 Tick을 전달합니다.</summary>
     /// <param name="DeltaTime">이전 프레임 이후 경과 시간입니다.</param>
     virtual void Tick(float DeltaTime);
@@ -184,7 +186,9 @@ protected:
 private:
     std::vector<std::unique_ptr<UActorComponent>> Components{};
     USceneComponent* RootComponent = nullptr;
+
     FGuid PendingRootComponentGuid{};
+    FGuid FolderGuid{};
 
     UWorld* World = nullptr;
     bool bHasBegunPlay = false;

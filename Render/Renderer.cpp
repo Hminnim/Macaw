@@ -30,6 +30,10 @@ void FRenderer::Create(HWND WindowHandle, UINT width, UINT height) {
 	ModelContextArray.Initialize(Device.Get(), DeviceContext.Get(), 128);
 	RootConstants.Initialize(Device.Get());
 	TextRenderer.Initialize(Device.Get(),256);
+
+#ifdef _DEBUG
+	Device.As(&DebugInterface);
+#endif
 }
 
 void FRenderer::BeginFrame() {
@@ -54,8 +58,7 @@ void FRenderer::EndFrame() {
 void FRenderer::RenderScene(FRenderProbe& Probe) {
 	RenderActorList(Probe.ActorProbes,Probe.MainCameraProbe);
 
-	if (AssetRegistry != nullptr)
-	{
+	if (AssetRegistry != nullptr) {
 		TextRenderer.Render(DeviceContext.Get(),Probe.TextProbes,Probe.MainCameraProbe, AssetRegistry);
 	}
 }
@@ -237,6 +240,20 @@ void FRenderer::ReSize(uint32 width, uint32 height) {
 	DeviceContext->RSSetViewports(1, &Viewport);
 }
 
+void FRenderer::Terminate() {
+	DeviceContext->ClearState();
+
+	SwapChain.Reset();
+	DepthStencilView.Reset();
+	DepthStencilBuffer.Reset();
+	RenderTargetView.Reset();
+	BackBuffer.Reset();
+}
+
+void FRenderer::ReportLiveObjects() const {
+	DebugInterface->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL | D3D11_RLDO_IGNORE_INTERNAL);
+}
+
 void FRenderer::CreateDeviceAndSwapChain(HWND WindowHandle) {
 	// 지원하는 Direct3D 기능 레벨을 정의
 	D3D_FEATURE_LEVEL featurelevels[] = { D3D_FEATURE_LEVEL_11_0 };
@@ -253,13 +270,19 @@ void FRenderer::CreateDeviceAndSwapChain(HWND WindowHandle) {
 	swapchaindesc.Windowed = TRUE; // 창 모드
 	swapchaindesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD; // 스왑 방식
 	swapchaindesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH | DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING; // 모드 전환 허용
-
+	
+#ifdef _DEBUG
 	// Direct3D 장치와 스왑 체인을 생성
 	ErrorHandler::ReportHRESULT(D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr,
 		D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_DEBUG,
 		featurelevels, ARRAYSIZE(featurelevels), D3D11_SDK_VERSION,
 		&swapchaindesc, &SwapChain, &Device, nullptr, &DeviceContext), "[ FRenderer ]", "Failed to create Direct3D device and swap chain.", ErrorHandler::EErrorLevel::Critical);
-
+#else 
+	ErrorHandler::ReportHRESULT(D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr,
+		D3D11_CREATE_DEVICE_BGRA_SUPPORT ,
+		featurelevels, ARRAYSIZE(featurelevels), D3D11_SDK_VERSION,
+		&swapchaindesc, &SwapChain, &Device, nullptr, &DeviceContext), "[ FRenderer ]", "Failed to create Direct3D device and swap chain.", ErrorHandler::EErrorLevel::Critical);
+#endif 
 	// 생성된 스왑 체인의 정보 가져오기
 	SwapChain->GetDesc(&swapchaindesc);
 
