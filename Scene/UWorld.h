@@ -26,6 +26,7 @@
 
 #include "../Render/RenderWindowInfo.h"
 
+#include "../Serialize/FEditorConfigManager.h"
 #include "Folder.h"
 
 class AActor;
@@ -143,5 +144,5 @@ private:
 
     FRenderProbe Probe{};
 
-    
+    FEditorSettings Settings;
 };
