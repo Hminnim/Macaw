@@ -3,7 +3,6 @@
 
 #include "AActor.h"
 #include "Component/UActorComponent.h"
-#include "Component/UCollisionComponent.h"
 #include "Component/USceneComponent.h"
 #include "Core/Asset/FAssetRegistry.h"
 #include "UWorld.h"
@@ -19,8 +18,8 @@ void FWorldEditorContext::InitializeChannels(FAssetRegistry& AssetRegistry, ID3D
         World->HandleSpawnPrimitive(Message, AssetRegistry);
     });
     EditorToWorld.TryBind<FMessageDeletePrimitive>([this](const FMessageDeletePrimitive&) {
-        if (UCollisionComponent* Collider = GetSelectedCollider()) {
-            World->DestroyActor(Collider->GetOwner());
+        if (AActor* Actor = GetSelectedActor()) {
+            World->DestroyActor(Actor);
             World->FlushPendingDestroyActors();
         }
     });
@@ -59,21 +58,12 @@ void FWorldEditorContext::SetRenderModeState(const size_t State)
     SharedState.GetWriter().Modify([&State](FWorldEditorSharedState& Shared) {Shared.ModeIndex = State;});
 }
 
-void FWorldEditorContext::SetSelectedCollider(UCollisionComponent* Collider) {
-    if (Collider == nullptr || Collider->GetOwner() == nullptr) {
-        ClearSelection();
-        return;
-    }
-    SetSelectedComponent(Collider);
-}
-
 void FWorldEditorContext::SetSelectedActor(AActor* Actor) {
     if (Actor == nullptr) {
         ClearSelection();
         return;
     }
 
-    SelectedCollider.Reset();
     SelectedActor.Set(Actor);
     SelectedComponent.Set(Actor->GetRootComponent());
 }
@@ -86,32 +76,17 @@ void FWorldEditorContext::SetSelectedComponent(UActorComponent* Component) {
 
     SelectedActor.Set(Component->GetOwner());
     SelectedComponent.Set(Component);
-
-    if (Component->GetTypeInfo()->IsA(UCollisionComponent::StaticTypeInfo())) {
-        SelectedCollider.Set(static_cast<UCollisionComponent*>(Component));
-    }
-    else {
-        SelectedCollider.Reset();
-    }
 }
 
 void FWorldEditorContext::ClearSelection() {
-    SelectedCollider.Reset();
     SelectedComponent.Reset();
     SelectedActor.Reset();
 }
 
 AActor* FWorldEditorContext::GetSelectedActor() const noexcept { return SelectedActor.Get(); }
 UActorComponent* FWorldEditorContext::GetSelectedComponent() const noexcept { return SelectedComponent.Get(); }
-UCollisionComponent* FWorldEditorContext::GetSelectedCollider() const noexcept { return SelectedCollider.Get(); }
 
 USceneComponent* FWorldEditorContext::GetSelectedTransformTarget() const noexcept {
-
-    if (SelectedCollider.Get() != nullptr) {
-        AActor* Actor = SelectedActor.Get();
-        return Actor != nullptr ? Actor->GetRootComponent() : nullptr;
-    }
-
     UActorComponent* Component = SelectedComponent.Get();
     if (Component != nullptr && Component->GetTypeInfo()->IsA(USceneComponent::StaticTypeInfo())) {
         return static_cast<USceneComponent*>(Component);

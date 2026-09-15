@@ -168,4 +168,6 @@ void UKTextRenderComponent::RebuildTextGeometry()
         Vertex.LocalPosition.x -= CenterX;
         Vertex.LocalPosition.y -= CenterY;
     }
+
+    UpdatePickingBoxFromTextGeometry();
 }

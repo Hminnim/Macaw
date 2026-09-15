@@ -9,6 +9,7 @@
 #include "../Scene/FWorldEditorContext.h"
 #include "../Scene/Subsystem/UCameraSubsystem.h"
 #include "../Scene/Subsystem/UCollisionSubsystem.h"
+#include "../Scene/Subsystem/UPickingSubsystem.h"
 #include "../Scene/Subsystem/URenderSubsystem.h"
 #include "../Scene/UWorld.h"
 
@@ -70,9 +71,11 @@ TEST_SUITE("CH6 World Subsystems") {
         UWorld World;
         CHECK(World.GetRenderSubsystem().IsInitialized());
         CHECK(World.GetCollisionSubsystem().IsInitialized());
+        CHECK(World.GetPickingSubsystem().IsInitialized());
         CHECK(World.GetCameraSubsystem().IsInitialized());
         CHECK_EQ(World.GetRenderSubsystem().GetWorld(), &World);
         CHECK_EQ(World.GetCollisionSubsystem().GetWorld(), &World);
+        CHECK_EQ(World.GetPickingSubsystem().GetWorld(), &World);
         CHECK_EQ(World.GetCameraSubsystem().GetWorld(), &World);
 
         AActor* Actor = World.AdoptActor<AActor>();
@@ -87,12 +90,15 @@ TEST_SUITE("CH6 World Subsystems") {
 
         CHECK(World.GetRenderSubsystem().ContainsComponent(Mesh));
         CHECK(World.GetCollisionSubsystem().ContainsComponent(Collision));
+        CHECK(World.GetPickingSubsystem().ContainsComponent(Mesh));
+        CHECK(World.GetPickingSubsystem().ContainsComponent(Collision));
         CHECK_EQ(World.GetCameraSubsystem().GetMainCamera(), Camera);
 
         Actor->SetWorld(nullptr);
 
         CHECK_FALSE(World.GetRenderSubsystem().ContainsComponent(Mesh));
         CHECK_FALSE(World.GetCollisionSubsystem().ContainsComponent(Collision));
+        CHECK_FALSE(World.GetPickingSubsystem().ContainsComponent(Mesh));
         CHECK_EQ(World.GetCameraSubsystem().GetMainCamera(), nullptr);
     }
 
@@ -115,7 +121,7 @@ TEST_SUITE("CH6 World Subsystems") {
         SelectedActor->SetRootComponent(SelectedMesh);
         OtherActor->SetRootComponent(OtherMesh);
 
-        Context.SetSelectedCollider(Collider);
+        Context.SetSelectedActor(SelectedActor);
         CHECK_EQ(Context.GetSelectedActor(), SelectedActor);
         CHECK_EQ(Context.GetSelectedTransformTarget(), SelectedMesh);
 
@@ -168,5 +174,40 @@ TEST_SUITE("CH6 World Subsystems") {
         REQUIRE(World.DestroyActor(Actor));
         World.FlushPendingDestroyActors();
         CHECK_FALSE(World.GetCollisionSubsystem().ContainsComponent(Collider));
+    }
+
+    TEST_CASE("Picking subsystem broad-phases primitives and narrow-phases mesh geometry") {
+        Microsoft::WRL::ComPtr<ID3D11Device> Device = CreateTestDevice();
+        REQUIRE(Device != nullptr);
+
+        UMesh Mesh;
+        REQUIRE(MakeTriangleMesh(Mesh, Device.Get()));
+
+        UWorld World;
+        AActor* Actor = World.AdoptActor<AActor>();
+        REQUIRE(Actor != nullptr);
+        UTestMeshComponent* MeshComponent = Actor->AddComponent<UTestMeshComponent>();
+        REQUIRE(MeshComponent != nullptr);
+        Actor->SetRootComponent(MeshComponent);
+        MeshComponent->Mesh = &Mesh;
+        MeshComponent->SetPickingBox(DirectX::BoundingOrientedBox{
+            DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.0f },
+            DirectX::XMFLOAT3{ 1.0f, 1.0f, 1.0f },
+            DirectX::XMFLOAT4{ 0.0f, 0.0f, 0.0f, 1.0f }
+        });
+
+        UPrimitiveComponent* PickedComponent = nullptr;
+        float Distance = 0.0f;
+        CHECK_FALSE(World.GetPickingSubsystem().Raycast(
+            FRay{ FVector3{ 0.0f, 0.5f, -2.0f }.ToSimpleMath(), FVector3{ 0.0f, 0.0f, 1.0f }.ToSimpleMath() },
+            PickedComponent,
+            Distance));
+
+        CHECK(World.GetPickingSubsystem().Raycast(
+            FRay{ FVector3{ 0.25f, -0.25f, -2.0f }.ToSimpleMath(), FVector3{ 0.0f, 0.0f, 1.0f }.ToSimpleMath() },
+            PickedComponent,
+            Distance));
+        CHECK_EQ(PickedComponent, MeshComponent);
+        CHECK(Distance == doctest::Approx(2.0f));
     }
 }

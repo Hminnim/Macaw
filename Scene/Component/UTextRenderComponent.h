@@ -41,6 +41,7 @@ public:
 	bool MakeTextRender(FTextProbe& OutProbe) const;
 
 protected:
+	void UpdatePickingBoxFromTextGeometry();
 	void Serialize(FArchive& Archive) override;
 
 	FAssetHandle FontHandle{};

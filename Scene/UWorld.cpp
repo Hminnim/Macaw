@@ -9,8 +9,9 @@
 #include "Component/UStaticMeshComponent.h"
 #include "Subsystem/UCameraSubsystem.h"
 #include "Subsystem/UCollisionSubsystem.h"
+#include "Subsystem/UPickingSubsystem.h"
 #include "Subsystem/URenderSubsystem.h"
-#include "Component/UCollisionComponent.h"
+#include "Component/UPrimitiveComponent.h"
 #include "Component/UTextRenderComponent.h"
 #include "FMouseCameraRotateRequestMessage.h"
 #include "FMousePickRequestMessage.h"
@@ -262,10 +263,12 @@ bool UWorld::ValidateFolderHierarchy() const {
 void UWorld::InitializeSubsystems() {
 	RenderSubsystem = std::make_unique<URenderSubsystem>();
 	CollisionSubsystem = std::make_unique<UCollisionSubsystem>();
+	PickingSubsystem = std::make_unique<UPickingSubsystem>();
 	CameraSubsystem = std::make_unique<UCameraSubsystem>();
 
 	RenderSubsystem->Initialize(this);
 	CollisionSubsystem->Initialize(this);
+	PickingSubsystem->Initialize(this);
 	CameraSubsystem->Initialize(this);
 
 	if (!FEditorConfigManager::Load(Settings))
@@ -281,6 +284,9 @@ void UWorld::DeinitializeSubsystems() {
 	if (CollisionSubsystem != nullptr) {
 		CollisionSubsystem->Deinitialize();
 	}
+	if (PickingSubsystem != nullptr) {
+		PickingSubsystem->Deinitialize();
+	}
 	if (RenderSubsystem != nullptr) {
 		RenderSubsystem->Deinitialize();
 	}
@@ -290,17 +296,6 @@ FRenderProbe& UWorld::BuildRenderProbe() {
 	Probe.ActorProbes.clear();
     Probe.GizmoProbes.clear();
     Probe.TextProbes.clear();
-
- /*   for (const UStaticMeshComponent* Component : RenderableComponents)
-    {
-		FActorProbe ActorProbe{};
-		Component->MakeRender(ActorProbe);
-
-		UCollisionComponent* SelectedCollision = EditorContext->GetSelectedCollider();
-		if (SelectedCollision != nullptr && Component->GetOwner() == SelectedCollision->GetOwner()) {
-			ActorProbe.Flags |= 0x0000'0001; 
-		}
-	}*/
 
 	RenderSubsystem->BuildRenderProbes(AssetRegistry, Probe);
 
@@ -378,6 +373,14 @@ UCollisionSubsystem& UWorld::GetCollisionSubsystem() {
 
 const UCollisionSubsystem& UWorld::GetCollisionSubsystem() const {
 	return *CollisionSubsystem;
+}
+
+UPickingSubsystem& UWorld::GetPickingSubsystem() {
+	return *PickingSubsystem;
+}
+
+const UPickingSubsystem& UWorld::GetPickingSubsystem() const {
+	return *PickingSubsystem;
 }
 
 UCameraSubsystem& UWorld::GetCameraSubsystem() {
@@ -654,16 +657,16 @@ void UWorld::HandleMousePickRequest(const FMousePickRequestMessage& Message) {
 		{
 			RayDirection.Normalize();
 
-			UCollisionComponent* NearestCollision = nullptr;
+			UPrimitiveComponent* NearestPrimitive = nullptr;
 			float NearestDistance = 0.0f;
-			if (GetCollisionSubsystem().Raycast(FRay{ RayOrigin.ToSimpleMath(), RayDirection.ToSimpleMath() }, NearestCollision, NearestDistance)) {
-				Console::AddLog(Console::STDOutHandle, ELogLevel::Log, ELogCategory::Etc, "Raycast hit bounds of collision component %f", NearestDistance);
+			if (GetPickingSubsystem().Raycast(FRay{ RayOrigin.ToSimpleMath(), RayDirection.ToSimpleMath() }, NearestPrimitive, NearestDistance)) {
+				Console::AddLog(Console::STDOutHandle, ELogLevel::Log, ELogCategory::Etc, "Raycast hit primitive component %f", NearestDistance);
 			}
 
-			if (NearestCollision != nullptr)
+			if (NearestPrimitive != nullptr)
 			{
 				if (EditorContext != nullptr) {
-					EditorContext->SetSelectedCollider(NearestCollision);
+					EditorContext->SetSelectedActor(NearestPrimitive->GetOwner());
 				}
 			}
 			else if (EditorContext != nullptr) {

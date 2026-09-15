@@ -277,7 +277,9 @@ void FRenderer::Terminate() {
 }
 
 void FRenderer::ReportLiveObjects() const {
+#ifdef _DEBUG
 	DebugInterface->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL | D3D11_RLDO_IGNORE_INTERNAL);
+#endif 
 }
 
 void FRenderer::CreateDeviceAndSwapChain(HWND WindowHandle) {

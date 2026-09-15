@@ -259,4 +259,36 @@ void UTextRenderComponent::RebuildTextGeometry()
 		Vertex.LocalPosition.x -= CenterX;
 		Vertex.LocalPosition.y -= CenterY;
 	}
+
+	UpdatePickingBoxFromTextGeometry();
+}
+
+void UTextRenderComponent::UpdatePickingBoxFromTextGeometry()
+{
+	if (Vertices.empty())
+	{
+		return;
+	}
+
+	float MinX = std::numeric_limits<float>::max();
+	float MinY = std::numeric_limits<float>::max();
+	float MaxX = std::numeric_limits<float>::lowest();
+	float MaxY = std::numeric_limits<float>::lowest();
+	for (const FTextVertex& Vertex : Vertices)
+	{
+		MinX = std::min(MinX, Vertex.LocalPosition.x);
+		MaxX = std::max(MaxX, Vertex.LocalPosition.x + Vertex.Size.x);
+		MinY = std::min(MinY, Vertex.LocalPosition.y - Vertex.Size.y);
+		MaxY = std::max(MaxY, Vertex.LocalPosition.y);
+	}
+
+	SetPickingBox(DirectX::BoundingOrientedBox{
+		DirectX::XMFLOAT3{ (MinX + MaxX) * 0.5f, (MinY + MaxY) * 0.5f, 0.0f },
+		DirectX::XMFLOAT3{
+			std::max((MaxX - MinX) * 0.5f, 0.001f),
+			std::max((MaxY - MinY) * 0.5f, 0.001f),
+			0.01f
+		},
+		DirectX::XMFLOAT4{ 0.0f, 0.0f, 0.0f, 1.0f }
+	});
 }

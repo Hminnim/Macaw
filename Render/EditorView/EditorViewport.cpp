@@ -7,7 +7,7 @@
 
 #include "../../FMouseInput.h"
 
-#include "../../Scene/Component/UCollisionComponent.h"
+#include "../../Scene/Component/UPrimitiveComponent.h"
 #include "../../Scene/AActor.h"
 
 #include "../../Serialize/FEditorConfigManager.h"
@@ -93,18 +93,18 @@ void EditorViewport::RenderAxis(ELineDepthMode DepthMode) {
 
 void EditorViewport::RenderBounds(ELineDepthMode DepthMode)
 {
-	if (EditorContext->GetSelectedCollider() == nullptr)	return;
-	UCollisionComponent* Collider = EditorContext->GetSelectedCollider();
 	AActor* Actor = EditorContext->GetSelectedActor();
-	Collider->GetBoundsCenter();
-	Collider->GetBoundsOrientation();
+	if (Actor == nullptr) return;
+
+	USceneComponent* RootComponent = Actor->GetRootComponent();
+	if (RootComponent == nullptr || !RootComponent->GetTypeInfo()->IsA(UPrimitiveComponent::StaticTypeInfo())) return;
+
+	const auto* Primitive = static_cast<UPrimitiveComponent*>(RootComponent);
 	DirectX::BoundingOrientedBox LocalBounds{};
-	LocalBounds.Center = Collider->GetBoundsCenter().ToSimpleMath();
-	LocalBounds.Extents = Collider->GetExtent().ToSimpleMath();
-	const FQuat BoundsOrientation = Collider->GetBoundsOrientation();
+	LocalBounds = Primitive->GetPickingBox();
 	std::array<DirectX::XMFLOAT3, DirectX::BoundingOrientedBox::CORNER_COUNT> Corners{};
 	DirectX::BoundingOrientedBox WorldBox;
-	LocalBounds.Transform(WorldBox, Collider->GetComponentToWorld().ToSimpleMath());
+	LocalBounds.Transform(WorldBox, Primitive->GetComponentToWorld().ToSimpleMath());
 	WorldBox.GetCorners(Corners.data());
 
 	const FVector4 LineColor = FVector4{ 1.0f, 1.0f, 0.0f, 1.0f };

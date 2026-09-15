@@ -15,9 +15,10 @@ public:
     FAssetHandle GetMeshHandle() const;
     void SetMeshHandle(FAssetHandle InHandle);
     void DrawPanels(FPropertyEditorContext& Context) override;
+    void OnRegister() override;
     
     virtual UMesh* ResolveMesh() const;
-   
+    bool BuildPickingBoxFromMesh();
     bool RaycastMesh(const FRay& Ray, float& OutDistance) const;
 
 protected:

@@ -15,11 +15,13 @@ public:
     bool IsVisible() const;
     void SetVisible(bool bInVisible);
     void DrawPanels(FPropertyEditorContext& Context) override;
+    void OnRegister() override;
+    void OnUnregister() override;
 
     virtual void MakeRender(FActorProbe& OutProbe) const {};
 
-	void SetPickingBox(const DirectX::BoundingOrientedBox& Box) { PickingBox = Box; }
-	DirectX::BoundingOrientedBox& GetPickingBox() { return PickingBox; }
+    void SetPickingBox(const DirectX::BoundingOrientedBox& Box) { PickingBox = Box; }
+    const DirectX::BoundingOrientedBox& GetPickingBox() const { return PickingBox; }
 
 protected:
     void Serialize(FArchive& Archive) override;

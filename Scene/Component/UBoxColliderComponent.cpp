@@ -38,6 +38,7 @@ bool UBoxColliderComponent::BuildBoundsFromMesh() {
     DirectX::BoundingBox Bounds;
     DirectX::BoundingBox::CreateFromPoints(Bounds, Points.size(), Points.data(), sizeof(DirectX::XMFLOAT3));
     DirectX::BoundingOrientedBox::CreateFromBoundingBox(OBB, Bounds);
+    SetPickingBox(OBB);
     return true;
 }
 
@@ -61,6 +62,7 @@ FQuat UBoxColliderComponent::GetBoundsOrientation() const {
 
 void UBoxColliderComponent::SetExtent(const FVector3& InExtent) {
     OBB.Extents = DirectX::XMFLOAT3(InExtent.x, InExtent.y, InExtent.z);
+    SetPickingBox(OBB);
 }
 
 void UBoxColliderComponent::DrawPanels(FPropertyEditorContext& Context) {
@@ -136,5 +138,6 @@ void UBoxColliderComponent::Serialize(FArchive& Archive) {
         OBB.Center = Center.ToSimpleMath();
         OBB.Extents = Extent.ToSimpleMath();
         OBB.Orientation = Orientation.ToSimpleMath();
+        SetPickingBox(OBB);
     }
 }

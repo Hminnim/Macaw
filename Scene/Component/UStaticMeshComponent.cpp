@@ -45,6 +45,8 @@ void UStaticMeshComponent::DrawPanels(FPropertyEditorContext& Context)
 
 void UStaticMeshComponent::OnRegister()
 {
+    UMeshComponent::OnRegister();
+
     AActor* Owner = GetOwner();
 
     if (Owner != nullptr && Owner->GetWorld() != nullptr)

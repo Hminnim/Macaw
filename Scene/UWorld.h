@@ -37,6 +37,7 @@ struct ID3D11Device;
 class FAssetRegistry;
 class UCameraSubsystem;
 class UCollisionSubsystem;
+class UPickingSubsystem;
 class URenderSubsystem;
 
 class UWorld : public UObject
@@ -86,6 +87,8 @@ public:
     const URenderSubsystem& GetRenderSubsystem() const;
     UCollisionSubsystem& GetCollisionSubsystem();
     const UCollisionSubsystem& GetCollisionSubsystem() const;
+    UPickingSubsystem& GetPickingSubsystem();
+    const UPickingSubsystem& GetPickingSubsystem() const;
     UCameraSubsystem& GetCameraSubsystem();
     const UCameraSubsystem& GetCameraSubsystem() const;
 
@@ -128,7 +131,6 @@ private:
     TArray<AActor*> PendingDestroyActors;
    
     TArray<UStaticMeshComponent*> RenderableComponents;
-    TArray<TObjectRef<UCollisionComponent>> CollisionComponents;
     TArray<UTextRenderComponent*> TextRenderableComponents{};
 
 
@@ -139,6 +141,7 @@ private:
 
     std::unique_ptr<URenderSubsystem> RenderSubsystem;
     std::unique_ptr<UCollisionSubsystem> CollisionSubsystem;
+    std::unique_ptr<UPickingSubsystem> PickingSubsystem;
     std::unique_ptr<UCameraSubsystem> CameraSubsystem;
 	// std::unique_ptr<TextRenderSubSystem> TextRenderSubsystem;
 
