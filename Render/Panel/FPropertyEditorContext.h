@@ -8,8 +8,7 @@
 class FAssetRegistry;
 struct FTypeInfo;
 
-// Component owns the details composition. This context contains only reusable,
-// type-agnostic property widgets and their short-lived edit state.
+
 struct FPropertyReferenceOption {
     const void* Id = nullptr;
     FString Label;

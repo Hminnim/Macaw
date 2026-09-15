@@ -89,6 +89,7 @@ void UStaticMeshComponent::Serialize(FArchive& Archive)
     FString GuidMaterialHandle;
     if (MaterialHandle.ID != std::numeric_limits<uint32>::max())
         GuidMaterialHandle = Archive.GetAssetRegistry()->ResolveAsset<UAsset>(MaterialHandle)->GetGuid().ToString();
+
     Archive.Serialize("GuidMaterialHandle", GuidMaterialHandle);
     if (Archive.IsLoading())
     {
