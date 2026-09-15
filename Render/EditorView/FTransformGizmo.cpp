@@ -40,6 +40,10 @@ void FTransformGizmo::ProcessInput(FKeyboardInput& KeyboardInput, FMouseInput& M
 		GizmoMode.Emplace((GizmoModeChannel.GetReader().Read() + 1) % 3);
 	}
 
+	if (KeyboardInput.GetKeyState(VK_TAB) == EKeyState::Pressed) {
+		GizmoCoordinateSpace.Emplace((GizmoCoordinateSpaceChannel.GetReader().Read() + 1) % 2);
+	}
+
 	const EKeyState LeftState = MouseInput.GetKeyState(Left);
 	const FMouseInput::DragCapture& Capture = MouseInput.GetDragCapture(Left);
 
