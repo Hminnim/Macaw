@@ -656,10 +656,7 @@ void UWorld::HandleMousePickRequest(const FMousePickRequestMessage& Message) {
 
 			UCollisionComponent* NearestCollision = nullptr;
 			float NearestDistance = 0.0f;
-			if (GetCollisionSubsystem().Raycast(
-				FRay{ RayOrigin.ToSimpleMath(), RayDirection.ToSimpleMath() },
-				NearestCollision,
-				NearestDistance)) {
+			if (GetCollisionSubsystem().Raycast(FRay{ RayOrigin.ToSimpleMath(), RayDirection.ToSimpleMath() }, NearestCollision, NearestDistance)) {
 				Console::AddLog(Console::STDOutHandle, ELogLevel::Log, ELogCategory::Etc, "Raycast hit bounds of collision component %f", NearestDistance);
 			}
 
