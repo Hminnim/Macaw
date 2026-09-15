@@ -84,3 +84,5 @@ private:
 	FNameEntryId ComparisonId;
 	int32 Number = 0;
 };
+
+static void SplitNameAndNumber(std::string_view InString, std::string_view& OutString, int32& OutNumber);

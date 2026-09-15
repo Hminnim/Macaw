@@ -429,7 +429,7 @@ private:
 	TArray<FNameSlot> DisplayHashBuckets;
 };
 
-void SplitNameAndNumber(std::string_view InString, std::string_view& OutString, int32& OutNumber)
+static void SplitNameAndNumber(std::string_view InString, std::string_view& OutString, int32& OutNumber)
 {
 	if (InString.empty())
 	{

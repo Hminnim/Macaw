@@ -104,11 +104,15 @@ public:
 
     void ResetWorld(FAssetRegistry* AssetRegistry, ID3D11Device* Device);
 
+    FName MakeUniqueObjectName(std::string_view SourceName);
+    AActor* FindActorByName(FName InName) const;
+
 private:
 	void InitializeSubsystems();
 	void DeinitializeSubsystems();
 
     void PublishEditorCameraState();
+
 private:
     TArray<std::unique_ptr<AActor>> Actors;
     TArray<AActor*> PendingDestroyActors;
