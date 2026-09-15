@@ -56,6 +56,8 @@ public:
             return nullptr;
         }
 
+        ActorPtr->SetName(MakeUniqueObjectName(ActorPtr->GetTypeInfo()->TypeName));
+
         return ActorPtr;
     }
 
