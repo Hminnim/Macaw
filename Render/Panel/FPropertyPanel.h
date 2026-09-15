@@ -154,36 +154,9 @@ private:
     }
 
     void DrawDeleteButton(AActor& Actor, UActorComponent& Component) {
-        auto* SceneComponent = Component.GetTypeInfo()->IsA<USceneComponent>()
-            ? static_cast<USceneComponent*>(&Component)
-            : nullptr;
-        const bool bDeletingRootWithoutReplacement = SceneComponent == Actor.GetRootComponent() && FindReplacementRoot(Actor, SceneComponent) == nullptr;
-        if (bDeletingRootWithoutReplacement) ImGui::BeginDisabled();
-        const bool bDeleteClicked = ImGui::Button("Delete Component");
-        if (bDeletingRootWithoutReplacement) {
-            ImGui::EndDisabled();
-            ImGui::SameLine();
-            ImGui::TextDisabled("Add another Scene Component before deleting the root.");
-        }
-        if (!bDeleteClicked || bDeletingRootWithoutReplacement) return;
-        if (SceneComponent == Actor.GetRootComponent()) {
-            USceneComponent* NewRoot = FindReplacementRoot(Actor, SceneComponent);
-            NewRoot->DetachFromComponent(EAttachmentTransformRule::KeepWorldTransform);
-            Actor.SetRootComponent(NewRoot);
-        }
-        Actor.DestroyComponent(&Component);
+        if (!ImGui::Button("Delete Component")) return;
+        Component.DestroyComponent();
         EditorContext->SetSelectedActor(&Actor);
-    }
-
-    static USceneComponent* FindReplacementRoot(AActor& Actor, USceneComponent* Excluded) {
-        for (const std::unique_ptr<UActorComponent>& Candidate : Actor.GetComponents()) {
-            UActorComponent* CandidateComponent = Candidate.get();
-            if (CandidateComponent == nullptr || !CandidateComponent->GetTypeInfo()->IsA<USceneComponent>()) continue;
-
-            auto* SceneComponent = static_cast<USceneComponent*>(CandidateComponent);
-            if (SceneComponent != Excluded) return SceneComponent;
-        }
-        return nullptr;
     }
 
 private:

@@ -71,10 +71,6 @@ public:
         return nullptr;
     }
 
-    /// <summary>소유 Component를 등록 해제하고 Actor에서 제거합니다.</summary>
-    /// <param name="Component">제거할 소유 Component입니다.</param>
-    /// <returns>Component를 소유하고 있어 제거했으면 true입니다.</returns>
-    bool DestroyComponent(UActorComponent* component);
     /// <summary>Actor가 RAII 방식으로 소유하는 모든 Component를 반환합니다.</summary>
     const std::vector<std::unique_ptr<UActorComponent>>& GetComponents() const;
 
@@ -184,6 +180,10 @@ protected:
     void Serialize(FArchive& Archive) override;
 
 private:
+    friend class UActorComponent;
+
+    void RemoveOwnedComponent(UActorComponent* Component);
+
     std::vector<std::unique_ptr<UActorComponent>> Components{};
     USceneComponent* RootComponent = nullptr;
 

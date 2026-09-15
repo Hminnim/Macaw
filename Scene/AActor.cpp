@@ -17,31 +17,22 @@ AActor::~AActor() {
     }
 }
 
-bool AActor::DestroyComponent(UActorComponent* Component) {
-    if (Component == nullptr) {
-        return false;
-    }
-
+void AActor::RemoveOwnedComponent(UActorComponent* Component) {
     auto It = std::ranges::find_if(Components, [Component](const std::unique_ptr<UActorComponent>& Ptr) {
             return Ptr.get() == Component;
         }
     );
 
     if (It == Components.end()) {
-        return false;
+        return;
     }
-
-    Component->UnregisterComponent();
-    UObjectSystem::Unregister(Component, Component->GetHandle());
-
 
     if (RootComponent == Component) {
         RootComponent = nullptr;
     }
 
+    UObjectSystem::Unregister(Component, Component->GetHandle());
     Components.erase(It);
-
-    return true;
 }
 
 USceneComponent* AActor::GetRootComponent() {

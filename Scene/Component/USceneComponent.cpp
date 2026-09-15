@@ -136,19 +136,28 @@ void USceneComponent::Serialize(FArchive& Archive) {
 
 
 void USceneComponent::OnUnregister() {
-    for (TObjectRef<USceneComponent>& ChildRef : Children) {
+    UActorComponent::OnUnregister();
+}
+
+void USceneComponent::DestroyComponent(bool bPromoteChildren) {
+    USceneComponent* ParentComponent = GetParent();
+    std::vector<USceneComponent*> ChildrenToDetach;
+    ChildrenToDetach.reserve(Children.size());
+    for (const TObjectRef<USceneComponent>& ChildRef : Children) {
         if (USceneComponent* Child = ChildRef.Get()) {
-            Child->Parent.Reset();
+            ChildrenToDetach.push_back(Child);
         }
     }
-    Children.clear();
 
-    if (USceneComponent* ParentComponent = Parent.Get()) {
-        ParentComponent->RemoveChild(this);
+    for (USceneComponent* Child : ChildrenToDetach) {
+        Child->AttachToComponent(
+            bPromoteChildren ? ParentComponent : nullptr,
+            EAttachmentTransformRule::KeepWorldTransform
+        );
     }
-    Parent.Reset();
 
-    UActorComponent::OnUnregister();
+    DetachFromComponent(EAttachmentTransformRule::KeepWorldTransform);
+    UActorComponent::DestroyComponent(bPromoteChildren);
 }
 
 void USceneComponent::RemoveChild(USceneComponent* InChild) {

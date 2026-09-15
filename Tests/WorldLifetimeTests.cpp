@@ -116,7 +116,7 @@ TEST_SUITE("World Lifetime")
             ULifetimeComponent* Component = Actor->AddComponent<ULifetimeComponent>();
             const FObjectHandle ComponentHandle = Component->GetHandle();
 
-            REQUIRE(Actor->DestroyComponent(Component));
+            Component->DestroyComponent();
 
             CHECK(Actor->GetComponents().empty());
             CHECK_EQ(GLifetimeCounters.ComponentCreations, 1);
@@ -152,7 +152,7 @@ TEST_SUITE("World Lifetime")
 
             REQUIRE_EQ(Child->GetParent(), Parent);
             REQUIRE_EQ(Parent->GetChildren().size(), 1);
-            REQUIRE(Actor->DestroyComponent(Parent));
+            Parent->DestroyComponent();
 
             CHECK_EQ(Actor->GetRootComponent(), nullptr);
             CHECK_EQ(Child->GetParent(), nullptr);
@@ -162,6 +162,32 @@ TEST_SUITE("World Lifetime")
         }
 
         CHECK_EQ(UObjectSystem::GetObjectCount(), ObjectCountBefore);
+    }
+
+    TEST_CASE("DestroyComponent promotes scene children when requested")
+    {
+        UWorld World;
+        AActor* Actor = World.AdoptActor<AActor>();
+        REQUIRE(Actor != nullptr);
+
+        USceneComponent* Root = Actor->AddComponent<USceneComponent>();
+        USceneComponent* Parent = Actor->AddComponent<USceneComponent>();
+        USceneComponent* Child = Actor->AddComponent<USceneComponent>();
+        REQUIRE(Actor->SetRootComponent(Root));
+        REQUIRE(Parent->AttachToComponent(Root));
+        REQUIRE(Child->AttachToComponent(Parent));
+
+        Root->SetRelativeLocation({ 10.0f, 0.0f, 0.0f });
+        Parent->SetRelativeLocation({ 5.0f, 0.0f, 0.0f });
+        Child->SetRelativeLocation({ 2.0f, 0.0f, 0.0f });
+        const FVector3 ChildWorldLocation = Child->GetComponentLocation();
+
+        Parent->DestroyComponent(true);
+
+        CHECK_EQ(Actor->GetRootComponent(), Root);
+        CHECK_EQ(Child->GetParent(), Root);
+        CHECK_EQ(Child->GetComponentLocation(), ChildWorldLocation);
+        CHECK_EQ(Actor->GetComponents().size(), 2);
     }
 
     TEST_CASE("Pending actor destruction is flushed at the end of a world tick")
