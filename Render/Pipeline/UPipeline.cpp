@@ -19,6 +19,7 @@ void UPipeline::Initialize(ID3D11Device* Device, const std::filesystem::path& me
         MetadataParser.ResolvePath("LitFilePath"),
         MetadataParser.ResolvePath("UnlitFilePath"),
         MetadataParser.ResolvePath("WireframeFilePath"),
+        MetadataParser.ResolvePath("OutlineFilePath")
     };
 
     for (auto&& [path, pipeline] : ranges::views::zip(ParsePath, Pipelines)) {
@@ -28,6 +29,8 @@ void UPipeline::Initialize(ID3D11Device* Device, const std::filesystem::path& me
         ErrorHandler::Report(not UPipeline::LoadPipelineDescription(path, Description), " [ UPipeline ]", "Failed to load pipeline description", ErrorHandler::EErrorLevel::Critical);
 
         ErrorHandler::Report(not UPipeline::Make(Device, Description, pipeline), " [ UPipeline ]", "Failed to create pipeline", ErrorHandler::EErrorLevel::Critical);
+
+        //ErrorHandler::Report(not MetadataParser.TryGet<UINT>("StencilRef", pipeline.StencilRef), "[ UPipeline ]", "Failed to load StencilRef", ErrorHandler::EErrorLevel::Critical);
     }
     ErrorHandler::Report(not MetadataParser.TryGet<size_t>("Primary", PrimaryIndex), "[ UPipeline ]", "Failed to load primary Index", ErrorHandler::EErrorLevel::Critical);
 
@@ -102,7 +105,13 @@ bool UPipeline::Make(ID3D11Device* Device, const FPipelineDescription& Descripti
     DepthStencilDesc.DepthEnable = Description.DepthStencil.DepthEnable;
     DepthStencilDesc.DepthWriteMask = Description.DepthStencil.DepthWriteEnable ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
     DepthStencilDesc.DepthFunc = ConvertCompareFunc(Description.DepthStencil.DepthFunc);
-    DepthStencilDesc.StencilEnable = false;
+    DepthStencilDesc.StencilEnable = Description.DepthStencil.StencilEnable;;
+    DepthStencilDesc.FrontFace.StencilFunc = ConvertCompareFunc(Description.DepthStencil.StencilFunc);
+    DepthStencilDesc.FrontFace.StencilPassOp = ConvertStencillOp(Description.DepthStencil.StencilPassOp);
+    DepthStencilDesc.FrontFace.StencilFailOp = ConvertStencillOp(Description.DepthStencil.StencilFailOp);
+    DepthStencilDesc.FrontFace.StencilDepthFailOp = ConvertStencillOp(Description.DepthStencil.StencilDepthFailOp);
+
+    DepthStencilDesc.BackFace = DepthStencilDesc.FrontFace;
 
     Result = Device->CreateDepthStencilState(&DepthStencilDesc, Pipeline.DepthStencilState.GetAddressOf());
 
@@ -158,7 +167,8 @@ void UPipeline::Bind(ID3D11DeviceContext* Context) const {
 
     Context->RSSetState(Pipelines[static_cast<size_t>(Mode)].RasterizerState.Get());
     Context->OMSetBlendState(Pipelines[static_cast<size_t>(Mode)].BlendState.Get(), nullptr, 0xffffffff);
-    Context->OMSetDepthStencilState(Pipelines[static_cast<size_t>(Mode)].DepthStencilState.Get(), 0);
+    //Context->OMSetDepthStencilState(Pipelines[static_cast<size_t>(Mode)].DepthStencilState.Get(), Pipelines[static_cast<size_t>(Mode)].StencilRef);
+    Context->OMSetDepthStencilState(Pipelines[static_cast<size_t>(Mode)].DepthStencilState.Get(), 1);
 }
 
 void UPipeline::Reset() {

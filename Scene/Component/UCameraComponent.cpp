@@ -77,6 +77,26 @@ void UCameraComponent::OnUnregister() {
     }
 }
 
+void UCameraComponent::SetMoveSensitivity(float InMoveSensitivity)
+{
+    MoveSensitivity = InMoveSensitivity;
+}
+
+void UCameraComponent::SetRotationSensitivity(float InRotationSensitivity)
+{
+    RotationSensitivity = InRotationSensitivity;
+}
+
+float UCameraComponent::GetRotationSensitivity() const
+{
+    return RotationSensitivity;
+}
+
+float UCameraComponent::GetMoveSensitivity() const
+{
+    return MoveSensitivity;
+}
+
 void UCameraComponent::Serialize(FArchive& Archive) {
     USceneComponent::Serialize(Archive);
     Archive.Serialize("FOV", FOV);

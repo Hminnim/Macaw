@@ -1,12 +1,12 @@
 {
   "VertexShader": {
-    "Source": "./Content/Shader/Base.hlsl",
+    "Source": "./Content/Shader/Outline.hlsl",
     "EntryPoint": "mainVS",
     "Profile": "vs_5_0"
   },
 
   "PixelShader": {
-    "Source": "./Content/Shader/Base.hlsl",
+    "Source": "./Content/Shader/Outline.hlsl",
     "EntryPoint": "mainPS",
     "Profile": "ps_5_0"
   },
@@ -44,8 +44,8 @@
   "PrimitiveTopology": "TriangleList",
 
   "Rasterizer": {
-    "FillMode": "Wireframe",
-    "CullMode": "Back",
+    "FillMode": "Solid",
+    "CullMode": "Front",
     "FrontCounterClockwise": false,
     "DepthClipEnable": true,
     "ScissorEnable": false
@@ -53,15 +53,15 @@
 
   "DepthStencil": {
     "DepthEnable": true,
-    "DepthWriteEnable": true,
+    "DepthWriteEnable": false,
     "DepthFunc": "LessEqual",
 
     "StencilEnable": true,
     "StencilReadMask": 255,
-    "StencilWriteMask": 255,
+    "StencilWriteMask": 0,
 
-    "StencilFunc": "Always",
-    "StencilPassOp": "Replace",
+    "StencilFunc": "NotEqual",
+    "StencilPassOp": "Keep",
     "StencilFailOp": "Keep",
     "StencilDepthFailOp": "Keep",
 
