@@ -48,7 +48,7 @@ public:
             ImGui::PushID(Component);
             Component->DrawPanels(PropertyEditor);
             ImGui::Separator();
-            DrawDeleteButton(*Actor, *Component);
+            HandleDeleteShortcut(*Actor, *Component);
             ImGui::PopID();
         }
         else {
@@ -153,8 +153,12 @@ private:
         EditorContext->SetSelectedComponent(NewComponent);
     }
 
-    void DrawDeleteButton(AActor& Actor, UActorComponent& Component) {
-        if (!ImGui::Button("Delete Component")) return;
+    void HandleDeleteShortcut(AActor& Actor, UActorComponent& Component) {
+        const ImGuiIO& IO = ImGui::GetIO();
+        if (!ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) || IO.WantTextInput || ImGui::IsAnyItemActive() || !ImGui::IsKeyPressed(ImGuiKey_Delete, false)) {
+            return;
+        }
+
         Component.DestroyComponent();
         EditorContext->SetSelectedActor(&Actor);
     }

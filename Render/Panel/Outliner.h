@@ -20,6 +20,7 @@ private:
     bool HasChildFolders(const Folder& FolderRecord) const;
     bool HasFolderActors(const Folder& FolderRecord) const;
     bool HasActorChildren(const AActor& Actor) const;
+    void HandleDeleteShortcut();
     void DrawFolder(const Folder& FolderRecord);
     void DrawActor(AActor& Actor);
     void DrawRootActors();

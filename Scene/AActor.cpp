@@ -98,6 +98,10 @@ UWorld* AActor::GetWorld() const {
     return World;
 }
 
+bool AActor::Destroy() {
+    return World != nullptr && World->DestroyActor(this);
+}
+
 FTransform AActor::GetActorTransform() const {
     if (RootComponent == nullptr) {
         return {};

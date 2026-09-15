@@ -134,7 +134,7 @@ TEST_SUITE("World Lifetime")
         CHECK_EQ(UObjectSystem::GetObjectCount(), ObjectCountBefore);
     }
 
-    TEST_CASE("Destroying a scene parent detaches its children and clears the root")
+    TEST_CASE("Destroying a root component destroys its owning actor")
     {
         const uint32 ObjectCountBefore = UObjectSystem::GetObjectCount();
 
@@ -148,17 +148,19 @@ TEST_SUITE("World Lifetime")
             Actor->SetRootComponent(Parent);
             Child->AttachToComponent(Parent);
 
+            const FObjectHandle ActorHandle = Actor->GetHandle();
             const FObjectHandle ParentHandle = Parent->GetHandle();
+            const FObjectHandle ChildHandle = Child->GetHandle();
 
             REQUIRE_EQ(Child->GetParent(), Parent);
             REQUIRE_EQ(Parent->GetChildren().size(), 1);
             Parent->DestroyComponent();
+            World.FlushPendingDestroyActors();
 
-            CHECK_EQ(Actor->GetRootComponent(), nullptr);
-            CHECK_EQ(Child->GetParent(), nullptr);
-            CHECK(Child->GetChildren().empty());
+            CHECK(World.GetActors().empty());
+            CHECK_EQ(UObjectSystem::Resolve(ActorHandle), nullptr);
             CHECK_EQ(UObjectSystem::Resolve(ParentHandle), nullptr);
-            CHECK_EQ(Actor->GetComponents().size(), 1);
+            CHECK_EQ(UObjectSystem::Resolve(ChildHandle), nullptr);
         }
 
         CHECK_EQ(UObjectSystem::GetObjectCount(), ObjectCountBefore);

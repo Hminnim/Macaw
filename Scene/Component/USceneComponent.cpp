@@ -140,6 +140,11 @@ void USceneComponent::OnUnregister() {
 }
 
 void USceneComponent::DestroyComponent(bool bPromoteChildren) {
+    AActor* Actor = GetOwner();
+    if (Actor != nullptr && Actor->GetRootComponent() == this && Actor->Destroy()) {
+        return;
+    }
+
     USceneComponent* ParentComponent = GetParent();
     std::vector<USceneComponent*> ChildrenToDetach;
     ChildrenToDetach.reserve(Children.size());
@@ -150,10 +155,7 @@ void USceneComponent::DestroyComponent(bool bPromoteChildren) {
     }
 
     for (USceneComponent* Child : ChildrenToDetach) {
-        Child->AttachToComponent(
-            bPromoteChildren ? ParentComponent : nullptr,
-            EAttachmentTransformRule::KeepWorldTransform
-        );
+        Child->AttachToComponent(bPromoteChildren ? ParentComponent : nullptr,EAttachmentTransformRule::KeepWorldTransform);
     }
 
     DetachFromComponent(EAttachmentTransformRule::KeepWorldTransform);

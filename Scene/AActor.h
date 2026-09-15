@@ -84,6 +84,9 @@ public:
     void SetWorld(UWorld* InWorld);
     /// <summary>현재 소속된 World를 반환합니다.</summary>
     UWorld* GetWorld() const;
+    /// <summary>소속 World에 Actor의 지연 파괴를 요청합니다.</summary>
+    /// <returns>파괴 요청이 수락되었으면 true입니다.</returns>
+    bool Destroy();
     /// <summary>Actor가 소유한 SceneComponent를 RootComponent로 지정합니다.</summary>
     /// <param name="InRootComponent">새 RootComponent 또는 nullptr입니다.</param>
     /// <returns>Component가 Actor 소유이거나 nullptr이면 true입니다.</returns>

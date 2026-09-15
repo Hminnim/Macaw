@@ -50,6 +50,7 @@ void FOutlinerPanel::DrawPanel() {
         ImGui::EndTable();
     }
 
+    HandleDeleteShortcut();
     ImGui::TextDisabled("%zu Actors | %zu Folders", World->GetActors().size(), World->GetFolders().size());
     ImGui::End();
     ImGui::PopStyleColor(4);
@@ -122,6 +123,18 @@ bool FOutlinerPanel::HasActorChildren(const AActor& Actor) const {
     return std::ranges::any_of(World->GetActors(), [this, &Actor](const std::unique_ptr<AActor>& ChildActor) {
         return ChildActor->GetFolderGuid() == Actor.GetFolderGuid() && IsActorAttachedTo(*ChildActor, Actor);
     });
+}
+
+void FOutlinerPanel::HandleDeleteShortcut() {
+    const ImGuiIO& IO = ImGui::GetIO();
+    if (!ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) || IO.WantTextInput || ImGui::IsAnyItemActive() || !ImGui::IsKeyPressed(ImGuiKey_Delete, false)) {
+        return;
+    }
+
+    AActor* Actor = EditorContext->GetSelectedActor();
+    if (Actor != nullptr && World->DestroyActor(Actor)) {
+        World->FlushPendingDestroyActors();
+    }
 }
 
 void FOutlinerPanel::DrawFolder(const Folder& FolderRecord) {

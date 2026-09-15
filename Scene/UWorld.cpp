@@ -90,6 +90,11 @@ bool UWorld::DestroyActor(AActor* Actor)
 		return false;
 	}
 
+	if (std::ranges::find(PendingDestroyActors, Actor) != PendingDestroyActors.end())
+	{
+		return true;
+	}
+
 	PendingDestroyActors.push_back(Actor);
 	return true;
 }
