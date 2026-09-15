@@ -5,7 +5,6 @@
 
 #include "../Core/Asset/FAssetRegistry.h"
 #include "../Core/Asset/UFont.h"
-#include "../Core/Asset/UTexture.h"
 
 #include <algorithm>
 #include <limits>
@@ -78,15 +77,13 @@ void FTextRenderer::Render(ID3D11DeviceContext* Context, const TArray<FTextProbe
 			continue;
 		}
 		Font->FlushAtlas(Context);
-		ID3D11ShaderResourceView* AtlasSRV = Font->GetRuntimeAtlasSRV();
+		ID3D11ShaderResourceView* AtlasSRV = Font->GetAtlasSRV();
 		if (AtlasSRV == nullptr)
 		{
-			UTexture* AtlasTexture =AssetRegistry->ResolveAsset<UTexture>(Font->GetAtlasTextureHandle());
-			if (AtlasTexture == nullptr)
+			if (AtlasSRV == nullptr)
 			{
 				continue;
 			}
-			AtlasSRV = AtlasTexture->GetSRV();
 		}
 		UPipeline* PipeLine = AssetRegistry->ResolveAsset<UPipeline>(Probe.PipelineHandle);
 		if (PipeLine == nullptr)

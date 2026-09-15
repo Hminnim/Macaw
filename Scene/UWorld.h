@@ -31,7 +31,7 @@
 class AActor;
 class UCameraComponent;
 class UStaticMeshComponent;
-class UTextRenderComponent;
+class UBillboardTextComponent;
 struct ID3D11Device;
 class FAssetRegistry;
 class UCameraSubsystem;
@@ -96,8 +96,8 @@ public:
     void HandleKeyboardCameraMoveRequest(const FKeyboardCameraMoveRequestMessage& Message);
     void HandleSpawnPrimitive(const FMessageSpawnPrimitive& Message, FAssetRegistry& AssetRegistry);
 
-    void RegisterTextRenderable(UTextRenderComponent* Component);
-    void UnregisterTextRenderable(UTextRenderComponent* Component);
+    void RegisterBillboardText(UBillboardTextComponent* Component);
+    void UnregisterBillboardText(UBillboardTextComponent* Component);
 
 	void UpdateEditorCameraState();
     void SetAssetRegistry(FAssetRegistry* InAssetRegistry);
@@ -121,8 +121,7 @@ private:
    
     TArray<UStaticMeshComponent*> RenderableComponents;
     TArray<TObjectRef<UCollisionComponent>> CollisionComponents;
-    TArray<UTextRenderComponent*> TextRenderableComponents{};
-
+    TArray<UBillboardTextComponent*> TextComponents{};
 
 	FStateChannel<RenderWindowInfo>::FReader WindowInfoReader;
 
@@ -135,6 +134,4 @@ private:
 	// std::unique_ptr<TextRenderSubSystem> TextRenderSubsystem;
 
     FRenderProbe Probe{};
-
-    
 };

@@ -114,7 +114,8 @@ void FPropertyEditorContext::DrawAssetPicker(const char* Label, FAssetRegistry& 
         const FString Name = Asset->GetAssetName();
         ImGui::PushID(Asset);
         if (ImGui::Selectable(Name.c_str(), Asset == Current)) {
-            Setter(Registry.GetAsset(Asset->GetGuid()));
+            //Setter(Registry.GetAsset(Asset->GetGuid()));
+            Setter(Registry.GetAsset(Name));
         }
         ImGui::PopID();
     }

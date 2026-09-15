@@ -11,7 +11,7 @@
 #include "Subsystem/UCollisionSubsystem.h"
 #include "Subsystem/URenderSubsystem.h"
 #include "Component/UCollisionComponent.h"
-#include "Component/UTextRenderComponent.h"
+#include "Component/UBillboardTextComponent.h"
 #include "FMouseCameraRotateRequestMessage.h"
 #include "FMousePickRequestMessage.h"
 #include "FWorldEditorContext.h"
@@ -297,7 +297,7 @@ FRenderProbe& UWorld::BuildRenderProbe() {
 
 	RenderSubsystem->BuildRenderProbes(AssetRegistry, Probe);
 
-    for (const UTextRenderComponent* Component : TextRenderableComponents)
+    for (const UBillboardTextComponent* Component : TextComponents)
     {
         if (Component == nullptr)
         {
@@ -870,20 +870,20 @@ void UWorld::PublishEditorCameraState()
 	EditorContext->PublishCameraState(CameraState);
 }
 
-void UWorld::RegisterTextRenderable(UTextRenderComponent* Component)
+void UWorld::RegisterBillboardText(UBillboardTextComponent* Component)
 {
     if (Component == nullptr)
     {
         return;
     }
-    if (std::ranges::find(TextRenderableComponents,Component) != TextRenderableComponents.end())
+    if (std::ranges::find(TextComponents,Component) != TextComponents.end())
     {
         return;
     }
-    TextRenderableComponents.push_back(Component);
+    TextComponents.push_back(Component);
 }
 
-void UWorld::UnregisterTextRenderable(UTextRenderComponent* Component)
+void UWorld::UnregisterBillboardText(UBillboardTextComponent* Component)
 {
-    std::erase(TextRenderableComponents,Component);
+    std::erase(TextComponents,Component);
 }

@@ -57,9 +57,10 @@
 #include "Render/EditorView/EditorViewport.h"
 
 #include "Core/Asset/UFont.h"
-#include "UKFont.h"
-#include "Scene/Component/UTextRenderComponent.h"
-#include "Scene/Component/UKTextRenderComponent.h"
+#include "Core/Asset/UFreeTypeFont.h"
+#include "Scene/Component/UBillBoardComponent.h"
+#include "Scene/Component/UBillBoardTextComponent.h"
+#include "Scene/Component/UNameTagComponent.h"
 
 #define MAX_LOADSTRING 100
 
@@ -179,8 +180,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	TypeRegistry::Register(UTexture::StaticTypeInfo());
     TypeRegistry::Register(AActor::StaticTypeInfo());
     TypeRegistry::Register(UFont::StaticTypeInfo());
-    TypeRegistry::Register(UKFont::StaticTypeInfo());
-
+    TypeRegistry::Register(UFreeTypeFont::StaticTypeInfo());
 
 	TypeRegistry::Register(UWorld::StaticTypeInfo());
 	TypeRegistry::Register(AActor::StaticTypeInfo());
@@ -191,8 +191,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	TypeRegistry::Register(UActorComponent::StaticTypeInfo());
 	TypeRegistry::Register(USceneComponent::StaticTypeInfo());
 	TypeRegistry::Register(UCollisionComponent::StaticTypeInfo());
-    TypeRegistry::Register(UTextRenderComponent::StaticTypeInfo());
-    TypeRegistry::Register(UKTextRenderComponent::StaticTypeInfo());
+    TypeRegistry::Register(UBillboardTextComponent::StaticTypeInfo());
+    TypeRegistry::Register(UNameTagComponent::StaticTypeInfo());
 	
 
 
@@ -311,26 +311,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	AssetRegistry.EmplaceAsset<UTexturedMaterial>(Renderer.GetDevice(), "TexturedMaterial", "./Content/Metadata/TexturedTestMaterial.meta");
 
     FAssetHandle TextPipelineHandle = AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(),"TextPipeline", "./Content/Metadata/TextPipeline.meta");
-    FAssetHandle FontTextureHandle =AssetRegistry.EmplaceAsset<UTexture>( Renderer.GetDevice(), "AsciiFontTexture","./Content/Metadata/AsciiFontTexture.meta");
-    FAssetHandle FontHandle =AssetRegistry.EmplaceAsset<UFont>(Renderer.GetDevice(),"AsciiFont");
-    FAssetHandle KFontHandle = AssetRegistry.EmplaceAsset<UKFont>( Renderer.GetDevice(),"KoreanFont","./Content/Metadata/NotoSansKR.meta");
-
-    UFont* Font = AssetRegistry.ResolveAsset<UFont>(KFontHandle);
+    FAssetHandle FontHandle = AssetRegistry.EmplaceAsset<UFreeTypeFont>(Renderer.GetDevice(),"DefaultFont","./Content/Metadata/NotoSansKR.meta");
     AActor* TextActor = World.AdoptActor<AActor>();
-
-    if (TextActor != nullptr)
-    {
-        UKTextRenderComponent* TextComponent = TextActor->AddComponent<UKTextRenderComponent>();
-        TextActor->SetRootComponent(TextComponent);
-        TextComponent->SetFontHandle(KFontHandle);
-        TextComponent->SetPipelineHandle(TextPipelineHandle);
-        TextComponent->SetCharacterHeight(0.5f);
-        TextComponent->SetLetterSpacing(0.0f);
-        TextComponent->SetLineSpacing(0.0f);
-        TextComponent->SetColor( FVector4{1.0f,1.0f,1.0f, 1.0f});
-        TextComponent->SetText(FString{ "크래프톤 정글3주차"});
-        TextComponent->GetComponentTransform().SetPosition(FVector3{0.0f, 0.0f, 0.0f});
-    }
 
     const FAssetHandle MeshHandle = AssetRegistry.GetAsset("CubeMesh");
     const FAssetHandle PipelineHandle = AssetRegistry.GetAsset("BasePipeline");

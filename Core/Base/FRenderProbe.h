@@ -16,7 +16,7 @@ struct FTextVertex
 
 struct FTextProbe
 {
-    // UTextRenderComponent의 월드 Transform
+    // UBillBoardTextComponent의 렌더링 원점으로 사용할 World Transform
     FMatrix World{};
 
     // 사용할 UFont

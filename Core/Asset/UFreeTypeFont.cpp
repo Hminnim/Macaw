@@ -1,14 +1,14 @@
 ﻿#include "PCH.h"
-#include "UKFont.h"
+#include "UFreeTypeFont.h"
 
 #include "Core/Asset/FAssetMetadataParser.h"
 #include "ErrorHandler.h"
 
-UKFont::~UKFont()
+UFreeTypeFont::~UFreeTypeFont()
 {
 	Reset();
 }
-void UKFont::Reset()
+void UFreeTypeFont::Reset()
 {
 	// SRV가 AtlasTexture를 참조하므로 View를 먼저 해제하고 Texture를 해제한다.
 	AtlasSRV.Reset();
@@ -43,7 +43,7 @@ void UKFont::Reset()
 	bAtlasDirty = false;
 	bInitialized = false;
 }
-void UKFont::Initialize(ID3D11Device* Device, const std::filesystem::path& MetaDataPath)
+void UFreeTypeFont::Initialize(ID3D11Device* Device, const std::filesystem::path& MetaDataPath)
 {
 	//UAsset Initialize
 	UFont::Initialize(Device, MetaDataPath);
@@ -107,7 +107,7 @@ void UKFont::Initialize(ID3D11Device* Device, const std::filesystem::path& MetaD
 	bAtlasDirty = false;
 	bInitialized = true;
 }
-bool UKFont::CreateAtlasTexture(ID3D11Device* Device)
+bool UFreeTypeFont::CreateAtlasTexture(ID3D11Device* Device)
 {
 	if (Device == nullptr || AtlasPixels.empty())
 	{
@@ -151,7 +151,7 @@ bool UKFont::CreateAtlasTexture(ID3D11Device* Device)
 
 	return true;
 }
-void UKFont::FlushAtlas(ID3D11DeviceContext* Context)
+void UFreeTypeFont::FlushAtlas(ID3D11DeviceContext* Context)
 {
 	if (!bInitialized || !bAtlasDirty || Context == nullptr || AtlasTexture == nullptr || AtlasPixels.empty())
 	{
@@ -168,7 +168,7 @@ void UKFont::FlushAtlas(ID3D11DeviceContext* Context)
 
 	bAtlasDirty = false;
 }
-const FKGlyph* UKFont::FindGlyph(char32_t CodePoint) const
+const FFontGlyph* UFreeTypeFont::FindGlyph(char32_t CodePoint) const
 {
 	auto CodePointIt = CodePointToGlyphIndex.find(CodePoint);
 	if (CodePointIt == CodePointToGlyphIndex.end())
@@ -182,14 +182,14 @@ const FKGlyph* UKFont::FindGlyph(char32_t CodePoint) const
 	}
 	return &GlyphCacheIt->second;
 }
-const FKGlyph* UKFont::GetOrCreateGlyph(char32_t CodePoint)
+const FFontGlyph* UFreeTypeFont::GetOrCreateGlyph(char32_t CodePoint)
 {
 	if (!bInitialized || Face == nullptr)
 	{
 		return nullptr;
 	}
 	// FindGlyph 결과 Glyph가 존재한다면 해당 Glyph 반환
-	if (const FKGlyph* CachedGlyph = FindGlyph(CodePoint))
+	if (const FFontGlyph* CachedGlyph = FindGlyph(CodePoint))
 	{
 		return CachedGlyph;
 	}
@@ -242,7 +242,7 @@ const FKGlyph* UKFont::GetOrCreateGlyph(char32_t CodePoint)
 	FT_Bitmap& Bitmap = Slot->bitmap;
 
 	// FKGlyph 구조체에 배치 정보 복사
-	FKGlyph NewGlyph{};
+	FFontGlyph NewGlyph{};
 	NewGlyph.GlyphIndex = GlyphIndex;
 	NewGlyph.BitmapWidth = static_cast<uint32_t>(Bitmap.width);
 	NewGlyph.BitmapHeight = static_cast<uint32_t>(Bitmap.rows);
@@ -276,7 +276,6 @@ const FKGlyph* UKFont::GetOrCreateGlyph(char32_t CodePoint)
 			static_cast<float>(AtlasY + Bitmap.rows) / static_cast<float>(AtlasHeight));
 		bAtlasDirty = true;
 	}
-	NewGlyph.bValid = true;
 	// 캐시에 저장
 	// emplace는 (Iterator, bool) 로 반환함, move -> Glyph를 복사하기보단 이동
 	auto [InsertedIt, bInserted] = GlyphCache.emplace(GlyphIndex, std::move(NewGlyph));
@@ -289,13 +288,13 @@ const FKGlyph* UKFont::GetOrCreateGlyph(char32_t CodePoint)
 	// 캐시 내부의 glyph 주소 반환
 	return &InsertedIt->second;
 }
-const FKFontMetrics& UKFont::GetFontMetrics() const
+const FFontMetrics& UFreeTypeFont::GetFontMetrics() const
 {
 	return FontMetrics;
 }
 // 현재 NextAtlasX,Y에서 해당 BitmapWidth/Height 를 할당할 수 있는지 확인하고 비트맵에 배치될 좌상단 좌표를 OutAtlasX,Y에 업데이트.
 // 이후 NextAtlasX,Y를 업데이트
-bool UKFont::AllocateAtlasRect(uint32_t BitmapWidth, uint32_t BitmapHeight, uint32_t& OutAtlasX, uint32_t& OutAtlasY)
+bool UFreeTypeFont::AllocateAtlasRect(uint32_t BitmapWidth, uint32_t BitmapHeight, uint32_t& OutAtlasX, uint32_t& OutAtlasY)
 {
 	if (BitmapWidth <= 0 || BitmapHeight <= 0)
 	{
@@ -322,7 +321,7 @@ bool UKFont::AllocateAtlasRect(uint32_t BitmapWidth, uint32_t BitmapHeight, uint
 	NextAtlasY = TempY;
 	return true;
 }
-bool UKFont::CopyBitmapToAtlas(FT_Bitmap& Bitmap, uint32_t AtlasX, uint32_t AtlasY)
+bool UFreeTypeFont::CopyBitmapToAtlas(FT_Bitmap& Bitmap, uint32_t AtlasX, uint32_t AtlasY)
 {
 	if (Bitmap.width == 0 || Bitmap.rows == 0)
 	{

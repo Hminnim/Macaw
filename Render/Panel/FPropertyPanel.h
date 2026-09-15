@@ -13,9 +13,7 @@
 #include "Scene/Component/UCameraComponent.h"
 #include "Scene/Component/USceneComponent.h"
 #include "Scene/Component/UStaticMeshComponent.h"
-#include "Scene/Component/UTextRenderComponent.h"
-#include "Scene/Component/UKTextRenderComponent.h"
-
+#include "Scene/Component/UBillboardTextComponent.h"
 // 목록, 선택, 구조 변경만 담당합니다. 타입별 Details는 Component::DrawPanels()로 위임합니다.
 class FPropertyPanel : public IEditorPanel {
 public:
@@ -95,8 +93,7 @@ private:
             if (ImGui::MenuItem("Static Mesh Component")) AddSceneComponent<UStaticMeshComponent>(Actor);
             if (ImGui::MenuItem("Camera Component")) AddSceneComponent<UCameraComponent>(Actor);
             if (ImGui::MenuItem("Box Collider Component")) AddSceneComponent<UBoxColliderComponent>(Actor);
-            if (ImGui::MenuItem("Text Render Component")) AddSceneComponent<UTextRenderComponent>(Actor);
-            if (ImGui::MenuItem("Korean Text Render Component")) AddSceneComponent<UKTextRenderComponent>(Actor);
+            if (ImGui::MenuItem("Billboard Text Component")) AddSceneComponent<UBillboardTextComponent>(Actor);
             ImGui::EndPopup();
         }
 
