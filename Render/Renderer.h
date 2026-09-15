@@ -43,7 +43,8 @@ public:
 	void BeginFrame();
 	void RenderScene(FRenderProbe& Probe);
 	void RenderGizmos(FRenderProbe& Probe);
-	void RenderActorList(TArray<FActorProbe>& ActorProbes, const CameraProbe& Camera);
+	void RenderOutline(const TArray<FActorProbe>& ActorProbes, const CameraProbe& MainCameraProbe);
+	void RenderActorList(TArray<FActorProbe>& ActorProbes, const CameraProbe& Camera, bool bOutline = false);
 	void EndFrame();
 
 	ID3D11Device* GetDevice() const { return Device.Get(); }

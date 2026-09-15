@@ -5,6 +5,8 @@
 #include <commdlg.h>
 #include <filesystem>
 
+#include "../../Serialize/FEditorConfigManager.h"
+#include "../../Scene/UWorld.h"
 void FControlPanel::DrawPanel()  
 {
     // 1. 상태 채널에서 카메라 정보 읽기 (Engine -> UI)
@@ -153,6 +155,30 @@ void FControlPanel::DrawPanel()
             CachedFOV);
     }
 
+    bool bMoveSensitivityChanged = false;
+    bool bRotationSensitivityChanged = false;
+    float MoveSensitivity = EditorContext->GetWorld()->GetSettings().MoveSensitivity;
+    float RotationSensitivity = EditorContext->GetWorld()->GetSettings().RotationSensitivity;
+
+    if (ImGui::SliderFloat("MoveSensitivity", &MoveSensitivity, 0.1f, 10.0f))
+    {
+        bMoveSensitivityChanged = true;
+    }
+
+    if (bMoveSensitivityChanged)
+    {
+        EditorContext->GetWorld()->GetSettings().MoveSensitivity = MoveSensitivity;
+    }
+
+    if (ImGui::SliderFloat("RotationSensitivity", &RotationSensitivity, 0.1f, 5.0f))
+    {
+        bRotationSensitivityChanged = true;
+    }
+
+    if (bRotationSensitivityChanged)
+    {
+        EditorContext->GetWorld()->GetSettings().RotationSensitivity = RotationSensitivity;
+    }
     ImGui::Separator();
 
     // =====================================================
@@ -163,20 +189,16 @@ void FControlPanel::DrawPanel()
 
     bool bGridChanged = false;
 
-    float gridSize = EditorContext->GetGridSizeState();
+    float gridSize = EditorContext->GetWorld()->GetSettings().GridSize;
 
-    if (ImGui::SliderFloat(
-        "GridSize",
-        &gridSize,
-        0.1f,
-        100.0f))
+    if (ImGui::SliderFloat("GridSize", &gridSize, 0.1f, 100.0f))
     {
         bGridChanged = true;
     }
 
     if (bGridChanged)
     {
-        EditorContext->SetGridSizeState(gridSize);
+        EditorContext->GetWorld()->GetSettings().GridSize = gridSize;
     }
     
     ImGui::Separator();

@@ -58,7 +58,10 @@ void FRenderer::EndFrame() {
 void FRenderer::RenderScene(FRenderProbe& Probe) {
 	RenderActorList(Probe.ActorProbes,Probe.MainCameraProbe);
 
-	if (AssetRegistry != nullptr) {
+	RenderOutline(Probe.ActorProbes, Probe.MainCameraProbe);
+
+	if (AssetRegistry != nullptr)
+	{
 		TextRenderer.Render(DeviceContext.Get(),Probe.TextProbes,Probe.MainCameraProbe, AssetRegistry);
 	}
 }
@@ -74,7 +77,26 @@ void FRenderer::RenderGizmos(FRenderProbe& Probe) {
 	RenderActorList(Probe.GizmoProbes,Probe.MainCameraProbe);
 }
 
-void FRenderer::RenderActorList(TArray<FActorProbe>& ActorProbes, const CameraProbe& MainCameraProbe) {
+void FRenderer::RenderOutline(const TArray<FActorProbe>& ActorProbes, const CameraProbe& MainCameraProbe) {
+	TArray<FActorProbe> OutlineProbes;
+
+	for (const FActorProbe& ActorProbe : ActorProbes)
+	{
+		if ((ActorProbe.Flags & static_cast<uint32>(ERenderObjectFlags::Selected)) != 0)
+		{
+			OutlineProbes.push_back(ActorProbe);
+		}
+	}
+
+	if (OutlineProbes.empty())
+	{
+		return;
+	}
+
+	RenderActorList(OutlineProbes, MainCameraProbe, true);
+}
+
+void FRenderer::RenderActorList(TArray<FActorProbe>& ActorProbes, const CameraProbe& MainCameraProbe, bool bOutline) {
 	if (ActorProbes.empty()) {
 		return;
 	}
@@ -140,7 +162,13 @@ void FRenderer::RenderActorList(TArray<FActorProbe>& ActorProbes, const CameraPr
 	for (auto g : Groups) {
 		const FActorProbe& First = g.front();
 		const FMaterialChunkSignature Signature = AssetRegistry->ResolveAsset<UMaterial>(First.MaterialHandle)->BuildChunkSignature();
+		
+		
 		UPipeline* Pipeline = AssetRegistry->ResolveAsset<UPipeline>(First.PipelineHandle);
+		if (bOutline) {
+			Pipeline->SetRenderMode(ERenderMode::Outline);
+		}
+		
 		UMesh* Mesh = AssetRegistry->ResolveAsset<UMesh>(First.MeshHandle);
 		
 		Pipeline->Bind(DeviceContext.Get());

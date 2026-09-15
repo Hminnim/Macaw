@@ -57,6 +57,8 @@ public:
             return nullptr;
         }
 
+        ActorPtr->SetName(MakeUniqueObjectName(ActorPtr->GetTypeInfo()->TypeName));
+
         return ActorPtr;
     }
 
@@ -107,6 +109,10 @@ public:
 
     void ResetWorld(FAssetRegistry* AssetRegistry, ID3D11Device* Device);
 
+    FName MakeUniqueObjectName(std::string_view SourceName);
+    AActor* FindActorByName(FName InName) const;
+
+    FEditorSettings& GetSettings() { return Settings; }
 private:
 	void InitializeSubsystems();
 	void DeinitializeSubsystems();
@@ -114,6 +120,7 @@ private:
     bool ValidateFolderHierarchy() const;
 
     void PublishEditorCameraState();
+
 private:
     TArray<std::unique_ptr<Folder>> Folders;
     TArray<std::unique_ptr<AActor>> Actors;

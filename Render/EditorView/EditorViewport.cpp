@@ -10,6 +10,10 @@
 #include "../../Scene/Component/UCollisionComponent.h"
 #include "../../Scene/AActor.h"
 
+#include "../../Serialize/FEditorConfigManager.h"
+
+#include "../../Scene/UWorld.h"
+
 void EditorViewport::Initialize(ID3D11Device* Device, FAssetRegistry& AssetRegistry, FStateChannel<RenderWindowInfo>::FReader windowReader, FWorldEditorContext& InEditorContext) {
 	LineRenderer->Initialize(Device);
 	TransformGizmo.Initialize(Device, AssetRegistry, windowReader, InEditorContext);
@@ -42,10 +46,8 @@ void EditorViewport::Render(ID3D11DeviceContext* Context, FRenderProbe& Probe) {
 
 void EditorViewport::RenderGrid(ELineDepthMode DepthMode) {
 	float GridInterval = 1.0f;
-
-	if (EditorContext != nullptr) {
-		GridInterval = EditorContext->GetGridSizeState();
-	}
+	UWorld* World = EditorContext->GetWorld();
+	GridInterval = World->GetSettings().GridSize;
 	int GridSize = (static_cast<int>(50 / GridInterval));
 	float LineLength = (float)GridSize * GridInterval;
 

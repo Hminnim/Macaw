@@ -316,9 +316,9 @@
                     "bActive": true,
                     "Transform": {
                         "Position": [
-                            -12.0,
+                            -0.9696722030639648,
                             0.0,
-                            8.0
+                            4.527577877044678
                         ],
                         "Rotation": [
                             0.0,
@@ -695,14 +695,14 @@
                     "bActive": true,
                     "Transform": {
                         "Position": [
-                            5.0,
-                            5.0,
-                            5.0
+                            10.07917594909668,
+                            -9.7946195602417,
+                            6.25930643081665
                         ],
                         "Rotation": [
-                            -0.7349756360054016,
-                            2.0978875160217285,
-                            0.005811277311295271
+                            -0.209952250123024,
+                            0.8329331278800964,
+                            0.009330363012850285
                         ],
                         "Scale": [
                             1.0,
@@ -721,6 +721,357 @@
                 }
             ],
             "GuidRootComponent": "97C63964-4A6B-B9F1-3071-258749F6FB28"
+        },
+        {
+            "Guid": "7875EE75-44E6-41DC-55D0-B1ABD78A831F",
+            "TypeName": "AActor",
+            "Name": "UObject",
+            "Components": [
+                {
+                    "Guid": "49F39F85-4779-E38B-68C0-B8994845A018",
+                    "TypeName": "UStaticMeshComponent",
+                    "Name": "UObject",
+                    "bActive": true,
+                    "Transform": {
+                        "Position": [
+                            4.841436386108398,
+                            4.809457778930664,
+                            7.419971466064453
+                        ],
+                        "Rotation": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "bAbsoluteLocation": false,
+                        "bAbsoluteRotation": false,
+                        "bAbsoluteScale": false
+                    },
+                    "Parent": "00000000-0000-0000-0000-000000000000",
+                    "bVisible": true,
+                    "GuidMeshHandle": "21D57DA0-49BF-D5C9-BA80-19A6AE964D3D",
+                    "GuidMaterialHandle": "FA1645DC-4F49-D9E7-8670-319ECC11011E",
+                    "GuidPipelineHandle": "C02B169B-487C-8DE9-B822-B6B4568CD39D"
+                }
+            ],
+            "GuidRootComponent": "49F39F85-4779-E38B-68C0-B8994845A018"
+        },
+        {
+            "Guid": "3232A2F9-4593-66F1-3067-F8B0A79BDEB5",
+            "TypeName": "AActor",
+            "Name": "UObject",
+            "Components": [
+                {
+                    "Guid": "C323334F-4948-D401-15C5-00974751A4FA",
+                    "TypeName": "UStaticMeshComponent",
+                    "Name": "UObject",
+                    "bActive": true,
+                    "Transform": {
+                        "Position": [
+                            0.6900687217712402,
+                            -0.6154088973999023,
+                            2.1095407009124756
+                        ],
+                        "Rotation": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "bAbsoluteLocation": false,
+                        "bAbsoluteRotation": false,
+                        "bAbsoluteScale": false
+                    },
+                    "Parent": "00000000-0000-0000-0000-000000000000",
+                    "bVisible": true,
+                    "GuidMeshHandle": "21D57DA0-49BF-D5C9-BA80-19A6AE964D3D",
+                    "GuidMaterialHandle": "2ED42DEA-4F9F-31A7-70B3-CAA4BAC25ECE",
+                    "GuidPipelineHandle": "C02B169B-487C-8DE9-B822-B6B4568CD39D"
+                }
+            ],
+            "GuidRootComponent": "C323334F-4948-D401-15C5-00974751A4FA"
+        },
+        {
+            "Guid": "72DEE33E-4EA6-A983-7ACE-C89BF1B20DED",
+            "TypeName": "AActor",
+            "Name": "UObject",
+            "Components": [
+                {
+                    "Guid": "24CA3FE9-46CC-11B2-3F87-2FB2F4FD4611",
+                    "TypeName": "UStaticMeshComponent",
+                    "Name": "UObject",
+                    "bActive": true,
+                    "Transform": {
+                        "Position": [
+                            1.3634295463562012,
+                            3.824282646179199,
+                            2.565541982650757
+                        ],
+                        "Rotation": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "bAbsoluteLocation": false,
+                        "bAbsoluteRotation": false,
+                        "bAbsoluteScale": false
+                    },
+                    "Parent": "00000000-0000-0000-0000-000000000000",
+                    "bVisible": true,
+                    "GuidMeshHandle": "21D57DA0-49BF-D5C9-BA80-19A6AE964D3D",
+                    "GuidMaterialHandle": "DCE53996-48EE-C721-5100-4BA572243F6C",
+                    "GuidPipelineHandle": "C02B169B-487C-8DE9-B822-B6B4568CD39D"
+                }
+            ],
+            "GuidRootComponent": "24CA3FE9-46CC-11B2-3F87-2FB2F4FD4611"
+        },
+        {
+            "Guid": "2A0F44FB-40CF-18A2-EF1B-AE89CC45ED8A",
+            "TypeName": "AActor",
+            "Name": "UObject",
+            "Components": [
+                {
+                    "Guid": "994D05BF-43D8-A622-BC93-C8944A1661CA",
+                    "TypeName": "UStaticMeshComponent",
+                    "Name": "UObject",
+                    "bActive": true,
+                    "Transform": {
+                        "Position": [
+                            0.764246940612793,
+                            3.628291130065918,
+                            5.113741874694824
+                        ],
+                        "Rotation": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "bAbsoluteLocation": false,
+                        "bAbsoluteRotation": false,
+                        "bAbsoluteScale": false
+                    },
+                    "Parent": "00000000-0000-0000-0000-000000000000",
+                    "bVisible": true,
+                    "GuidMeshHandle": "21D57DA0-49BF-D5C9-BA80-19A6AE964D3D",
+                    "GuidMaterialHandle": "D0117548-430D-C998-68D3-F5BA75599C97",
+                    "GuidPipelineHandle": "C02B169B-487C-8DE9-B822-B6B4568CD39D"
+                }
+            ],
+            "GuidRootComponent": "994D05BF-43D8-A622-BC93-C8944A1661CA"
+        },
+        {
+            "Guid": "84C41296-4B50-DF32-8E37-A298F9D27148",
+            "TypeName": "AActor",
+            "Name": "UObject",
+            "Components": [
+                {
+                    "Guid": "8826647D-4F87-B760-D695-0FA3AC17143B",
+                    "TypeName": "UStaticMeshComponent",
+                    "Name": "UObject",
+                    "bActive": true,
+                    "Transform": {
+                        "Position": [
+                            -0.9075884819030762,
+                            2.771145820617676,
+                            5.7889251708984375
+                        ],
+                        "Rotation": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "bAbsoluteLocation": false,
+                        "bAbsoluteRotation": false,
+                        "bAbsoluteScale": false
+                    },
+                    "Parent": "00000000-0000-0000-0000-000000000000",
+                    "bVisible": true,
+                    "GuidMeshHandle": "21D57DA0-49BF-D5C9-BA80-19A6AE964D3D",
+                    "GuidMaterialHandle": "FB03FD81-43B7-31F9-2D5B-C8B18D69E6FB",
+                    "GuidPipelineHandle": "C02B169B-487C-8DE9-B822-B6B4568CD39D"
+                }
+            ],
+            "GuidRootComponent": "8826647D-4F87-B760-D695-0FA3AC17143B"
+        },
+        {
+            "Guid": "8FF1AF94-4A1E-AF93-1260-9FB85E60F63C",
+            "TypeName": "AActor",
+            "Name": "UObject",
+            "Components": [
+                {
+                    "Guid": "4D5CCEB9-4112-E7AF-5CD3-FA83FA481AE9",
+                    "TypeName": "UStaticMeshComponent",
+                    "Name": "UObject",
+                    "bActive": true,
+                    "Transform": {
+                        "Position": [
+                            -2.771970748901367,
+                            -1.153879165649414,
+                            3.5745391845703125
+                        ],
+                        "Rotation": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "bAbsoluteLocation": false,
+                        "bAbsoluteRotation": false,
+                        "bAbsoluteScale": false
+                    },
+                    "Parent": "00000000-0000-0000-0000-000000000000",
+                    "bVisible": true,
+                    "GuidMeshHandle": "21D57DA0-49BF-D5C9-BA80-19A6AE964D3D",
+                    "GuidMaterialHandle": "FB03FD81-43B7-31F9-2D5B-C8B18D69E6FB",
+                    "GuidPipelineHandle": "C02B169B-487C-8DE9-B822-B6B4568CD39D"
+                }
+            ],
+            "GuidRootComponent": "4D5CCEB9-4112-E7AF-5CD3-FA83FA481AE9"
+        },
+        {
+            "Guid": "E4451EBF-4064-F489-A73C-F19060074549",
+            "TypeName": "AActor",
+            "Name": "UObject",
+            "Components": [
+                {
+                    "Guid": "F57E1327-4E20-F629-EAB7-6BB6D6FC4313",
+                    "TypeName": "UStaticMeshComponent",
+                    "Name": "UObject",
+                    "bActive": true,
+                    "Transform": {
+                        "Position": [
+                            1.574493408203125,
+                            0.2197437286376953,
+                            4.569431304931641
+                        ],
+                        "Rotation": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "bAbsoluteLocation": false,
+                        "bAbsoluteRotation": false,
+                        "bAbsoluteScale": false
+                    },
+                    "Parent": "00000000-0000-0000-0000-000000000000",
+                    "bVisible": true,
+                    "GuidMeshHandle": "21D57DA0-49BF-D5C9-BA80-19A6AE964D3D",
+                    "GuidMaterialHandle": "69F927EF-4FA1-5A08-BA3B-6C9EE7663F4D",
+                    "GuidPipelineHandle": "C02B169B-487C-8DE9-B822-B6B4568CD39D"
+                }
+            ],
+            "GuidRootComponent": "F57E1327-4E20-F629-EAB7-6BB6D6FC4313"
+        },
+        {
+            "Guid": "010E4207-4EDB-B72C-9C87-EF9D7BE5D159",
+            "TypeName": "AActor",
+            "Name": "UObject",
+            "Components": [
+                {
+                    "Guid": "87CC60C2-4129-305A-B9B7-14B5EADC52A6",
+                    "TypeName": "UStaticMeshComponent",
+                    "Name": "UObject",
+                    "bActive": true,
+                    "Transform": {
+                        "Position": [
+                            2.436429977416992,
+                            -4.140676498413086,
+                            6.87747859954834
+                        ],
+                        "Rotation": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "bAbsoluteLocation": false,
+                        "bAbsoluteRotation": false,
+                        "bAbsoluteScale": false
+                    },
+                    "Parent": "00000000-0000-0000-0000-000000000000",
+                    "bVisible": true,
+                    "GuidMeshHandle": "21D57DA0-49BF-D5C9-BA80-19A6AE964D3D",
+                    "GuidMaterialHandle": "CA9C54AA-46D8-681F-80BD-A18B3FA84F76",
+                    "GuidPipelineHandle": "C02B169B-487C-8DE9-B822-B6B4568CD39D"
+                }
+            ],
+            "GuidRootComponent": "87CC60C2-4129-305A-B9B7-14B5EADC52A6"
+        },
+        {
+            "Guid": "9DDA5902-400A-F132-049C-61A920F1ADBC",
+            "TypeName": "AActor",
+            "Name": "UObject",
+            "Components": [
+                {
+                    "Guid": "2BD7267C-485F-07A5-9C1C-9F95D165E1C3",
+                    "TypeName": "UStaticMeshComponent",
+                    "Name": "UObject",
+                    "bActive": true,
+                    "Transform": {
+                        "Position": [
+                            -1.9040381908416748,
+                            -3.8807015419006348,
+                            5.856488227844238
+                        ],
+                        "Rotation": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "bAbsoluteLocation": false,
+                        "bAbsoluteRotation": false,
+                        "bAbsoluteScale": false
+                    },
+                    "Parent": "00000000-0000-0000-0000-000000000000",
+                    "bVisible": true,
+                    "GuidMeshHandle": "21D57DA0-49BF-D5C9-BA80-19A6AE964D3D",
+                    "GuidMaterialHandle": "D0117548-430D-C998-68D3-F5BA75599C97",
+                    "GuidPipelineHandle": "C02B169B-487C-8DE9-B822-B6B4568CD39D"
+                }
+            ],
+            "GuidRootComponent": "2BD7267C-485F-07A5-9C1C-9F95D165E1C3"
         }
     ]
 }

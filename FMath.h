@@ -233,6 +233,7 @@ using FColor4 = FVector4;
 // their authoritative rotation in FQuat.
 struct FRotator
 {
+    // Z-up convention: pitch rotates around X, yaw around Z, and roll around Y.
     float x = 0.0f; // pitch
     float y = 0.0f; // yaw
     float z = 0.0f; // roll
@@ -252,6 +253,8 @@ inline const FRotator FRotator::Zero{};
 
 struct FMatrix
 {
+    // The engine world is Z-up.  FTransform applies the mesh-source basis at
+    // the boundary; matrices, vectors, and quaternions otherwise stay Z-up.
     // Value-returning compatibility API. Singular input produces non-finite values.
     // Use TryInverse when the caller needs to handle failure.
     FMatrix Invert() const

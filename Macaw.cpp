@@ -61,6 +61,8 @@
 #include "Scene/Component/UTextRenderComponent.h"
 #include "Scene/Component/UKTextRenderComponent.h"
 
+#include "Serialize/FEditorConfigManager.h"
+
 #define MAX_LOADSTRING 100
 
 
@@ -312,7 +314,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     FAssetHandle TextPipelineHandle = AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(),"TextPipeline", "./Content/Metadata/TextPipeline.meta");
     FAssetHandle FontTextureHandle =AssetRegistry.EmplaceAsset<UTexture>( Renderer.GetDevice(), "AsciiFontTexture","./Content/Metadata/AsciiFontTexture.meta");
-    FAssetHandle FontHandle =AssetRegistry.EmplaceAsset<UFont>(Renderer.GetDevice(),"AsciiFont");
+    FAssetHandle FontHandle = AssetRegistry.EmplaceAsset<UFont>(Renderer.GetDevice(),"AsciiFont");
     FAssetHandle KFontHandle = AssetRegistry.EmplaceAsset<UKFont>( Renderer.GetDevice(),"KoreanFont","./Content/Metadata/NotoSansKR.meta");
 
     UFont* Font = AssetRegistry.ResolveAsset<UFont>(KFontHandle);
@@ -340,6 +342,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     AActor* CameraActor = World.AdoptActor<AActor>();
     UCameraComponent* Camera = CameraActor->AddComponent<UCameraComponent>();
 
+    Camera->SetMoveSensitivity(World.GetSettings().MoveSensitivity);
+    Camera->SetRotationSensitivity(World.GetSettings().RotationSensitivity);
     CameraActor->SetRootComponent(Camera);
 
     }
@@ -356,6 +360,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     io.Fonts->AddFontFromFileTTF("./Content/Font/NotoSansKR-Medium.ttf", 16.0f, nullptr, io.Fonts->GetGlyphRangesKorean());
 
     auto LastTickTime = std::chrono::steady_clock::now();
+
+    //char BufferA[256] = "Player";
+    //char BufferB[256] = "player";
 
     while (true) {
         if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
@@ -408,6 +415,30 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             EditorView.RenderSceneGuides(Renderer.GetDeviceContext(),Probe);
             Renderer.RenderGizmos(Probe);
             EditorView.RenderOrientationAxis(Renderer.GetDeviceContext(),Probe.MainCameraProbe);
+            
+            //ImGui::Begin("FName Test");      
+            //ImGui::Separator();
+            //
+            //ImGui::InputText("String A", BufferA, sizeof(BufferA));
+            //ImGui::InputText("String B", BufferB, sizeof(BufferB));
+
+            //FName NameA(BufferA);
+            //FName NameB(BufferB);
+
+            //bool bIsEqual = (NameA == NameB);
+            //if (bIsEqual)
+            //{
+            //    ImGui::Text("operator== : true");               
+            //}
+            //else
+            //{
+            //    ImGui::Text("operator== : false");            
+            //}
+
+            //ImGui::Text("=== 2. Display Result (Case Preservation) ===");
+            //ImGui::Text("A.ToString() : \"%s\"", NameA.ToString().c_str());
+            //ImGui::Text("B.ToString() : \"%s\"", NameB.ToString().c_str());
+            //ImGui::End();
 
             ImGui::Render();
             ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
@@ -417,7 +448,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             GMouseInput.EndFrame();
         }
     }
-   
+    
+    FEditorConfigManager::Save(World.GetSettings());
 
     // ImGui 소멸
     ImGui_ImplDX11_Shutdown();

@@ -33,6 +33,8 @@
 #include <rapidjson/ostreamwrapper.h>
 #include <rapidjson/prettywriter.h>
 
+#include "../Serialize/FEditorConfigManager.h"
+
 UWorld::UWorld() {
 	InitializeSubsystems();
 }
@@ -265,6 +267,11 @@ void UWorld::InitializeSubsystems() {
 	RenderSubsystem->Initialize(this);
 	CollisionSubsystem->Initialize(this);
 	CameraSubsystem->Initialize(this);
+
+	if (!FEditorConfigManager::Load(Settings))
+	{
+		FEditorConfigManager::Save(Settings);
+	}
 }
 
 void UWorld::DeinitializeSubsystems() {
@@ -784,7 +791,8 @@ void UWorld::HandleKeyboardCameraMoveRequest(
 
 	MoveDirection.Normalize();
 
-	constexpr float CameraMoveSpeed = 5.0f;
+	float CameraMoveSpeed = Settings.MoveSensitivity;
+
 
 	FTransform& CameraTransform = Camera->GetRelativeTransform();
 
@@ -864,6 +872,48 @@ void UWorld::ResetWorld(FAssetRegistry* AssetRegistry, ID3D11Device* Device)
 
 	AssetRegistry->Reset();
 	AssetRegistry->Initialize(Device);
+}
+
+FName UWorld::MakeUniqueObjectName(std::string_view SourceName)
+{
+	std::string_view BaseName;
+	int32 Number = 0;
+
+	SplitNameAndNumber(SourceName, BaseName, Number);
+
+	int32 Index = (Number > 0) ? (Number + 1) : 1;
+
+	if ((Number == 0) && (FindActorByName(BaseName) == nullptr))
+	{
+		return FName(BaseName);
+	}
+
+	while (true)
+	{
+		FName CandidateName(BaseName, Index);
+
+		if (FindActorByName(CandidateName) == nullptr)
+		{
+			return CandidateName;
+		}
+
+		Index++;
+	}
+
+	return FName();
+}
+
+AActor* UWorld::FindActorByName(FName InName) const
+{
+	for (const auto& Actor : Actors)
+	{
+		if (Actor && Actor->GetName() == InName)
+		{
+			return Actor.get();
+		}
+	}
+
+	return nullptr;
 }
 
 void UWorld::UpdateEditorCameraState() {

@@ -63,7 +63,18 @@
   "DepthStencil": {
     "DepthEnable": false,
     "DepthWriteEnable": false,
-    "DepthFunc": "Always"
+    "DepthFunc": "Always",
+
+    "StencilEnable": true,
+    "StencilReadMask": 255,
+    "StencilWriteMask": 255,
+
+    "StencilFunc": "Always",
+    "StencilPassOp": "Replace",
+    "StencilFailOp": "Keep",
+    "StencilDepthFailOp": "Keep",
+
+    "StencilRef": 1
   },
 
   "Blend": {
