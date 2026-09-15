@@ -91,8 +91,8 @@ HWND gHWND;
 FRenderer Renderer;
 
 namespace {
-    constexpr bool bLoadTestScene = false;
-    constexpr bool bEnableSceneSave = false;
+    constexpr bool bLoadTestScene = true;
+    constexpr bool bEnableSceneSave = true;
 
     void ConfigureTestStaticMesh(UStaticMeshComponent* MeshComponent, const FAssetHandle& MeshHandle, const FAssetHandle& PipelineHandle, const FAssetHandle& MaterialHandle, const FVector3& Location) {
         MeshComponent->SetMeshHandle(MeshHandle);
@@ -307,11 +307,23 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "PurpleMaterial", "./Content/Metadata/PurpleMaterial.meta");
     AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "TealMaterial", "./Content/Metadata/TealMaterial.meta");
     AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "WhiteMaterial", "./Content/Metadata/WhiteMaterial.meta");
+    {
+        AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(), "TexturedPipeline", "./Content/Metadata/TexturedTestPipeline.meta");
+        AssetRegistry.EmplaceAsset<UTexture>(Renderer.GetDevice(), "PlankTexture", "./Content/Metadata/TexturedTestTexture.meta");
+        AssetRegistry.EmplaceAsset<UTexturedMaterial>(Renderer.GetDevice(), "TexturedMaterial", "./Content/Metadata/TexturedTestMaterial.meta");
 
-	AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(), "TexturedPipeline", "./Content/Metadata/TexturedTestPipeline.meta");
-	AssetRegistry.EmplaceAsset<UTexture>(Renderer.GetDevice(), "PlankTexture", "./Content/Metadata/TexturedTestTexture.meta");
-	AssetRegistry.EmplaceAsset<UTexturedMaterial>(Renderer.GetDevice(), "TexturedMaterial", "./Content/Metadata/TexturedTestMaterial.meta");
+        auto SkyDomeTextureHandle = AssetRegistry.EmplaceAsset<UTexture>(Renderer.GetDevice(), "SkyDomeTexture", "./Content/Metadata/SkyDomeTexture.meta");
+        auto SkyDomeMaterialHandle = AssetRegistry.EmplaceAsset<UTexturedMaterial>(Renderer.GetDevice(), "SkyDomeMaterial", "./Content/Metadata/SkyDomeMaterial.meta");
+        auto SkyDomePipelineHandle = AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(), "SkyDomePipeline", "./Content/Metadata/SkyDomePipeline.meta");
+		auto SkyDomeMeshHandle = AssetRegistry.EmplaceAsset<UMesh>(Renderer.GetDevice(), "SkyDome", "./Content/Metadata/SkyDomeMesh.meta");
 
+		AActor* SkyDomeActor = World.AdoptActor<AActor>();
+        UStaticMeshComponent* comp = SkyDomeActor->AddComponent<UStaticMeshComponent>();
+		comp->SetMeshHandle(SkyDomeMeshHandle);
+		comp->SetPipelineHandle(SkyDomePipelineHandle);
+		comp->SetMaterialHandle(SkyDomeMaterialHandle);
+
+    }
     FAssetHandle TextPipelineHandle = AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(),"TextPipeline", "./Content/Metadata/TextPipeline.meta");
     FAssetHandle FontTextureHandle =AssetRegistry.EmplaceAsset<UTexture>( Renderer.GetDevice(), "AsciiFontTexture","./Content/Metadata/AsciiFontTexture.meta");
     FAssetHandle FontHandle = AssetRegistry.EmplaceAsset<UFont>(Renderer.GetDevice(),"AsciiFont");
