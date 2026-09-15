@@ -33,6 +33,8 @@
 #include <rapidjson/ostreamwrapper.h>
 #include <rapidjson/prettywriter.h>
 
+#include "../Serialize/FEditorConfigManager.h"
+
 UWorld::UWorld() {
 	InitializeSubsystems();
 }
@@ -135,6 +137,11 @@ void UWorld::InitializeSubsystems() {
 	RenderSubsystem->Initialize(this);
 	CollisionSubsystem->Initialize(this);
 	CameraSubsystem->Initialize(this);
+
+	if (!FEditorConfigManager::Load(Settings))
+	{
+		FEditorConfigManager::Save(Settings);
+	}
 }
 
 void UWorld::DeinitializeSubsystems() {
@@ -501,7 +508,7 @@ void UWorld::HandleMouseCameraRotateRequest(const FMouseCameraRotateRequestMessa
 		return;
 	}
 
-	constexpr float RotationSensitivity = 0.003f;
+	float RotationSensitivity = Settings.RotationSensitivity * 0.001f;
 	constexpr float MaximumPitch = DirectX::XMConvertToRadians(89.0f);
 
 	FTransform& CameraTransform = Camera->GetRelativeTransform();
@@ -595,7 +602,8 @@ void UWorld::HandleKeyboardCameraMoveRequest(
 
 	MoveDirection.Normalize();
 
-	constexpr float CameraMoveSpeed = 5.0f;
+	float CameraMoveSpeed = Settings.MoveSensitivity;
+
 
 	FTransform& CameraTransform = Camera->GetRelativeTransform();
 

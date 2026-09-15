@@ -26,7 +26,7 @@
 
 #include "../Render/RenderWindowInfo.h"
 
-
+#include "../Serialize/FEditorConfigManager.h"
 class AActor;
 class UCameraComponent;
 class UStaticMeshComponent;
@@ -109,6 +109,7 @@ public:
     FName MakeUniqueObjectName(std::string_view SourceName);
     AActor* FindActorByName(FName InName) const;
 
+    FEditorSettings& GetSettings() { return Settings; }
 private:
 	void InitializeSubsystems();
 	void DeinitializeSubsystems();
@@ -133,4 +134,6 @@ private:
     std::unique_ptr<UCameraSubsystem> CameraSubsystem;
 
     FRenderProbe Probe{};
+
+    FEditorSettings Settings;
 };

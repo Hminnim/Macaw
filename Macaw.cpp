@@ -61,6 +61,8 @@
 #include "Scene/Component/UTextRenderComponent.h"
 #include "Scene/Component/UKTextRenderComponent.h"
 
+#include "Serialize/FEditorConfigManager.h"
+
 #define MAX_LOADSTRING 100
 
 
@@ -349,6 +351,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     AActor* CameraActor = World.AdoptActor<AActor>();
     UCameraComponent* Camera = CameraActor->AddComponent<UCameraComponent>();
 
+    Camera->SetMoveSensitivity(World.GetSettings().MoveSensitivity);
+    Camera->SetRotationSensitivity(World.GetSettings().RotationSensitivity);
     CameraActor->SetRootComponent(Camera);
 
     }
@@ -451,7 +455,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             GMouseInput.EndFrame();
         }
     }
-   
+    
+    FEditorConfigManager::Save(World.GetSettings());
 
     // ImGui 소멸
     ImGui_ImplDX11_Shutdown();

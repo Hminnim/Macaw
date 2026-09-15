@@ -16,7 +16,6 @@ class UWorld;
 
 struct FWorldEditorSharedState {
     std::optional<FCameraSnapshot> Camera;
-    float GridSize{1.0f};
     size_t ModeIndex{ 0 };
 };
 
@@ -32,9 +31,6 @@ public:
     const FCameraSnapshot* GetCameraState() const noexcept;
     void PublishCameraState(const FCameraSnapshot& State);
 
-    const float GetGridSizeState() const noexcept;
-    void SetGridSizeState(const float State);
-
     const size_t GetRenderModeState() const noexcept;
     void SetRenderModeState(const size_t State);
 
@@ -44,6 +40,8 @@ public:
     AActor* GetSelectedActor() const noexcept;
     UCollisionComponent* GetSelectedCollider() const noexcept;
     USceneComponent* GetSelectedTransformTarget() const noexcept;
+
+    UWorld* GetWorld() const { return World; }
 
 private:
     UWorld* World = nullptr;
