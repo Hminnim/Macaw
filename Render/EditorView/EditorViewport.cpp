@@ -48,21 +48,35 @@ void EditorViewport::RenderGrid(ELineDepthMode DepthMode) {
 	float GridInterval = 1.0f;
 	UWorld* World = EditorContext->GetWorld();
 	GridInterval = World->GetSettings().GridSize;
-	int GridSize = (static_cast<int>(50 / GridInterval));
-	float LineLength = (float)GridSize * GridInterval;
+	int GridSize = (static_cast<int>(300 / GridInterval));
+	float LineLength = static_cast<float>(GridSize) * GridInterval;
+	FVector CameraPos = EditorContext->GetCameraState()->Position;
+
+	float SnappedX = std::floor(CameraPos.x / GridInterval) * GridInterval;
+	float SnappedY = std::floor(CameraPos.y / GridInterval) * GridInterval;
 
 	for (auto x : std::views::iota(-GridSize, GridSize + 1)) {
-		if (x == 0) {
-			continue;
-		}
-		LineRenderer->AddLine(FVector3{ static_cast<float>(x * GridInterval), -LineLength, 0.f }, FVector3{ static_cast<float>(x * GridInterval), LineLength, 0.f }, FVector4{ 0.5f, 0.5f, 0.5f, 1.0f }, 1.0f, DepthMode);
+		float LineX = SnappedX + static_cast<float>(x) * GridInterval;
+
+		LineRenderer->AddLine(
+			FVector3{ LineX, SnappedY - LineLength, 0.f },
+			FVector3{ LineX, SnappedY + LineLength, 0.f },
+			FVector4{ 0.5f, 0.5f, 0.5f, 1.0f },
+			1.0f,
+			DepthMode
+		);
 	}
 
 	for (auto y : std::views::iota(-GridSize, GridSize + 1)) {
-		if (y == 0) {
-			continue;
-		}
-		LineRenderer->AddLine(FVector3{ -LineLength, static_cast<float>(y * GridInterval), 0.f }, FVector3{ LineLength, static_cast<float>(y * GridInterval), 0.f }, FVector4{ 0.5f, 0.5f, 0.5f, 1.0f }, 1.0f, DepthMode);
+		float LineY = SnappedY + static_cast<float>(y) * GridInterval;
+
+		LineRenderer->AddLine(
+			FVector3{ SnappedX - LineLength, LineY, 0.f },
+			FVector3{ SnappedX + LineLength, LineY, 0.f },
+			FVector4{ 0.5f, 0.5f, 0.5f, 1.0f },
+			1.0f,
+			DepthMode
+		);
 	}
 }
 

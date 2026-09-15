@@ -65,6 +65,7 @@ void FPropertyEditorContext::DrawTransform(const char* Label, const FTransform& 
     }
 
     UpdateTransformFields(Value);
+
     const bool bChanged =
         ImGui::DragFloat3("Position", &EditPosition.x, 0.1f) ||
         ImGui::DragFloat3("Rotation", &EditRotation.x, 0.5f) ||
