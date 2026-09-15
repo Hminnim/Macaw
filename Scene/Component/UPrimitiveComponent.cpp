@@ -18,5 +18,7 @@ void UPrimitiveComponent::Serialize(FArchive& Archive) {
 
 void UPrimitiveComponent::DrawPanels(FPropertyEditorContext& Context) {
     USceneComponent::DrawPanels(Context);
-    Context.DrawPrimitiveComponentProperties(*this);
+    Context.DrawBool("Visible", IsVisible(), [this](bool bVisible) {
+        SetVisible(bVisible);
+    });
 }

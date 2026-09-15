@@ -24,7 +24,6 @@ public:
         FStateChannel<uint8>::FReadWriter InGizmoMode,
         FStateChannel<uint8>::FReadWriter InGizmoCoordinateSpace)
         : EditorContext(&InEditorContext)
-        , PropertyEditor(InEditorContext)
         , GizmoMode(std::move(InGizmoMode))
         , GizmoCoordinateSpace(std::move(InGizmoCoordinateSpace)) {
     }

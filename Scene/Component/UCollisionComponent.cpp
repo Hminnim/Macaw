@@ -24,7 +24,9 @@ void UCollisionComponent::SetCollisionEnabled(bool bEnabled)
 void UCollisionComponent::DrawPanels(FPropertyEditorContext& Context)
 {
     UPrimitiveComponent::DrawPanels(Context);
-    Context.DrawCollisionComponentProperties(*this);
+    Context.DrawBool("Collision Enabled", IsCollisionEnabled(), [this](bool bEnabled) {
+        SetCollisionEnabled(bEnabled);
+    });
 }
 
 void UCollisionComponent::OnRegister()

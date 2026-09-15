@@ -34,7 +34,9 @@ void UActorComponent::OnUnregister() {
 }
 
 void UActorComponent::DrawPanels(FPropertyEditorContext& Context) {
-    Context.DrawActorComponentProperties(*this);
+    Context.DrawBool("Active", IsActive(), [this](bool bActive) {
+        SetActive(bActive);
+    });
 }
 
 bool UActorComponent::IsActive() const {

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <stdint.h>
 #include "UPrimitiveComponent.h"
 #include "../../Core/Asset/UFont.h"

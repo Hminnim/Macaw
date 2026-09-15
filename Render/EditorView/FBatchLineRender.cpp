@@ -1,4 +1,4 @@
-#include "PCH.h"
+﻿#include "PCH.h"
 #include "FBatchLineRender.h"
 
 void FBatchLineRenderer::Initialize(ID3D11Device* InDevice, uint32 InitialLineCapacity)

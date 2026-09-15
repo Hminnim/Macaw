@@ -8,6 +8,8 @@
 #include "Scene/Subsystem/URenderSubsystem.h"
 #include "../../Serialize/FArchive.h"
 #include "../../Core/Asset/FAssetRegistry.h"
+#include "Core/Asset/UMaterial.h"
+#include "Render/Pipeline/UPipeline.h"
 
 FAssetHandle UStaticMeshComponent::GetMaterialHandle() const { return MaterialHandle; }
 
@@ -26,7 +28,19 @@ void UStaticMeshComponent::SetPipelineHandle(FAssetHandle InHandle)
 void UStaticMeshComponent::DrawPanels(FPropertyEditorContext& Context)
 {
     UMeshComponent::DrawPanels(Context);
-    Context.DrawStaticMeshComponentProperties(*this);
+    AActor* Owner = GetOwner();
+    UWorld* World = Owner != nullptr ? Owner->GetWorld() : nullptr;
+    FAssetRegistry* Registry = World != nullptr ? World->GetAssetRegistry() : nullptr;
+    if (Registry == nullptr) {
+        Context.DrawDisabledText("Material/Pipeline: Asset registry unavailable");
+        return;
+    }
+    Context.DrawAssetPicker("Material", *Registry, *UMaterial::StaticTypeInfo(), GetMaterialHandle(), [this](FAssetHandle Handle) {
+        SetMaterialHandle(Handle);
+    });
+    Context.DrawAssetPicker("Pipeline", *Registry, *UPipeline::StaticTypeInfo(), GetPipelineHandle(), [this](FAssetHandle Handle) {
+        SetPipelineHandle(Handle);
+    });
 }
 
 void UStaticMeshComponent::OnRegister()

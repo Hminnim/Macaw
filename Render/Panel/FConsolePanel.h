@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "Render/Panel/IEditorPanel.h"
 #include "Render/Panel/Console/ConsoleWindow.h"
