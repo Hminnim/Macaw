@@ -14,6 +14,7 @@
 #include "Scene/Component/USceneComponent.h"
 #include "Scene/Component/UStaticMeshComponent.h"
 #include "Scene/Component/UBillboardTextComponent.h"
+#include "Scene/Component/UNameTagComponent.h"
 // 목록, 선택, 구조 변경만 담당합니다. 타입별 Details는 Component::DrawPanels()로 위임합니다.
 class FPropertyPanel : public IEditorPanel {
 public:
@@ -94,6 +95,7 @@ private:
             if (ImGui::MenuItem("Camera Component")) AddSceneComponent<UCameraComponent>(Actor);
             if (ImGui::MenuItem("Box Collider Component")) AddSceneComponent<UBoxColliderComponent>(Actor);
             if (ImGui::MenuItem("Billboard Text Component")) AddSceneComponent<UBillboardTextComponent>(Actor);
+            if (ImGui::MenuItem("Name Tag Component")) AddSceneComponent<UNameTagComponent>(Actor);
             ImGui::EndPopup();
         }
 
