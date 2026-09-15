@@ -689,8 +689,8 @@ void UWorld::HandleMouseCameraRotateRequest(const FMouseCameraRotateRequestMessa
 		return;
 	}
 
-	float RotationSensitivity = Settings.RotationSensitivity * 0.001f;
-	constexpr float MaximumPitch = DirectX::XMConvertToRadians(89.0f);
+	constexpr float RotationSensitivity = 0.003f;
+	constexpr float MaximumPitch = 0.99f;
 
 	FTransform& CameraTransform = Camera->GetRelativeTransform();
 	const FQuat CurrentRotation = CameraTransform.GetRotationQuaternion();
@@ -699,22 +699,46 @@ void UWorld::HandleMouseCameraRotateRequest(const FMouseCameraRotateRequestMessa
 	FQuat YawDelta = FQuat::CreateFromAxisAngle(FVector3::UnitZ, Message.DeltaX * RotationSensitivity);
 	YawDelta.Normalize();
 
-	const FMatrix YawMatrix = Camera->GetRelativeTransform().ToMatrixWithScale();
-	FVector3 Forward = YawMatrix.Right();
+	// Yaw 적용
+	FQuat YawedRotation = FQuat::Concatenate(YawDelta, CurrentRotation);
+	YawedRotation.Normalize();
+
+	// Yaw 적용 후의 축을 행렬에서 가져옴
+	FTransform YawedTransform;
+	YawedTransform.SetRotation(YawedRotation);
+
+	FMatrix YawMatrix = YawedTransform.ToMatrixWithScale();
+
+	FVector Right = YawMatrix.Right();
+	Right.Normalize();
+
+	FVector Forward = YawMatrix.Forward();
 	Forward.Normalize();
 
-	FQuat PitchDelta = FQuat::CreateFromAxisAngle(Forward, -Message.DeltaY * RotationSensitivity);
+	FVector Up = FVector(0, 0, 1);
+	FQuat PitchDelta;
+
+	if (Forward.Dot(Up) > MaximumPitch && Message.DeltaY > 0.0f) {
+		PitchDelta = FQuat::CreateFromAxisAngle(Right, 0 * RotationSensitivity);
+	}
+	else if (Forward.Dot(Up) < -MaximumPitch && Message.DeltaY < 0.0f) {
+		PitchDelta = FQuat::CreateFromAxisAngle(Right, 0 * RotationSensitivity);
+	}
+	else {
+		PitchDelta = FQuat::CreateFromAxisAngle(Right, -Message.DeltaY * RotationSensitivity);
+	}
+
 	PitchDelta.Normalize();
 
+	FQuat FinalRotation;
 	auto worldDelta = FQuat::Concatenate(PitchDelta, YawDelta);
-	worldDelta.Normalize();
 
+	worldDelta.Normalize();
 	CameraTransform.SetRotation(FQuat::Concatenate(worldDelta, CurrentRotation));
 
 	// CameraTransform.SetRotation(FQuat::Concatenate(CurrentRotation, PitchDelta));
 
 	PublishEditorCameraState();
-
 }
 
 AActor* UWorld::AddActor(std::unique_ptr<AActor> InActor) 
