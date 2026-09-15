@@ -61,16 +61,16 @@ void FPropertyEditorContext::DrawText(const char* Label, const FString& Value, c
 void FPropertyEditorContext::DrawTransform(const char* Label, const FTransform& Value, const std::function<void(const FTransform&)>& Setter) {
     const ImGuiID TransformId = ImGui::GetID(Label);
     if (EditingTransformId != TransformId) {
-        UpdateTransformFields(Value);
         EditingTransformId = TransformId;
     }
 
+    UpdateTransformFields(Value);
     const bool bChanged =
-        ImGui::DragFloat3("Position", &EditPosition.x, 0.1f) |
-        ImGui::DragFloat3("Rotation", &EditRotation.x, 0.5f) |
-        ImGui::DragFloat3("Scale", &EditScale.x, 0.05f, 0.001f, FLT_MAX) |
-        ImGui::Checkbox("Absolute Location", &bAbsoluteLocation) |
-        ImGui::Checkbox("Absolute Rotation", &bAbsoluteRotation) |
+        ImGui::DragFloat3("Position", &EditPosition.x, 0.1f) ||
+        ImGui::DragFloat3("Rotation", &EditRotation.x, 0.5f) ||
+        ImGui::DragFloat3("Scale", &EditScale.x, 0.05f, 0.001f, FLT_MAX) ||
+        ImGui::Checkbox("Absolute Location", &bAbsoluteLocation) ||
+        ImGui::Checkbox("Absolute Rotation", &bAbsoluteRotation) ||
         ImGui::Checkbox("Absolute Scale", &bAbsoluteScale);
     if (bChanged) {
         EditScale = FVector::Max(EditScale, FVector(0.001f, 0.001f, 0.001f));
