@@ -96,7 +96,7 @@ void FTransformGizmo::Update(const CameraProbe& Camera) {
 
 	USceneComponent* Target = EditorContext->GetSelectedTransformTarget();
 	UCollisionComponent* Collider = EditorContext->GetSelectedCollider();
-	if (Target == nullptr || Collider == nullptr) {
+	if (Target == nullptr) {
 		bVisible = false;
 		return;
 	}
@@ -159,8 +159,13 @@ void FTransformGizmo::Update(const CameraProbe& Camera) {
 	GizmoWorldTransform.Translation(TargetWorld.Translation());
 
 	FVector3 BoundsExtent{};
-	UpdateBoundsInGizmoSpace(*Collider, BoundsCenterInGizmoSpace, BoundsExtent);
 
+	if (Collider != nullptr && Collider->GetOwner() == Target->GetOwner()) {
+		UpdateBoundsInGizmoSpace(*Collider, BoundsCenterInGizmoSpace, BoundsExtent);
+	}
+	else {
+		BoundsCenterInGizmoSpace = FVector3::Zero;
+	}
 	const RenderWindowInfo& WindowInfo = WindowInfoReader.Read();
 	const float ViewportHeight = WindowInfo.Viewport.Height;
 	const float ProjectionYScale = Camera.Projection.m[1][1];
