@@ -116,8 +116,7 @@ UActorComponent* FWorldEditorContext::GetSelectedComponent() const noexcept { re
 UCollisionComponent* FWorldEditorContext::GetSelectedCollider() const noexcept { return SelectedCollider.Get(); }
 
 USceneComponent* FWorldEditorContext::GetSelectedTransformTarget() const noexcept {
-    // Collider picking has historically manipulated the owning Actor's root transform.
-    // Keep that editor interaction intact while the Details panel tracks the collider itself.
+
     if (SelectedCollider.Get() != nullptr) {
         AActor* Actor = SelectedActor.Get();
         return Actor != nullptr ? Actor->GetRootComponent() : nullptr;
