@@ -104,7 +104,7 @@ void FTransformGizmo::Update(const CameraProbe& Camera) {
 
 	USceneComponent* Target = EditorContext->GetSelectedTransformTarget();
 	UCollisionComponent* Collider = EditorContext->GetSelectedCollider();
-	if (Target == nullptr || Collider == nullptr) {
+	if (Target == nullptr) {
 		bVisible = false;
 		return;
 	}
@@ -167,7 +167,14 @@ void FTransformGizmo::Update(const CameraProbe& Camera) {
 	GizmoWorldTransform.Translation(TargetWorld.Translation());
 
 	FVector3 BoundsExtent{};
-	UpdateBoundsInGizmoSpace(*Collider, BoundsCenterInGizmoSpace, BoundsExtent);
+	if (Collider != nullptr && Collider->GetOwner() == Target->GetOwner()) {
+		UpdateBoundsInGizmoSpace(*Collider, BoundsCenterInGizmoSpace, BoundsExtent);
+	}
+	else {
+		// Actor를 Outliner에서 직접 선택한 경우에는 Collider가 없을 수 있다.
+		// 이때 Gizmo는 선택 Actor의 RootComponent 위치를 기준으로 표시한다.
+		BoundsCenterInGizmoSpace = FVector3::Zero;
+	}
 
 	const RenderWindowInfo& WindowInfo = WindowInfoReader.Read();
 	const float ViewportHeight = WindowInfo.Viewport.Height;
