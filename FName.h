@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "STL.h"
 #include "Common.h"
 #include <string_view>

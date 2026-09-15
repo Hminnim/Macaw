@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "UAsset.h"
 #include "FAssetHandle.h"
 #include "../../FVector.h"

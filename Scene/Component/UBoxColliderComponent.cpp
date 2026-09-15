@@ -3,6 +3,7 @@
 #include "Render/Panel/FPropertyEditorContext.h"
 
 #include "UMeshComponent.h"
+#include "Scene/AActor.h"
 #include "Core/Asset/UMesh.h"
 #include "Core/Base/UObjectSystem.h"
 
@@ -64,7 +65,32 @@ void UBoxColliderComponent::SetExtent(const FVector3& InExtent) {
 
 void UBoxColliderComponent::DrawPanels(FPropertyEditorContext& Context) {
     UCollisionComponent::DrawPanels(Context);
-    Context.DrawBoxColliderComponentProperties(*this);
+    Context.DrawVector3("Extent", GetExtent(), 0.05f, 0.001f, FLT_MAX, [this](const FVector3& Extent) {
+        SetExtent(Extent);
+    });
+
+    AActor* Actor = GetOwner();
+    if (Actor == nullptr) {
+        return;
+    }
+    UMeshComponent* CurrentMesh = GetMeshComponent();
+    const char* Preview = CurrentMesh != nullptr ? CurrentMesh->GetTypeInfo()->TypeName.data() : "None";
+    std::vector<FPropertyReferenceOption> Candidates;
+    for (const std::unique_ptr<UActorComponent>& Candidate : Actor->GetComponents()) {
+        auto* Mesh = dynamic_cast<UMeshComponent*>(Candidate.get());
+        if (Mesh == nullptr) {
+            continue;
+        }
+        Candidates.push_back({ Mesh, FString(Mesh->GetTypeInfo()->TypeName), Mesh == CurrentMesh, [this, Mesh] {
+            SetMeshComponent(Mesh);
+        } });
+    }
+    Context.DrawReferencePicker("Source Mesh Component", Preview, CurrentMesh == nullptr, [this] {
+        SetMeshComponent(nullptr);
+    }, Candidates);
+    Context.DrawButton("Build Bounds From Mesh", [this] {
+        BuildBoundsFromMesh();
+    });
 }
 
 bool UBoxColliderComponent::ResolveLoadedReferences() {

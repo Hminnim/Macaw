@@ -1,4 +1,4 @@
-#include "PCH.h"
+﻿#include "PCH.h"
 #include "Scene/Component/UTextRenderComponent.h"
 #include "Render/Panel/FPropertyEditorContext.h"
 
@@ -7,6 +7,7 @@
 
 #include "Core/Asset/FAssetRegistry.h"
 #include "Core/Asset/UFont.h"
+#include "Render/Pipeline/UPipeline.h"
 
 void UTextRenderComponent::SetFontHandle(FAssetHandle InFontHandle)
 {
@@ -52,7 +53,35 @@ const FAssetHandle UTextRenderComponent::GetFontHandle() const
 void UTextRenderComponent::DrawPanels(FPropertyEditorContext& Context)
 {
 	UPrimitiveComponent::DrawPanels(Context);
-	Context.DrawTextRenderComponentProperties(*this);
+	Context.DrawText("Text", GetText(), [this](const FString& TextValue) {
+		SetText(TextValue);
+	});
+	Context.DrawColor("Color", GetColor(), [this](const FVector4& ColorValue) {
+		SetColor(ColorValue);
+	});
+	Context.DrawFloat("Character Height", GetCharacterHeight(), 0.01f, 0.001f, FLT_MAX, [this](float CharacterHeightValue) {
+		SetCharacterHeight(CharacterHeightValue);
+	});
+	Context.DrawFloat("Letter Spacing", GetLetterSpacing(), 0.01f, 0.0f, 0.0f, [this](float LetterSpacingValue) {
+		SetLetterSpacing(LetterSpacingValue);
+	});
+	Context.DrawFloat("Line Spacing", GetLineSpacing(), 0.01f, 0.0f, 0.0f, [this](float LineSpacingValue) {
+		SetLineSpacing(LineSpacingValue);
+	});
+
+	AActor* Owner = GetOwner();
+	UWorld* World = Owner != nullptr ? Owner->GetWorld() : nullptr;
+	FAssetRegistry* Registry = World != nullptr ? World->GetAssetRegistry() : nullptr;
+	if (Registry == nullptr) {
+		Context.DrawDisabledText("Font/Pipeline: Asset registry unavailable");
+		return;
+	}
+	Context.DrawAssetPicker("Font", *Registry, *UFont::StaticTypeInfo(), GetFontHandle(), [this](FAssetHandle Handle) {
+		SetFontHandle(Handle);
+	});
+	Context.DrawAssetPicker("Text Pipeline", *Registry, *UPipeline::StaticTypeInfo(), GetPipelineHandle(), [this](FAssetHandle Handle) {
+		SetPipelineHandle(Handle);
+	});
 }
 const FAssetHandle UTextRenderComponent::GetPipelineHandle() const
 {

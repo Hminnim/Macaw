@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "STL.h"
 #include "Core/Base/TypeInfo.h"

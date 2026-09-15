@@ -2,6 +2,7 @@
 
 #include "USceneComponent.h"
 #include "Render/Panel/FPropertyEditorContext.h"
+#include "Scene/AActor.h"
 
 namespace {
     bool DecomposeWorldTransform(const FMatrix& WorldMatrix, FVector3& OutScale, FQuat& OutRotation, FVector3& OutTranslation) {
@@ -47,7 +48,41 @@ void USceneComponent::SetRelativeTransform(const FTransform& Transform) {
 
 void USceneComponent::DrawPanels(FPropertyEditorContext& Context) {
     UActorComponent::DrawPanels(Context);
-    Context.DrawSceneComponentProperties(*this);
+
+    if (Context.BeginCategory("Transform")) {
+        Context.DrawTransform("Relative Transform", GetRelativeTransform(), [this](const FTransform& Transform) {
+            SetRelativeTransform(Transform);
+        });
+    }
+
+    AActor* Actor = GetOwner();
+    if (Actor == nullptr || !Context.BeginCategory("Attachment")) {
+        return;
+    }
+    if (Actor->GetRootComponent() == this) {
+        Context.DrawDisabledText("Root Component");
+        return;
+    }
+
+    USceneComponent* CurrentParent = GetParent();
+    const char* Preview = CurrentParent != nullptr ? CurrentParent->GetTypeInfo()->TypeName.data() : "None";
+    std::vector<FPropertyReferenceOption> Candidates;
+    for (const std::unique_ptr<UActorComponent>& Candidate : Actor->GetComponents()) {
+        auto* Parent = dynamic_cast<USceneComponent*>(Candidate.get());
+        if (Parent == nullptr || Parent == this) {
+            continue;
+        }
+        Candidates.push_back({ Parent, FString(Parent->GetTypeInfo()->TypeName), Parent == CurrentParent, [this, Parent] {
+            AttachToComponent(Parent, EAttachmentTransformRule::KeepWorldTransform);
+        } });
+    }
+    Context.DrawReferencePicker("Parent", Preview, CurrentParent == nullptr, [this] {
+        DetachFromComponent(EAttachmentTransformRule::KeepWorldTransform);
+    }, Candidates);
+    Context.DrawButton("Make Root Component", [this, Actor] {
+        DetachFromComponent(EAttachmentTransformRule::KeepWorldTransform);
+        Actor->SetRootComponent(this);
+    });
 }
 
 void USceneComponent::SetRelativeLocation(const FVector3& Location) {

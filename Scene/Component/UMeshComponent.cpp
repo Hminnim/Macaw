@@ -17,7 +17,16 @@ void UMeshComponent::SetMeshHandle(FAssetHandle InHandle) {
 
 void UMeshComponent::DrawPanels(FPropertyEditorContext& Context) {
     UPrimitiveComponent::DrawPanels(Context);
-    Context.DrawMeshComponentProperties(*this);
+    AActor* Owner = GetOwner();
+    UWorld* World = Owner != nullptr ? Owner->GetWorld() : nullptr;
+    FAssetRegistry* Registry = World != nullptr ? World->GetAssetRegistry() : nullptr;
+    if (Registry == nullptr) {
+        Context.DrawDisabledText("Mesh: Asset registry unavailable");
+        return;
+    }
+    Context.DrawAssetPicker("Mesh", *Registry, *UMesh::StaticTypeInfo(), GetMeshHandle(), [this](FAssetHandle Handle) {
+        SetMeshHandle(Handle);
+    });
 }
 
 UMesh* UMeshComponent::ResolveMesh() const {

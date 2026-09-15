@@ -1,4 +1,4 @@
-#include "PCH.h"
+﻿#include "PCH.h"
 #include "Core/Asset/UFont.h"
 
 void UFont::BuildFixedGrid(FAssetHandle InAtlasTextureHandle, uint32_t InAtlasWidth, uint32_t InAtlasHeight, uint32_t InCellWidth, uint32_t InCellHeight, uint8_t InFirstCharacter, uint8_t InLastCharacter, float InDefaultAdvance)
