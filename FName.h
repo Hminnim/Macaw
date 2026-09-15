@@ -85,4 +85,33 @@ private:
 	int32 Number = 0;
 };
 
-static void SplitNameAndNumber(std::string_view InString, std::string_view& OutString, int32& OutNumber);
+inline void SplitNameAndNumber(std::string_view InString, std::string_view& OutString, int32& OutNumber)
+{
+	if (InString.empty())
+	{
+		return;
+	}
+
+	OutString = InString;
+	OutNumber = 0;
+
+	const size_t Sep = InString.rfind('_');
+	if (Sep == std::string_view::npos || Sep == 0 || Sep + 1 == InString.length())
+	{
+		return;
+	}
+
+	int32 Num = 0;
+	for (size_t i = Sep + 1; i < InString.length(); ++i)
+	{
+		if (!std::isdigit(static_cast<unsigned char>(InString[i])))
+		{
+			return;
+		}
+
+		Num = Num * 10 + (InString[i] - '0');
+	}
+
+	OutString = InString.substr(0, Sep);
+	OutNumber = Num + 1;
+}
