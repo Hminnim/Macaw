@@ -154,7 +154,9 @@ private:
     }
 
     void DrawDeleteButton(AActor& Actor, UActorComponent& Component) {
-        auto* SceneComponent = dynamic_cast<USceneComponent*>(&Component);
+        auto* SceneComponent = Component.GetTypeInfo()->IsA<USceneComponent>()
+            ? static_cast<USceneComponent*>(&Component)
+            : nullptr;
         const bool bDeletingRootWithoutReplacement = SceneComponent == Actor.GetRootComponent() && FindReplacementRoot(Actor, SceneComponent) == nullptr;
         if (bDeletingRootWithoutReplacement) ImGui::BeginDisabled();
         const bool bDeleteClicked = ImGui::Button("Delete Component");
@@ -175,8 +177,11 @@ private:
 
     static USceneComponent* FindReplacementRoot(AActor& Actor, USceneComponent* Excluded) {
         for (const std::unique_ptr<UActorComponent>& Candidate : Actor.GetComponents()) {
-            auto* SceneComponent = dynamic_cast<USceneComponent*>(Candidate.get());
-            if (SceneComponent != nullptr && SceneComponent != Excluded) return SceneComponent;
+            UActorComponent* CandidateComponent = Candidate.get();
+            if (CandidateComponent == nullptr || !CandidateComponent->GetTypeInfo()->IsA<USceneComponent>()) continue;
+
+            auto* SceneComponent = static_cast<USceneComponent*>(CandidateComponent);
+            if (SceneComponent != Excluded) return SceneComponent;
         }
         return nullptr;
     }

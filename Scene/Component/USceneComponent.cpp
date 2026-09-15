@@ -68,10 +68,14 @@ void USceneComponent::DrawPanels(FPropertyEditorContext& Context) {
     const char* Preview = CurrentParent != nullptr ? CurrentParent->GetTypeInfo()->TypeName.data() : "None";
     std::vector<FPropertyReferenceOption> Candidates;
     for (const std::unique_ptr<UActorComponent>& Candidate : Actor->GetComponents()) {
-        auto* Parent = dynamic_cast<USceneComponent*>(Candidate.get());
-        if (Parent == nullptr || Parent == this) {
+        UActorComponent* CandidateComponent = Candidate.get();
+        if (CandidateComponent == nullptr || !CandidateComponent->GetTypeInfo()->IsA<USceneComponent>()) {
             continue;
         }
+
+        auto* Parent = static_cast<USceneComponent*>(CandidateComponent);
+        if (Parent == this) continue;
+
         Candidates.push_back({ Parent, FString(Parent->GetTypeInfo()->TypeName), Parent == CurrentParent, [this, Parent] {
             AttachToComponent(Parent, EAttachmentTransformRule::KeepWorldTransform);
         } });

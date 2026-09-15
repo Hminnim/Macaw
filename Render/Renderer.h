@@ -89,7 +89,8 @@ private:
 
 	FAssetRegistry* AssetRegistry{ nullptr };
 
-	TGraphicsArray<ModelContext> ModelContextArray{};
+	TGraphicsArray<ModelContext, true, true> ModelContextArray{};
+	TArray<ModelContext> FrameContexts{};
 	TGraphicsRootConstants<64> RootConstants{};
 
 	FTextRenderer TextRenderer{};

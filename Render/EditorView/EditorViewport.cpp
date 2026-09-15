@@ -7,8 +7,7 @@
 
 #include "../../FMouseInput.h"
 
-#include "../../Scene/Component/UPrimitiveComponent.h"
-#include "../../Scene/AActor.h"
+#include "../../Scene/Component/UCollisionComponent.h"
 
 #include "../../Serialize/FEditorConfigManager.h"
 
@@ -91,39 +90,15 @@ void EditorViewport::RenderAxis(ELineDepthMode DepthMode) {
 	LineRenderer->AddRay(FVector3{ 0.0f, 0.0f, 0.0f }, FVector3{ 0.0f, 0.0f, -1.0f }, 1000.0f, FVector4{ 0.0f, 0.0f, 1.0f, 1.0f }, 3.0f, DepthMode);
 }
 
-void EditorViewport::RenderBounds(ELineDepthMode DepthMode)
-{
-	AActor* Actor = EditorContext->GetSelectedActor();
-	if (Actor == nullptr) return;
+void EditorViewport::RenderBounds(ELineDepthMode DepthMode) {
+	if (EditorContext == nullptr) return;
 
-	USceneComponent* RootComponent = Actor->GetRootComponent();
-	if (RootComponent == nullptr || !RootComponent->GetTypeInfo()->IsA(UPrimitiveComponent::StaticTypeInfo())) return;
+	const UActorComponent* SelectedComponent = EditorContext->GetSelectedComponent();
+	if (SelectedComponent == nullptr || !SelectedComponent->GetTypeInfo()->IsA<UCollisionComponent>()) return;
 
-	const auto* Primitive = static_cast<UPrimitiveComponent*>(RootComponent);
-	DirectX::BoundingOrientedBox LocalBounds{};
-	LocalBounds = Primitive->GetPickingBox();
-	std::array<DirectX::XMFLOAT3, DirectX::BoundingOrientedBox::CORNER_COUNT> Corners{};
-	DirectX::BoundingOrientedBox WorldBox;
-	LocalBounds.Transform(WorldBox, Primitive->GetComponentToWorld().ToSimpleMath());
-	WorldBox.GetCorners(Corners.data());
+	const auto* CollisionComponent = static_cast<const UCollisionComponent*>(SelectedComponent);
 
-	const FVector4 LineColor = FVector4{ 1.0f, 1.0f, 0.0f, 1.0f };
-	const float Thickness = 3.0f;
-
-	LineRenderer->AddLine(FVector3{ Corners[0] }, FVector3{ Corners[1] }, LineColor, Thickness, DepthMode);
-	LineRenderer->AddLine(FVector3{ Corners[1] }, FVector3{ Corners[2] }, LineColor, Thickness, DepthMode);
-	LineRenderer->AddLine(FVector3{ Corners[2] }, FVector3{ Corners[3] }, LineColor, Thickness, DepthMode);
-	LineRenderer->AddLine(FVector3{ Corners[3] }, FVector3{ Corners[0] }, LineColor, Thickness, DepthMode);
-
-	LineRenderer->AddLine(FVector3{ Corners[4] }, FVector3{ Corners[5] }, LineColor, Thickness, DepthMode);
-	LineRenderer->AddLine(FVector3{ Corners[5] }, FVector3{ Corners[6] }, LineColor, Thickness, DepthMode);
-	LineRenderer->AddLine(FVector3{ Corners[6] }, FVector3{ Corners[7] }, LineColor, Thickness, DepthMode);
-	LineRenderer->AddLine(FVector3{ Corners[7] }, FVector3{ Corners[4] }, LineColor, Thickness, DepthMode);
-
-	LineRenderer->AddLine(FVector3{ Corners[0] }, FVector3{ Corners[4] }, LineColor, Thickness, DepthMode);
-	LineRenderer->AddLine(FVector3{ Corners[1] }, FVector3{ Corners[5] }, LineColor, Thickness, DepthMode);
-	LineRenderer->AddLine(FVector3{ Corners[2] }, FVector3{ Corners[6] }, LineColor, Thickness, DepthMode);
-	LineRenderer->AddLine(FVector3{ Corners[3] }, FVector3{ Corners[7] }, LineColor, Thickness, DepthMode);
+	CollisionComponent->DrawEditorBounds(*LineRenderer, DepthMode);
 }
 
 void EditorViewport::RenderOrientationAxis(ID3D11DeviceContext* Context, CameraProbe& Probe) {

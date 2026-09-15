@@ -1,11 +1,14 @@
 ﻿#include "PCH.h"
 #include "UBoxColliderComponent.h"
+#include "Render/EditorView/ILineRenderer.h"
 #include "Render/Panel/FPropertyEditorContext.h"
 
 #include "UMeshComponent.h"
 #include "Scene/AActor.h"
 #include "Core/Asset/UMesh.h"
 #include "Core/Base/UObjectSystem.h"
+
+#include <array>
 
 void UBoxColliderComponent::SetMeshComponent(UMeshComponent* InMeshComponent) {
     MeshComponent.Set(InMeshComponent);
@@ -48,21 +51,40 @@ bool UBoxColliderComponent::RaycastBounds(const FRay& Ray, float& OutDistance) c
     return WorldBox.Intersects(Ray.position, Ray.direction, OutDistance);
 }
 
-FVector3 UBoxColliderComponent::GetBoundsCenter() const {
-    return FVector3{ OBB.Center.x, OBB.Center.y, OBB.Center.z };
-}
-
 FVector3 UBoxColliderComponent::GetExtent() const {
     return FVector3{ OBB.Extents.x, OBB.Extents.y, OBB.Extents.z };
-}
-
-FQuat UBoxColliderComponent::GetBoundsOrientation() const {
-    return FQuat{ OBB.Orientation.x, OBB.Orientation.y, OBB.Orientation.z, OBB.Orientation.w };
 }
 
 void UBoxColliderComponent::SetExtent(const FVector3& InExtent) {
     OBB.Extents = DirectX::XMFLOAT3(InExtent.x, InExtent.y, InExtent.z);
     SetPickingBox(OBB);
+}
+
+void UBoxColliderComponent::DrawEditorBounds(ILineRenderer& LineRenderer, ELineDepthMode DepthMode) const {
+    DirectX::BoundingOrientedBox WorldBox;
+    OBB.Transform(WorldBox, GetComponentToWorld().ToSimpleMath());
+
+    std::array<DirectX::XMFLOAT3, DirectX::BoundingOrientedBox::CORNER_COUNT> Corners{};
+    WorldBox.GetCorners(Corners.data());
+
+    const FVector4 LineColor = FVector4{ 1.0f, 1.0f, 0.0f, 1.0f };
+    const float Thickness = 1.0f;
+    const auto AddEdge = [&LineRenderer, &Corners, LineColor, Thickness, DepthMode](size_t Start, size_t End) {
+        LineRenderer.AddLine(FVector3{ Corners[Start] }, FVector3{ Corners[End] }, LineColor, Thickness, DepthMode);
+    };
+
+    AddEdge(0, 1);
+    AddEdge(1, 2);
+    AddEdge(2, 3);
+    AddEdge(3, 0);
+    AddEdge(4, 5);
+    AddEdge(5, 6);
+    AddEdge(6, 7);
+    AddEdge(7, 4);
+    AddEdge(0, 4);
+    AddEdge(1, 5);
+    AddEdge(2, 6);
+    AddEdge(3, 7);
 }
 
 void UBoxColliderComponent::DrawPanels(FPropertyEditorContext& Context) {
@@ -79,10 +101,12 @@ void UBoxColliderComponent::DrawPanels(FPropertyEditorContext& Context) {
     const char* Preview = CurrentMesh != nullptr ? CurrentMesh->GetTypeInfo()->TypeName.data() : "None";
     std::vector<FPropertyReferenceOption> Candidates;
     for (const std::unique_ptr<UActorComponent>& Candidate : Actor->GetComponents()) {
-        auto* Mesh = dynamic_cast<UMeshComponent*>(Candidate.get());
-        if (Mesh == nullptr) {
+        UActorComponent* CandidateComponent = Candidate.get();
+        if (CandidateComponent == nullptr || !CandidateComponent->GetTypeInfo()->IsA<UMeshComponent>()) {
             continue;
         }
+
+        auto* Mesh = static_cast<UMeshComponent*>(CandidateComponent);
         Candidates.push_back({ Mesh, FString(Mesh->GetTypeInfo()->TypeName), Mesh == CurrentMesh, [this, Mesh] {
             SetMeshComponent(Mesh);
         } });

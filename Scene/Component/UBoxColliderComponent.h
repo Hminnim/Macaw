@@ -16,10 +16,9 @@ public:
     bool BuildBoundsFromMesh();
 
     bool RaycastBounds(const FRay& Ray, float& OutDistance) const override;
-    FVector3 GetBoundsCenter() const override;
-    FVector3 GetExtent() const override;
-    FQuat GetBoundsOrientation() const override;
-    void SetExtent(const FVector3& InExtent) override;
+    void DrawEditorBounds(ILineRenderer& LineRenderer, ELineDepthMode DepthMode) const override;
+    FVector3 GetExtent() const;
+    void SetExtent(const FVector3& InExtent);
     void DrawPanels(FPropertyEditorContext& Context) override;
 
     bool ResolveLoadedReferences() override;

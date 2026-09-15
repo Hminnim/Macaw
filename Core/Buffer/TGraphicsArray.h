@@ -6,7 +6,7 @@
 #include <span>
 #include <type_traits>
 
-template<typename T, bool bAutoResize = true>
+template<typename T, bool bAutoResize = true, bool bDynamic = false>
 class TGraphicsArray {
 	static_assert(std::is_trivially_copyable_v<T>, "TGraphicsArray requires trivially copyable element types.");
 	static_assert(sizeof(T) % 4 == 0, "Structured buffer element size must be aligned to 4 bytes.");
@@ -32,9 +32,9 @@ public:
 		FGraphicsBufferDescription Description{};
 		Description.ByteSize = InCapacity * sizeof(T);
 		Description.Stride = sizeof(T);
-		Description.Usage = D3D11_USAGE_DEFAULT;
+		Description.Usage = bDynamic ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT;
 		Description.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-		Description.CPUAccessFlags = 0;
+		Description.CPUAccessFlags = bDynamic ? D3D11_CPU_ACCESS_WRITE : 0;
 		Description.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
 
 		if (!Buffer.Initialize(Device, Description)) {
@@ -49,7 +49,8 @@ public:
 		Capacity = InCapacity;
 
 		if (!InitialData.empty()) {
-			if (!Buffer.Update(Context, InitialData.data(), static_cast<uint32>(InitialData.size_bytes()))) {
+			const bool bUploaded = bDynamic ? Buffer.WriteDiscard(Context, InitialData.data(), static_cast<uint32>(InitialData.size_bytes())) : Buffer.Update(Context, InitialData.data(), static_cast<uint32>(InitialData.size_bytes()));
+			if (!bUploaded) {
 				Reset();
 				return false;
 			}
@@ -57,6 +58,24 @@ public:
 			Count = static_cast<uint32>(InitialData.size());
 		}
 
+		return true;
+	}
+
+	bool UploadDiscard(ID3D11Device* Device, ID3D11DeviceContext* Context, std::span<const T> Values) requires(bDynamic) {
+		if (Values.empty()) {
+			Count = 0;
+			return true;
+		}
+
+		if (!EnsureCapacity(Device, Context, static_cast<uint32>(Values.size()))) {
+			return false;
+		}
+
+		if (!Buffer.WriteDiscard(Context, Values.data(), static_cast<uint32>(Values.size_bytes()))) {
+			return false;
+		}
+
+		Count = static_cast<uint32>(Values.size());
 		return true;
 	}
 
@@ -199,9 +218,9 @@ private:
 		FGraphicsBufferDescription Description{};
 		Description.ByteSize = NewCapacity * sizeof(T);
 		Description.Stride = sizeof(T);
-		Description.Usage = D3D11_USAGE_DEFAULT;
+		Description.Usage = bDynamic ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT;
 		Description.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-		Description.CPUAccessFlags = 0;
+		Description.CPUAccessFlags = bDynamic ? D3D11_CPU_ACCESS_WRITE : 0;
 		Description.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
 
 		FGraphicsBuffer NewBuffer;
@@ -210,9 +229,11 @@ private:
 			return false;
 		}
 
-		if (Buffer.IsValid() && Count > 0) {
-			if (!NewBuffer.CopyFrom(Context, 0, Buffer, 0, Count * sizeof(T))) {
-				return false;
+		if constexpr (!bDynamic) {
+			if (Buffer.IsValid() && Count > 0) {
+				if (!NewBuffer.CopyFrom(Context, 0, Buffer, 0, Count * sizeof(T))) {
+					return false;
+				}
 			}
 		}
 

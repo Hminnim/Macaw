@@ -28,6 +28,7 @@ void FRenderer::Create(HWND WindowHandle, UINT width, UINT height) {
 	FRenderer::CreateSamplerStates();
 
 	ModelContextArray.Initialize(Device.Get(), DeviceContext.Get(), 128);
+	FrameContexts.reserve(128);
 	RootConstants.Initialize(Device.Get());
 	TextRenderer.Initialize(Device.Get(),256);
 
@@ -56,6 +57,10 @@ void FRenderer::EndFrame() {
 }
 
 void FRenderer::RenderScene(FRenderProbe& Probe) {
+	if (AssetRegistry != nullptr) {
+		AssetRegistry->GetMaterialBuffer().Flush(DeviceContext.Get());
+	}
+
 	RenderActorList(Probe.ActorProbes,Probe.MainCameraProbe);
 
 	RenderOutline(Probe.ActorProbes, Probe.MainCameraProbe);
@@ -131,12 +136,10 @@ void FRenderer::RenderActorList(TArray<FActorProbe>& ActorProbes, const CameraPr
 		return GetRenderChunkKey(A) == GetRenderChunkKey(B);
 		});
 
-	ModelContextArray.Clear();
+	FrameContexts.clear();
+	FrameContexts.reserve(ActorProbes.size());
 
-	TArray<ModelContext> Contexts;
-	Contexts.reserve(ActorProbes.size());
-
-	std::ranges::transform(Groups | std::views::join, std::back_inserter(Contexts), [&](const auto& AC) {
+	std::ranges::transform(Groups | std::views::join, std::back_inserter(FrameContexts), [&](const auto& AC) {
 		return ModelContext{
 			.World = AC.World,
 			.MaterialIndex = AssetRegistry->ResolveAsset<UMaterial>(AC.MaterialHandle)->GetGPUIndex(),
@@ -144,7 +147,12 @@ void FRenderer::RenderActorList(TArray<FActorProbe>& ActorProbes, const CameraPr
 		};
 	});
 
-	ModelContextArray.AddRange(Device.Get(), DeviceContext.Get(), Contexts);
+	ID3D11ShaderResourceView* NullModelContext = nullptr;
+	DeviceContext->VSSetShaderResources(0, 1, &NullModelContext);
+	DeviceContext->PSSetShaderResources(0, 1, &NullModelContext);
+	if (!ModelContextArray.UploadDiscard(Device.Get(), DeviceContext.Get(), FrameContexts)) {
+		return;
+	}
 
 	DeviceContext->VSSetShaderResources(0, 1, ModelContextArray.GetSRV());
 	DeviceContext->PSSetShaderResources(0, 1, ModelContextArray.GetSRV());
@@ -165,8 +173,6 @@ void FRenderer::RenderActorList(TArray<FActorProbe>& ActorProbes, const CameraPr
 		}, 0);
 
 	RootConstants.Bind(DeviceContext.Get(), 0, EGraphicsShaderStage::Graphics);
-	AssetRegistry->GetMaterialBuffer().Flush(DeviceContext.Get());
-
 	uint32 InstanceCount{ 0 };
 	FMaterialChunkSignature BoundTextureSet{};
 	bool bTextureSetBound{ false };
