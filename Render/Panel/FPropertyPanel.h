@@ -63,6 +63,7 @@ public:
 		ImGui::Text("Coordinate");
 		int CoordinateSpaceIndex = static_cast<int>(GizmoCoordinateSpace.Read());
 		bool bCoordinateSpaceChanged = false;
+		
 		bCoordinateSpaceChanged |= ImGui::RadioButton("World", &CoordinateSpaceIndex, static_cast<int>(EGizmoCoordinateSpace::World));
 		ImGui::SameLine();
 		bCoordinateSpaceChanged |= ImGui::RadioButton("Local", &CoordinateSpaceIndex, static_cast<int>(EGizmoCoordinateSpace::Local));

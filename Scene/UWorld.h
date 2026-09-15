@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <filesystem>
 #include <memory>
@@ -87,6 +87,8 @@ public:
 
     void HandleMouseCameraRotateRequest(const FMouseCameraRotateRequestMessage& Message);
 
+    void HandleEditorCameraRequest(const FMessageSetEditorCameraRequest& Message);
+
     void HandleKeyboardCameraMoveRequest(const FKeyboardCameraMoveRequestMessage& Message);
 
     void HandleSpawnPrimitive(const FMessageSpawnPrimitive& Message, FAssetRegistry& AssetRegistry);
@@ -106,7 +108,6 @@ private:
 	void InitializeSubsystems();
 	void DeinitializeSubsystems();
 
-    void ApplyEditorCameraState();
     void PublishEditorCameraState();
 private:
     TArray<std::unique_ptr<AActor>> Actors;
