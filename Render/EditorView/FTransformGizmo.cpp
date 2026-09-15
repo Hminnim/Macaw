@@ -11,7 +11,6 @@
 #include "../../Core/Asset/BasicGeometry/Corn.h"
 #include "../../Core/Asset/BasicGeometry/Cylinder.h"
 #include "../../Core/Asset/UColorMaterial.h"
-#include "../../Scene/AActor.h"
 #include "../../Scene/Component/UPrimitiveComponent.h"
 
 void FTransformGizmo::Initialize(ID3D11Device* Device, FAssetRegistry& AssetRegistry, FStateChannel<RenderWindowInfo>::FReader InWindowInfoReader, FWorldEditorContext& InEditorContext) {
@@ -164,19 +163,12 @@ void FTransformGizmo::Update(const CameraProbe& Camera) {
 
 	FVector3 BoundsExtent{};
 
-	UPrimitiveComponent* RootPrimitive = nullptr;
-	if (AActor* SelectedActor = EditorContext->GetSelectedActor()) {
-		USceneComponent* RootComponent = SelectedActor->GetRootComponent();
-		if (RootComponent != nullptr && RootComponent->GetTypeInfo()->IsA(UPrimitiveComponent::StaticTypeInfo())) {
-			RootPrimitive = static_cast<UPrimitiveComponent*>(RootComponent);
-		}
-	}
+	const UPrimitiveComponent* TargetPrimitive = Target->GetTypeInfo()->IsA<UPrimitiveComponent>() ? static_cast<const UPrimitiveComponent*>(Target) : nullptr;
 
-	if (RootPrimitive != nullptr) {
-		UpdateBoundsInGizmoSpace(*RootPrimitive, BoundsCenterInGizmoSpace, BoundsExtent);
+	if (TargetPrimitive != nullptr) {
+		UpdateBoundsInGizmoSpace(*TargetPrimitive, BoundsCenterInGizmoSpace, BoundsExtent);
 	}
 	else {
-		// Primitive RootComponent가 없는 Actor는 RootComponent 위치를 기준으로 표시한다.
 		BoundsCenterInGizmoSpace = FVector3::Zero;
 	}
 	const RenderWindowInfo& WindowInfo = WindowInfoReader.Read();
