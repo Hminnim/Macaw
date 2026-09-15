@@ -1,6 +1,7 @@
 ﻿#include "PCH.h"
 
 #include "USceneComponent.h"
+#include "Render/Panel/FPropertyEditorContext.h"
 
 namespace {
     bool DecomposeWorldTransform(const FMatrix& WorldMatrix, FVector3& OutScale, FQuat& OutRotation, FVector3& OutTranslation) {
@@ -42,6 +43,11 @@ const FTransform& USceneComponent::GetRelativeTransform() const {
 
 void USceneComponent::SetRelativeTransform(const FTransform& Transform) {
     this->Transform = Transform;
+}
+
+void USceneComponent::DrawPanels(FPropertyEditorContext& Context) {
+    UActorComponent::DrawPanels(Context);
+    Context.DrawSceneComponentProperties(*this);
 }
 
 void USceneComponent::SetRelativeLocation(const FVector3& Location) {

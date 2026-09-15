@@ -23,6 +23,7 @@ public:
     void SetAspectRatio(float InAspectRatio);
     void SetNearPlane(float InNearPlane);
     void SetFarPlane(float InFarPlane);
+    void DrawPanels(FPropertyEditorContext& Context) override;
 
     void OnRegister() override;
     void OnUnregister() override;

@@ -14,6 +14,7 @@ public:
 
     FAssetHandle GetMeshHandle() const;
     void SetMeshHandle(FAssetHandle InHandle);
+    void DrawPanels(FPropertyEditorContext& Context) override;
     virtual UMesh* ResolveMesh() const;
     bool RaycastMesh(const FRay& Ray, float& OutDistance) const;
 
