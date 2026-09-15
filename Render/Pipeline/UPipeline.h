@@ -27,6 +27,8 @@ struct PipelineUnit {
     D3D11_PRIMITIVE_TOPOLOGY PrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
     bool Initialized{ false };
+
+    UINT StencilRef{ 0 };
 };
 
 enum class ERenderMode : size_t {
@@ -34,6 +36,7 @@ enum class ERenderMode : size_t {
     Lit,
     Unlit,
     Wireframe,
+    Outline,
     Max
 };
 
