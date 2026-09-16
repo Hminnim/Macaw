@@ -284,39 +284,39 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     if constexpr (bLoadTestScene) {
 		World.LoadScene("./scenes/test.json", Renderer.GetDevice(), &AssetRegistry);
     } else {
-	AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(), "BasePipeline", "./Content/Metadata/BasePipeline.meta");
-	AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(), "AlternatePipeline", "./Content/Metadata/AlternatePipeline.meta");
-    // Triangle
-	AssetRegistry.EmplaceAsset<UMesh>(Renderer.GetDevice(), "SphereMesh", "./Content/Metadata/SphereMesh.meta");
-	AssetRegistry.EmplaceAsset<UMesh>(Renderer.GetDevice(), "CubeMesh", "./Content/Metadata/CubeMesh.meta");
-	AssetRegistry.EmplaceAsset<UMesh>(Renderer.GetDevice(), "CylinderMesh", "./Content/Metadata/CylinderMesh.meta");
-	AssetRegistry.EmplaceAsset<UMesh>(Renderer.GetDevice(), "PlaneMesh", "./Content/Metadata/PlaneMesh.meta");
-	AssetRegistry.EmplaceAsset<UMesh>(Renderer.GetDevice(), "ConeMesh", "./Content/Metadata/ConeMesh.meta");
-   	AssetRegistry.EmplaceAsset<UMesh>(Renderer.GetDevice(), "TorusMesh", "./Content/Metadata/TorusMesh.meta");
-	AssetRegistry.EmplaceAsset<UMesh>(Renderer.GetDevice(), "CapsuleMesh", "./Content/Metadata/CapsuleMesh.meta");
-	AssetRegistry.EmplaceAsset<UMesh>(Renderer.GetDevice(), "PyrimidMesh", "./Content/Metadata/PyramidMesh.meta");
+	    AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(), "BasePipeline", "./Content/Metadata/BasePipeline.meta");
+	    AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(), "AlternatePipeline", "./Content/Metadata/AlternatePipeline.meta");
+        // Triangle
+	    AssetRegistry.EmplaceAsset<UMesh>(Renderer.GetDevice(), "SphereMesh", "./Content/Metadata/SphereMesh.meta");
+	    AssetRegistry.EmplaceAsset<UMesh>(Renderer.GetDevice(), "CubeMesh", "./Content/Metadata/CubeMesh.meta");
+	    AssetRegistry.EmplaceAsset<UMesh>(Renderer.GetDevice(), "CylinderMesh", "./Content/Metadata/CylinderMesh.meta");
+	    AssetRegistry.EmplaceAsset<UMesh>(Renderer.GetDevice(), "PlaneMesh", "./Content/Metadata/PlaneMesh.meta");
+	    AssetRegistry.EmplaceAsset<UMesh>(Renderer.GetDevice(), "ConeMesh", "./Content/Metadata/ConeMesh.meta");
+   	    AssetRegistry.EmplaceAsset<UMesh>(Renderer.GetDevice(), "TorusMesh", "./Content/Metadata/TorusMesh.meta");
+	    AssetRegistry.EmplaceAsset<UMesh>(Renderer.GetDevice(), "CapsuleMesh", "./Content/Metadata/CapsuleMesh.meta");
+	    AssetRegistry.EmplaceAsset<UMesh>(Renderer.GetDevice(), "PyrimidMesh", "./Content/Metadata/PyramidMesh.meta");
 
-    AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "GreyMaterial", "./Content/Metadata/GreyMaterial.meta");
-    AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "RedMaterial", "./Content/Metadata/RedMaterial.meta");
-    AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "GreenMaterial", "./Content/Metadata/GreenMaterial.meta");
-    AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "BlueMaterial", "./Content/Metadata/BlueMaterial.meta");
-    AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "YellowMaterial", "./Content/Metadata/YellowMaterial.meta");
-    AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "AmberMaterial", "./Content/Metadata/AmberMaterial.meta");
-    AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "BrownMaterial", "./Content/Metadata/BrownMaterial.meta");
-    AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "CyanMaterial", "./Content/Metadata/CyanMaterial.meta");
-    AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "LimeMaterial", "./Content/Metadata/LimeMaterial.meta");
-    AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "MagentaMaterial", "./Content/Metadata/MagentaMaterial.meta");
-    AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "NavyMaterial", "./Content/Metadata/NavyMaterial.meta");
-    AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "OrangeMaterial", "./Content/Metadata/OrangeMaterial.meta");
-    AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "PinkMaterial", "./Content/Metadata/PinkMaterial.meta");
-    AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "PurpleMaterial", "./Content/Metadata/PurpleMaterial.meta");
-    AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "TealMaterial", "./Content/Metadata/TealMaterial.meta");
-    AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "WhiteMaterial", "./Content/Metadata/WhiteMaterial.meta");
+        AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "GreyMaterial", "./Content/Metadata/GreyMaterial.meta");
+        AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "RedMaterial", "./Content/Metadata/RedMaterial.meta");
+        AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "GreenMaterial", "./Content/Metadata/GreenMaterial.meta");
+        AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "BlueMaterial", "./Content/Metadata/BlueMaterial.meta");
+        AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "YellowMaterial", "./Content/Metadata/YellowMaterial.meta");
+        AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "AmberMaterial", "./Content/Metadata/AmberMaterial.meta");
+        AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "BrownMaterial", "./Content/Metadata/BrownMaterial.meta");
+        AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "CyanMaterial", "./Content/Metadata/CyanMaterial.meta");
+        AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "LimeMaterial", "./Content/Metadata/LimeMaterial.meta");
+        AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "MagentaMaterial", "./Content/Metadata/MagentaMaterial.meta");
+        AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "NavyMaterial", "./Content/Metadata/NavyMaterial.meta");
+        AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "OrangeMaterial", "./Content/Metadata/OrangeMaterial.meta");
+        AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "PinkMaterial", "./Content/Metadata/PinkMaterial.meta");
+        AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "PurpleMaterial", "./Content/Metadata/PurpleMaterial.meta");
+        AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "TealMaterial", "./Content/Metadata/TealMaterial.meta");
+        AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "WhiteMaterial", "./Content/Metadata/WhiteMaterial.meta");
 
-	AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(), "TexturedPipeline", "./Content/Metadata/TexturedTestPipeline.meta");
-	AssetRegistry.EmplaceAsset<UTexture>(Renderer.GetDevice(), "PlankTexture", "./Content/Metadata/TexturedTestTexture.meta");
-    AssetRegistry.EmplaceAsset<UTexture>(Renderer.GetDevice(), "TestSprite", "./Content/Metadata/TestSprite.meta");
-	AssetRegistry.EmplaceAsset<UTexturedMaterial>(Renderer.GetDevice(), "TexturedMaterial", "./Content/Metadata/TexturedTestMaterial.meta");
+	    AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(), "TexturedPipeline", "./Content/Metadata/TexturedTestPipeline.meta");
+	    AssetRegistry.EmplaceAsset<UTexture>(Renderer.GetDevice(), "PlankTexture", "./Content/Metadata/TexturedTestTexture.meta");
+        AssetRegistry.EmplaceAsset<UTexture>(Renderer.GetDevice(), "TestSprite", "./Content/Metadata/TestSprite.meta");
+	    AssetRegistry.EmplaceAsset<UTexturedMaterial>(Renderer.GetDevice(), "TexturedMaterial", "./Content/Metadata/TexturedTestMaterial.meta");
 
         auto SkyDomeTextureHandle = AssetRegistry.EmplaceAsset<UTexture>(Renderer.GetDevice(), "SkyDomeTexture", "./Content/Metadata/SkyDomeTexture.meta");
         auto SkyDomeMaterialHandle = AssetRegistry.EmplaceAsset<UTexturedMaterial>(Renderer.GetDevice(), "SkyDomeMaterial", "./Content/Metadata/SkyDomeMaterial.meta");
@@ -328,6 +328,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		comp->SetMeshHandle(SkyDomeMeshHandle);
 		comp->SetPipelineHandle(SkyDomePipelineHandle);
 		comp->SetMaterialHandle(SkyDomeMaterialHandle);
+
+		comp->SetPickingBox(DirectX::BoundingOrientedBox{ DirectX::XMFLOAT3{0.f,0.f,0.f}, DirectX::XMFLOAT3{0.f,0.f,0.f}, DirectX::XMFLOAT4{0.f,0.f,0.f, 1.f} });
 
     }
     FAssetHandle TextPipelineHandle = AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(),"TextPipeline", "./Content/Metadata/TextPipeline.meta");

@@ -28,5 +28,5 @@ protected:
 
 private:
     bool bVisible = true;
-    DirectX::BoundingOrientedBox PickingBox{ DirectX::XMFLOAT3{0.f,0.f,0.f}, DirectX::XMFLOAT3{1.f,1.f,1.f}, DirectX::XMFLOAT4{0.f,0.f,0.f, 1.f} };
+    DirectX::BoundingOrientedBox PickingBox{ DirectX::XMFLOAT3{0.f,0.f,0.f}, DirectX::XMFLOAT3{0.f,0.f,0.f}, DirectX::XMFLOAT4{0.f,0.f,0.f, 1.f} };
 };
