@@ -1,4 +1,4 @@
-#include "PCH.h"
+﻿#include "PCH.h"
 
 #include "URenderSubsystem.h"
 
@@ -31,10 +31,13 @@ void URenderSubsystem::BuildRenderProbes(FAssetRegistry* AssetRegistry, FRenderP
         FActorProbe ActorProbe{};
         Component->MakeRender(ActorProbe);
 
-        size_t mode = { EditorContext->GetRenderModeState()};
-        
-        auto resolved = AssetRegistry->ResolveAsset<UPipeline>(Component->GetPipelineHandle());
-        resolved->SetRenderMode(static_cast<ERenderMode>(mode)); 
+        if (not Component->IsActive() or not Component->IsVisible()) continue;
+
+        if (AssetRegistry != nullptr && EditorContext != nullptr) {
+            if (UPipeline* Pipeline = AssetRegistry->ResolveAsset<UPipeline>(Component->GetPipelineHandle())) {
+                Pipeline->SetRenderMode(static_cast<ERenderMode>(EditorContext->GetRenderModeState()));
+            }
+        }
 
 
         if (SelectedActor != nullptr && Component->GetOwner() == SelectedActor) {

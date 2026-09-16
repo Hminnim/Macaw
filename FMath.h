@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <algorithm>
 
 #include "SimpleMath/SimpleMath.h"
@@ -77,6 +77,7 @@ struct FVector
 	static const FVector Zero, UnitX, UnitY, UnitZ;
 	bool operator==(const FVector&) const = default;
 	FVector operator-() const { return FVector(-x, -y, -z); }
+
 	static FVector Min(const FVector& a, const FVector& b)
 	{
 		return { a.x < b.x ? a.x : b.x, a.y < b.y ? a.y : b.y, a.z < b.z ? a.z : b.z };
@@ -629,6 +630,16 @@ struct FQuat {
 
     DirectX::SimpleMath::Quaternion ToSimpleMath() const { return { x, y, z, w }; }
 
+    FQuat operator*(const FQuat& Other) const
+    {
+        return FQuat(
+            w * Other.x + x * Other.w + y * Other.z - z * Other.y, // X
+            w * Other.y - x * Other.z + y * Other.w + z * Other.x, // Y
+            w * Other.z + x * Other.y - y * Other.x + z * Other.w, // Z
+            w * Other.w - x * Other.x - y * Other.y - z * Other.z  // W
+        );
+    }
+
     static FQuat FromRotator(const FRotator& Rotation) {
         const FQuat Roll = CreateFromAxisAngle(FVector::UnitY, Rotation.z);
         const FQuat Pitch = CreateFromAxisAngle(FVector::UnitX, Rotation.x);
@@ -671,8 +682,7 @@ struct FQuat {
     }
 
     static FQuat Concatenate(const FQuat& First, const FQuat& Second) {
-        return FQuat(DirectX::SimpleMath::Quaternion::Concatenate(
-            First.ToSimpleMath(), Second.ToSimpleMath()));
+        return First * Second;
     }
 
     const static FQuat CreateFromRotationMatrix(const FMatrix& M) {

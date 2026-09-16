@@ -1,4 +1,4 @@
-#include "PCH.h"
+﻿#include "PCH.h"
 #include "FControlPanel.h"
 
 #include <windows.h>
@@ -17,215 +17,152 @@ void FControlPanel::DrawPanel()
         CachedFOV = EditorContext->GetCameraState()->FOV;
     }
 
-    ImGui::Begin("Control Panel");
-
-    ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
-    ImGui::Separator();
-
-    // 2. 단방향 채널: 스폰 이벤트 전송 (UI -> Engine)
-    ImGui::Text("Spawn Primitive");
+    // 전역 메뉴 바는 뷰포트의 상단에 고정되며 도킹 레이아웃의 일부가 아니다.
+    if (!ImGui::BeginMainMenuBar())
+    {
+        return;
+    }
 
     const char* PrimitiveTypes[] =
     {
-        "CubeMesh",
-        "SphereMesh",
-        "PlaneMesh",
-        "CylinderMesh",
-        "CapsuleMesh",
-        "ConeMesh",
-        "TorusMesh",
-        "PyrimidMesh"
+        "CubeMesh", "SphereMesh", "PlaneMesh", "CylinderMesh",
+        "CapsuleMesh", "ConeMesh", "TorusMesh", "PyrimidMesh"
     };
 
-    ImGui::Combo(
-        "Type",
-        &SelectedPrimitiveIndex,
-        PrimitiveTypes,
-        IM_ARRAYSIZE(PrimitiveTypes));
-
-    ImGui::InputInt(
-        "Number of Objects to Spawn",
-        &SpawnCountToRequest);
-
-    if (SpawnCountToRequest < 1)
+    // Create: 기존의 Primitive 생성/삭제 기능을 한 그룹으로 유지한다.
+    if (ImGui::BeginMenu("Create"))
     {
-        SpawnCountToRequest = 1;
-    }
+        ImGui::TextDisabled("Spawn Primitive");
+        ImGui::SetNextItemWidth(180.0f);
+        ImGui::Combo("Type", &SelectedPrimitiveIndex, PrimitiveTypes, IM_ARRAYSIZE(PrimitiveTypes));
+        ImGui::InputInt("Number of Objects to Spawn", &SpawnCountToRequest);
 
-    if (ImGui::Button("Spawn Object(s)"))
-    {
-        EditorToWorldSender.TryEmplace<FMessageSpawnPrimitive>(
-            FString(PrimitiveTypes[SelectedPrimitiveIndex]),
-            static_cast<uint32>(SpawnCountToRequest));
-    }
-
-    if (ImGui::Button("Delete Object"))
-    {
-        EditorToWorldSender.TryEmplace<FMessageDeletePrimitive>();
-    }
-
-    ImGui::Separator();
-
-    // =====================================================
-    // Scene
-    // =====================================================
-
-    ImGui::Text("Scene Management");
-
-    ImGui::InputText(
-        "Scene Name",
-        SceneNameBuffer,
-        IM_ARRAYSIZE(SceneNameBuffer));
-
-    if (ImGui::Button("Save Scene"))
-    {
-        EditorToWorldSender.TryEmplace<FMessageSaveScene>(
-            FString(SceneNameBuffer));
-    }
-
-    ImGui::SameLine();
-
-    if (ImGui::Button("Load Scene"))
-    {
-        const FString FilePath =
-            OpenFileDialog();
-
-        if (!FilePath.empty())
+        if (SpawnCountToRequest < 1)
         {
-            EditorToWorldSender.TryEmplace<FMessageLoadScene>(
-                FString(FilePath));
+            SpawnCountToRequest = 1;
         }
-        
-        size_t SlashPos = FilePath.find_last_of("\\/");
 
-        std::string FileName;
-        if (SlashPos != std::string::npos)
-            FileName = FilePath.substr(SlashPos + 1);
-        else
-            FileName = FilePath;
+        if (ImGui::Button("Spawn Object(s)"))
+        {
+            EditorToWorldSender.TryEmplace<FMessageSpawnPrimitive>(
+                FString(PrimitiveTypes[SelectedPrimitiveIndex]),
+                static_cast<uint32>(SpawnCountToRequest));
+        }
 
-        size_t DotPos = FileName.find_last_of('.');
-        if (DotPos != std::string::npos)
-            FileName = FileName.substr(0, DotPos);
+        if (ImGui::Button("Delete Object"))
+        {
+            EditorToWorldSender.TryEmplace<FMessageDeletePrimitive>();
+        }
 
-        if (FileName.size() < sizeof(SceneNameBuffer))
-            std::memcpy(SceneNameBuffer, FileName.data(), FileName.size() + 1);
+        ImGui::EndMenu();
+    }
+
+    // Scene: 저장과 불러오기, 씬 이름 편집을 기존과 같은 흐름으로 제공한다.
+    if (ImGui::BeginMenu("Scene"))
+    {
+        ImGui::SetNextItemWidth(220.0f);
+        ImGui::InputText("Scene Name", SceneNameBuffer, IM_ARRAYSIZE(SceneNameBuffer));
+
+        if (ImGui::Button("Save Scene"))
+        {
+            EditorToWorldSender.TryEmplace<FMessageSaveScene>(FString(SceneNameBuffer));
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Load Scene"))
+        {
+            const FString FilePath = OpenFileDialog();
+
+            if (!FilePath.empty())
+            {
+                EditorToWorldSender.TryEmplace<FMessageLoadScene>(FString(FilePath));
+            }
+
+            size_t SlashPos = FilePath.find_last_of("\\/");
+            std::string FileName;
+            if (SlashPos != std::string::npos)
+                FileName = FilePath.substr(SlashPos + 1);
+            else
+                FileName = FilePath;
+
+            size_t DotPos = FileName.find_last_of('.');
+            if (DotPos != std::string::npos)
+                FileName = FileName.substr(0, DotPos);
+
+            if (FileName.size() < sizeof(SceneNameBuffer))
+                std::memcpy(SceneNameBuffer, FileName.data(), FileName.size() + 1);
+        }
+
+        ImGui::EndMenu();
+    }
+
+    // Camera: 카메라 요청 메시지와 감도 설정을 한 팝업에 모은다.
+    if (ImGui::BeginMenu("Camera"))
+    {
+        bool bCameraChanged = false;
+        float FOVDegrees = CachedFOV * 180.0f / 3.1415926535f;
+
+        if (ImGui::SliderFloat("FOV", &FOVDegrees, 30.0f, 120.0f))
+        {
+            CachedFOV = FOVDegrees * 3.1415926535f / 180.0f;
+            bCameraChanged = true;
+        }
+
+        bCameraChanged |= ImGui::DragFloat3("Location", &CachedCamPos.x, 0.1f);
+        bCameraChanged |= ImGui::DragFloat3("Rotation", &CachedCamRot.x, 0.01f);
+
+        if (bCameraChanged)
+        {
+            EditorToWorldSender.TryEmplace<FMessageSetEditorCameraRequest>(
+                CachedCamPos, CachedCamRot, CachedFOV);
+        }
+
+        float MoveSensitivity = EditorContext->GetWorld()->GetSettings().MoveSensitivity;
+        if (ImGui::SliderFloat("MoveSensitivity", &MoveSensitivity, 0.1f, 10.0f))
+        {
+            EditorContext->GetWorld()->GetSettings().MoveSensitivity = MoveSensitivity;
+        }
+
+        float RotationSensitivity = EditorContext->GetWorld()->GetSettings().RotationSensitivity;
+        if (ImGui::SliderFloat("RotationSensitivity", &RotationSensitivity, 0.1f, 5.0f))
+        {
+            EditorContext->GetWorld()->GetSettings().RotationSensitivity = RotationSensitivity;
+        }
+
+        ImGui::EndMenu();
+    }
+
+    if (ImGui::BeginMenu("Grid"))
+    {
+        float GridSize = EditorContext->GetWorld()->GetSettings().GridSize;
+        if (ImGui::SliderFloat("GridSize", &GridSize, 0.1f, 100.0f))
+        {
+            EditorContext->GetWorld()->GetSettings().GridSize = GridSize;
+        }
+        ImGui::EndMenu();
     }
 
     ImGui::Separator();
-
-    // =====================================================
-    // Camera
-    // =====================================================
-
-    ImGui::Text("Camera");
-
-    bool bCameraChanged = false;
-
-    float FOVDegrees =
-        CachedFOV * 180.0f / 3.1415926535f;
-
-    if (ImGui::SliderFloat(
-        "FOV",
-        &FOVDegrees,
-        30.0f,
-        120.0f))
+    int RenderIndex = static_cast<int>(EditorContext->GetRenderModeState());
+    const char* RenderModes[] = { "Solid", "Lit", "Unlit", "Wireframe" };
+    ImGui::SetNextItemWidth(110.0f);
+    if (ImGui::Combo("Render Mode", &RenderIndex, RenderModes, IM_ARRAYSIZE(RenderModes)))
     {
-        CachedFOV =
-            FOVDegrees * 3.1415926535f / 180.0f;
-
-        bCameraChanged = true;
+        EditorContext->SetRenderModeState(static_cast<size_t>(RenderIndex));
     }
 
-    bCameraChanged |= ImGui::DragFloat3(
-        "Location",
-        &CachedCamPos.x,
-        0.1f);
+    // 남은 공간의 오른쪽 끝에 성능 정보를 고정한다.
+    const char* FpsText = "FPS: %.1f";
+    const float FpsWidth = ImGui::CalcTextSize("FPS: 000.0").x;
+    ImGui::SetCursorPosX(ImGui::GetWindowWidth() - FpsWidth - ImGui::GetStyle().WindowPadding.x);
+    ImGui::Text(FpsText, ImGui::GetIO().Framerate);
 
-    bCameraChanged |= ImGui::DragFloat3(
-        "Rotation",
-        &CachedCamRot.x,
-        0.01f);
-
-    if (bCameraChanged)
-    {
-        EditorToWorldSender.TryEmplace<FMessageSetEditorCameraRequest>(
-            CachedCamPos,
-            CachedCamRot,
-            CachedFOV);
-    }
-
-    bool bMoveSensitivityChanged = false;
-    bool bRotationSensitivityChanged = false;
-    float MoveSensitivity = EditorContext->GetWorld()->GetSettings().MoveSensitivity;
-    float RotationSensitivity = EditorContext->GetWorld()->GetSettings().RotationSensitivity;
-
-    if (ImGui::SliderFloat("MoveSensitivity", &MoveSensitivity, 0.1f, 10.0f))
-    {
-        bMoveSensitivityChanged = true;
-    }
-
-    if (bMoveSensitivityChanged)
-    {
-        EditorContext->GetWorld()->GetSettings().MoveSensitivity = MoveSensitivity;
-    }
-
-    if (ImGui::SliderFloat("RotationSensitivity", &RotationSensitivity, 0.1f, 5.0f))
-    {
-        bRotationSensitivityChanged = true;
-    }
-
-    if (bRotationSensitivityChanged)
-    {
-        EditorContext->GetWorld()->GetSettings().RotationSensitivity = RotationSensitivity;
-    }
-    ImGui::Separator();
-
-    // =====================================================
-    // Grid
-    // =====================================================
-
-    ImGui::Text("Grid");
-
-    bool bGridChanged = false;
-
-    float gridSize = EditorContext->GetWorld()->GetSettings().GridSize;
-
-    if (ImGui::SliderFloat("GridSize", &gridSize, 0.1f, 100.0f))
-    {
-        bGridChanged = true;
-    }
-
-    if (bGridChanged)
-    {
-        EditorContext->GetWorld()->GetSettings().GridSize = gridSize;
-    }
-    
-    ImGui::Separator();
-
-    // =====================================================
-    // RenderMode
-    // =====================================================
-    bool bRenderModeChanged = false;
-    int renderIndex = static_cast<int>(EditorContext->GetRenderModeState());
-
-    const char* renderMode[] = { "Solid", "Lit", "Unlit", "Wireframe" };
-
-    if (ImGui::Combo("Render Mode", &renderIndex, renderMode, IM_ARRAYSIZE(renderMode))) {
-        bRenderModeChanged = true;
-    }
-
-    if (bRenderModeChanged)
-    {
-        EditorContext->SetRenderModeState(static_cast<size_t>(renderIndex));
-    }
-    ImGui::End();
+    ImGui::EndMainMenuBar();
 }
 
 
 
-FString FControlPanel::OpenFileDialog()
-{
+FString FControlPanel::OpenFileDialog() {
     char FileName[MAX_PATH] = { 0 };
     OPENFILENAMEA OpenFileName = { 0 };
 

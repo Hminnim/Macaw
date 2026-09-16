@@ -15,6 +15,7 @@ public:
 
     void SetMaterialHandle(FAssetHandle InHandle);
     void SetPipelineHandle(FAssetHandle InHandle);
+    void DrawPanels(FPropertyEditorContext& Context) override;
 
     void OnRegister() override;
     void OnUnregister() override;
@@ -24,6 +25,8 @@ protected:
     void Serialize(FArchive& Archive) override;
 
 private:
+    void EnsureDefaultRenderAssets();
+
     FAssetHandle MaterialHandle;
     FAssetHandle PipelineHandle;
 };

@@ -4,6 +4,7 @@
 #include "Serialize/FArchive.h"
 
 class AActor;
+class FPropertyEditorContext;
 class UWorld;
 
 class UActorComponent : public UObject {
@@ -28,6 +29,7 @@ public:
     virtual void EndPlay();
     virtual void Tick(float DeltaTime);
     virtual void OnUnregister();
+    virtual void DrawPanels(FPropertyEditorContext& Context);
 
     bool IsActive() const;
     void SetActive(bool bInActive);
@@ -39,6 +41,9 @@ public:
 
     void RegisterComponent(UWorld* world);
 	void UnregisterComponent();
+    /// <summary>Component를 등록 해제하고 소유 Actor에서 제거합니다.</summary>
+    /// <param name="bPromoteChildren">SceneComponent 자식을 부모에게 승격할지 여부입니다.</param>
+    virtual void DestroyComponent(bool bPromoteChildren = false);
 
     virtual bool ResolveLoadedReferences();
 protected:
@@ -57,4 +62,5 @@ private:
 	bool bRegistered{ false };
 	bool bInitialized{ false };
 	bool bHasBegunPlay{ false };
+    bool bIsBeingDestroyed{ false };
 };

@@ -1,8 +1,8 @@
-#include "PCH.h"
+﻿#include "PCH.h"
 #include "FWorldEditorContext.h"
 
 #include "AActor.h"
-#include "Component/UCollisionComponent.h"
+#include "Component/UActorComponent.h"
 #include "Component/USceneComponent.h"
 #include "Core/Asset/FAssetRegistry.h"
 #include "UWorld.h"
@@ -18,8 +18,8 @@ void FWorldEditorContext::InitializeChannels(FAssetRegistry& AssetRegistry, ID3D
         World->HandleSpawnPrimitive(Message, AssetRegistry);
     });
     EditorToWorld.TryBind<FMessageDeletePrimitive>([this](const FMessageDeletePrimitive&) {
-        if (UCollisionComponent* Collider = GetSelectedCollider()) {
-            World->DestroyActor(Collider->GetOwner());
+        if (AActor* Actor = GetSelectedActor()) {
+            World->DestroyActor(Actor);
             World->FlushPendingDestroyActors();
         }
     });
@@ -28,9 +28,6 @@ void FWorldEditorContext::InitializeChannels(FAssetRegistry& AssetRegistry, ID3D
     });
     EditorToWorld.TryBind<FMessageLoadScene>([this, &AssetRegistry, Device](const FMessageLoadScene& Message) {
         World->LoadScene(std::filesystem::path(Message.FilePath.c_str()), Device, &AssetRegistry);
-    });
-    EditorToWorld.TryBind<FMessageSetEditorCameraRequest>([this](const FMessageSetEditorCameraRequest& Message) {
-        World->HandleEditorCameraRequest(Message);
     });
 }
 
@@ -61,24 +58,40 @@ void FWorldEditorContext::SetRenderModeState(const size_t State)
     SharedState.GetWriter().Modify([&State](FWorldEditorSharedState& Shared) {Shared.ModeIndex = State;});
 }
 
-void FWorldEditorContext::SetSelectedCollider(UCollisionComponent* Collider) {
-    if (Collider == nullptr || Collider->GetOwner() == nullptr) {
+void FWorldEditorContext::SetSelectedActor(AActor* Actor) {
+    if (Actor == nullptr) {
         ClearSelection();
         return;
     }
-    SelectedCollider.Set(Collider);
-    SelectedActor.Set(Collider->GetOwner());
+
+    SelectedActor.Set(Actor);
+    SelectedComponent.Set(Actor->GetRootComponent());
+}
+
+void FWorldEditorContext::SetSelectedComponent(UActorComponent* Component) {
+    if (Component == nullptr || Component->GetOwner() == nullptr) {
+        ClearSelection();
+        return;
+    }
+
+    SelectedActor.Set(Component->GetOwner());
+    SelectedComponent.Set(Component);
 }
 
 void FWorldEditorContext::ClearSelection() {
-    SelectedCollider.Reset();
+    SelectedComponent.Reset();
     SelectedActor.Reset();
 }
 
 AActor* FWorldEditorContext::GetSelectedActor() const noexcept { return SelectedActor.Get(); }
-UCollisionComponent* FWorldEditorContext::GetSelectedCollider() const noexcept { return SelectedCollider.Get(); }
+UActorComponent* FWorldEditorContext::GetSelectedComponent() const noexcept { return SelectedComponent.Get(); }
 
 USceneComponent* FWorldEditorContext::GetSelectedTransformTarget() const noexcept {
+    UActorComponent* Component = SelectedComponent.Get();
+    if (Component != nullptr && Component->GetTypeInfo()->IsA(USceneComponent::StaticTypeInfo())) {
+        return static_cast<USceneComponent*>(Component);
+    }
+
     AActor* Actor = SelectedActor.Get();
     return Actor != nullptr ? Actor->GetRootComponent() : nullptr;
 }

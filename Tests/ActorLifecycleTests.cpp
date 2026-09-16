@@ -1,4 +1,4 @@
-#include "PCH.h"
+﻿#include "PCH.h"
 #include "doctest.h"
 
 #include "../Render/RenderWindowInfo.h"
@@ -164,7 +164,7 @@ TEST_SUITE("CH3 Actor Lifecycle")
         CHECK_EQ(GComponentLifecycleCounters.InitializeCalls, 2);
         CHECK_EQ(GComponentLifecycleCounters.BeginPlayCalls, 2);
 
-        REQUIRE(Actor->DestroyComponent(DynamicComponent));
+        DynamicComponent->DestroyComponent();
         CHECK_EQ(GComponentLifecycleCounters.EndPlayCalls, 1);
 
         REQUIRE(World.DestroyActor(Actor));

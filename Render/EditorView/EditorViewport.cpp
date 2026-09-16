@@ -8,7 +8,6 @@
 #include "../../FMouseInput.h"
 
 #include "../../Scene/Component/UCollisionComponent.h"
-#include "../../Scene/AActor.h"
 
 #include "../../Serialize/FEditorConfigManager.h"
 
@@ -48,21 +47,35 @@ void EditorViewport::RenderGrid(ELineDepthMode DepthMode) {
 	float GridInterval = 1.0f;
 	UWorld* World = EditorContext->GetWorld();
 	GridInterval = World->GetSettings().GridSize;
-	int GridSize = (static_cast<int>(50 / GridInterval));
-	float LineLength = (float)GridSize * GridInterval;
+	int GridSize = (static_cast<int>(300 / GridInterval));
+	float LineLength = static_cast<float>(GridSize) * GridInterval;
+	FVector CameraPos = EditorContext->GetCameraState()->Position;
+
+	float SnappedX = std::floor(CameraPos.x / GridInterval) * GridInterval;
+	float SnappedY = std::floor(CameraPos.y / GridInterval) * GridInterval;
 
 	for (auto x : std::views::iota(-GridSize, GridSize + 1)) {
-		if (x == 0) {
-			continue;
-		}
-		LineRenderer->AddLine(FVector3{ static_cast<float>(x * GridInterval), -LineLength, 0.f }, FVector3{ static_cast<float>(x * GridInterval), LineLength, 0.f }, FVector4{ 0.5f, 0.5f, 0.5f, 1.0f }, 1.0f, DepthMode);
+		float LineX = SnappedX + static_cast<float>(x) * GridInterval;
+
+		LineRenderer->AddLine(
+			FVector3{ LineX, SnappedY - LineLength, 0.f },
+			FVector3{ LineX, SnappedY + LineLength, 0.f },
+			FVector4{ 0.5f, 0.5f, 0.5f, 1.0f },
+			1.0f,
+			DepthMode
+		);
 	}
 
 	for (auto y : std::views::iota(-GridSize, GridSize + 1)) {
-		if (y == 0) {
-			continue;
-		}
-		LineRenderer->AddLine(FVector3{ -LineLength, static_cast<float>(y * GridInterval), 0.f }, FVector3{ LineLength, static_cast<float>(y * GridInterval), 0.f }, FVector4{ 0.5f, 0.5f, 0.5f, 1.0f }, 1.0f, DepthMode);
+		float LineY = SnappedY + static_cast<float>(y) * GridInterval;
+
+		LineRenderer->AddLine(
+			FVector3{ SnappedX - LineLength, LineY, 0.f },
+			FVector3{ SnappedX + LineLength, LineY, 0.f },
+			FVector4{ 0.5f, 0.5f, 0.5f, 1.0f },
+			1.0f,
+			DepthMode
+		);
 	}
 }
 
@@ -77,39 +90,15 @@ void EditorViewport::RenderAxis(ELineDepthMode DepthMode) {
 	LineRenderer->AddRay(FVector3{ 0.0f, 0.0f, 0.0f }, FVector3{ 0.0f, 0.0f, -1.0f }, 1000.0f, FVector4{ 0.0f, 0.0f, 1.0f, 1.0f }, 3.0f, DepthMode);
 }
 
-void EditorViewport::RenderBounds(ELineDepthMode DepthMode)
-{
-	if (EditorContext->GetSelectedCollider() == nullptr)	return;
-	UCollisionComponent* Collider = EditorContext->GetSelectedCollider();
-	AActor* Actor = EditorContext->GetSelectedActor();
-	Collider->GetBoundsCenter();
-	Collider->GetBoundsOrientation();
-	DirectX::BoundingOrientedBox LocalBounds{};
-	LocalBounds.Center = Collider->GetBoundsCenter().ToSimpleMath();
-	LocalBounds.Extents = Collider->GetExtent().ToSimpleMath();
-	const FQuat BoundsOrientation = Collider->GetBoundsOrientation();
-	std::array<DirectX::XMFLOAT3, DirectX::BoundingOrientedBox::CORNER_COUNT> Corners{};
-	DirectX::BoundingOrientedBox WorldBox;
-	LocalBounds.Transform(WorldBox, Collider->GetComponentToWorld().ToSimpleMath());
-	WorldBox.GetCorners(Corners.data());
+void EditorViewport::RenderBounds(ELineDepthMode DepthMode) {
+	if (EditorContext == nullptr) return;
 
-	const FVector4 LineColor = FVector4{ 1.0f, 1.0f, 0.0f, 1.0f };
-	const float Thickness = 3.0f;
+	const UActorComponent* SelectedComponent = EditorContext->GetSelectedComponent();
+	if (SelectedComponent == nullptr || !SelectedComponent->GetTypeInfo()->IsA<UCollisionComponent>()) return;
 
-	LineRenderer->AddLine(FVector3{ Corners[0] }, FVector3{ Corners[1] }, LineColor, Thickness, DepthMode);
-	LineRenderer->AddLine(FVector3{ Corners[1] }, FVector3{ Corners[2] }, LineColor, Thickness, DepthMode);
-	LineRenderer->AddLine(FVector3{ Corners[2] }, FVector3{ Corners[3] }, LineColor, Thickness, DepthMode);
-	LineRenderer->AddLine(FVector3{ Corners[3] }, FVector3{ Corners[0] }, LineColor, Thickness, DepthMode);
+	const auto* CollisionComponent = static_cast<const UCollisionComponent*>(SelectedComponent);
 
-	LineRenderer->AddLine(FVector3{ Corners[4] }, FVector3{ Corners[5] }, LineColor, Thickness, DepthMode);
-	LineRenderer->AddLine(FVector3{ Corners[5] }, FVector3{ Corners[6] }, LineColor, Thickness, DepthMode);
-	LineRenderer->AddLine(FVector3{ Corners[6] }, FVector3{ Corners[7] }, LineColor, Thickness, DepthMode);
-	LineRenderer->AddLine(FVector3{ Corners[7] }, FVector3{ Corners[4] }, LineColor, Thickness, DepthMode);
-
-	LineRenderer->AddLine(FVector3{ Corners[0] }, FVector3{ Corners[4] }, LineColor, Thickness, DepthMode);
-	LineRenderer->AddLine(FVector3{ Corners[1] }, FVector3{ Corners[5] }, LineColor, Thickness, DepthMode);
-	LineRenderer->AddLine(FVector3{ Corners[2] }, FVector3{ Corners[6] }, LineColor, Thickness, DepthMode);
-	LineRenderer->AddLine(FVector3{ Corners[3] }, FVector3{ Corners[7] }, LineColor, Thickness, DepthMode);
+	CollisionComponent->DrawEditorBounds(*LineRenderer, DepthMode);
 }
 
 void EditorViewport::RenderOrientationAxis(ID3D11DeviceContext* Context, CameraProbe& Probe) {

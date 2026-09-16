@@ -35,8 +35,7 @@ public:
 	FName GetName() const { return Name; }
 	void SetName(FName InName) { Name = InName; }
 
-	void Save(FArchive& Archive) 
-	{
+	void Save(FArchive& Archive)  {
 		ErrorHandler::Report(Archive.IsSaving() == false, "Save Error", "Given archive is not set as saving mode", ErrorHandler::EErrorLevel::Error);
 		Serialize(Archive);
 	}
@@ -55,8 +54,7 @@ public:
 	// RTTI
 	JG_DECLARE_ROOT_TYPEINFO(UObject)
 protected:
-	virtual void Serialize(FArchive& Archive)
-	{
+	virtual void Serialize(FArchive& Archive) {
 		Archive.Serialize("Guid", Guid);
 		FString TypeNameStr(GetTypeInfo()->TypeName);
 		Archive.Serialize("TypeName", TypeNameStr);

@@ -1,5 +1,6 @@
 ﻿#include "PCH.h"
 #include "UMeshComponent.h"
+#include "Render/Panel/FPropertyEditorContext.h"
 
 #include "Scene/AActor.h"
 #include "Scene/UWorld.h"
@@ -12,6 +13,21 @@ FAssetHandle UMeshComponent::GetMeshHandle() const {
 
 void UMeshComponent::SetMeshHandle(FAssetHandle InHandle) {
     MeshHandle = InHandle;
+    BuildPickingBoxFromMesh();
+}
+
+void UMeshComponent::DrawPanels(FPropertyEditorContext& Context) {
+    UPrimitiveComponent::DrawPanels(Context);
+    AActor* Owner = GetOwner();
+    UWorld* World = Owner != nullptr ? Owner->GetWorld() : nullptr;
+    FAssetRegistry* Registry = World != nullptr ? World->GetAssetRegistry() : nullptr;
+    if (Registry == nullptr) {
+        Context.DrawDisabledText("Mesh: Asset registry unavailable");
+        return;
+    }
+    Context.DrawAssetPicker("Mesh", *Registry, *UMesh::StaticTypeInfo(), GetMeshHandle(), [this](FAssetHandle Handle) {
+        SetMeshHandle(Handle);
+    });
 }
 
 UMesh* UMeshComponent::ResolveMesh() const {
@@ -19,6 +35,36 @@ UMesh* UMeshComponent::ResolveMesh() const {
     UWorld* World = Owner != nullptr ? Owner->GetWorld() : nullptr;
     FAssetRegistry* Registry = World != nullptr ? World->GetAssetRegistry() : nullptr;
     return Registry != nullptr ? Registry->ResolveAsset<UMesh>(MeshHandle) : nullptr;
+}
+
+void UMeshComponent::OnRegister() {
+    UPrimitiveComponent::OnRegister();
+    BuildPickingBoxFromMesh();
+}
+
+bool UMeshComponent::BuildPickingBoxFromMesh() {
+    UMesh* Mesh = ResolveMesh();
+    if (Mesh == nullptr) {
+        return false;
+    }
+
+    const auto Positions = Mesh->GetVertexAttributeData<EVertexAttribute::Position>();
+    if (Positions.empty()) {
+        return false;
+    }
+
+    std::vector<DirectX::XMFLOAT3> Points;
+    Points.reserve(Positions.size());
+    for (const FVector3& Position : Positions) {
+        Points.emplace_back(Position.x, Position.y, Position.z);
+    }
+
+    DirectX::BoundingBox Bounds;
+    DirectX::BoundingBox::CreateFromPoints(Bounds, Points.size(), Points.data(), sizeof(DirectX::XMFLOAT3));
+    DirectX::BoundingOrientedBox Box;
+    DirectX::BoundingOrientedBox::CreateFromBoundingBox(Box, Bounds);
+    SetPickingBox(Box);
+    return true;
 }
 
 bool UMeshComponent::RaycastMesh(const FRay& Ray, float& OutDistance) const {

@@ -1,4 +1,4 @@
-﻿// Macaw.cpp : 애플리케이션에 대한 진입점을 정의합니다.
+// Macaw.cpp : 애플리케이션에 대한 진입점을 정의합니다.
 //
 #include "PCH.h"
  
@@ -57,9 +57,10 @@
 #include "Render/EditorView/EditorViewport.h"
 
 #include "Core/Asset/UFont.h"
-#include "UKFont.h"
-#include "Scene/Component/UTextRenderComponent.h"
-#include "Scene/Component/UKTextRenderComponent.h"
+#include "Core/Asset/UFreeTypeFont.h"
+#include "Scene/Component/UBillBoardComponent.h"
+#include "Scene/Component/UBillBoardTextComponent.h"
+#include "Scene/Component/UNameTagComponent.h"
 
 #include "Serialize/FEditorConfigManager.h"
 
@@ -92,7 +93,7 @@ FRenderer Renderer;
 
 namespace {
     constexpr bool bLoadTestScene = false;
-    constexpr bool bEnableSceneSave = false;
+    constexpr bool bEnableSceneSave = true;
 
     void ConfigureTestStaticMesh(UStaticMeshComponent* MeshComponent, const FAssetHandle& MeshHandle, const FAssetHandle& PipelineHandle, const FAssetHandle& MaterialHandle, const FVector3& Location) {
         MeshComponent->SetMeshHandle(MeshHandle);
@@ -181,8 +182,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	TypeRegistry::Register(UTexture::StaticTypeInfo());
     TypeRegistry::Register(AActor::StaticTypeInfo());
     TypeRegistry::Register(UFont::StaticTypeInfo());
-    TypeRegistry::Register(UKFont::StaticTypeInfo());
-
+    TypeRegistry::Register(UFreeTypeFont::StaticTypeInfo());
 
 	TypeRegistry::Register(UWorld::StaticTypeInfo());
 	TypeRegistry::Register(AActor::StaticTypeInfo());
@@ -193,8 +193,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	TypeRegistry::Register(UActorComponent::StaticTypeInfo());
 	TypeRegistry::Register(USceneComponent::StaticTypeInfo());
 	TypeRegistry::Register(UCollisionComponent::StaticTypeInfo());
-    TypeRegistry::Register(UTextRenderComponent::StaticTypeInfo());
-    TypeRegistry::Register(UKTextRenderComponent::StaticTypeInfo());
+    TypeRegistry::Register(UBillboardTextComponent::StaticTypeInfo());
+    TypeRegistry::Register(UNameTagComponent::StaticTypeInfo());
 	
 
 
@@ -250,16 +250,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     FEditorUIManager EditorUIManager;
 
-    EditorUIManager.Initialize(
-        World,
-
-        EditorContext,
-
-        gHWND,
-
-        EditorView.GetGizmoMode(),
-        EditorView.GetGizmoCoordinateSpace()
-    );
+    EditorUIManager.Initialize(World, EditorContext, gHWND, EditorView.GetGizmoMode(), EditorView.GetGizmoCoordinateSpace());
 
     GMouseInput.InitializeWorldCommandSender(WorldCommandChannel.GetSender());
     GKeyboardInput.InitializeWorldCommandSender(WorldCommandChannel.GetSender());
@@ -316,32 +307,27 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "PurpleMaterial", "./Content/Metadata/PurpleMaterial.meta");
     AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "TealMaterial", "./Content/Metadata/TealMaterial.meta");
     AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "WhiteMaterial", "./Content/Metadata/WhiteMaterial.meta");
-
-	AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(), "TexturedPipeline", "./Content/Metadata/TexturedTestPipeline.meta");
-	AssetRegistry.EmplaceAsset<UTexture>(Renderer.GetDevice(), "PlankTexture", "./Content/Metadata/TexturedTestTexture.meta");
-	AssetRegistry.EmplaceAsset<UTexturedMaterial>(Renderer.GetDevice(), "TexturedMaterial", "./Content/Metadata/TexturedTestMaterial.meta");
-
-    FAssetHandle TextPipelineHandle = AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(),"TextPipeline", "./Content/Metadata/TextPipeline.meta");
-    FAssetHandle FontTextureHandle =AssetRegistry.EmplaceAsset<UTexture>( Renderer.GetDevice(), "AsciiFontTexture","./Content/Metadata/AsciiFontTexture.meta");
-    FAssetHandle FontHandle = AssetRegistry.EmplaceAsset<UFont>(Renderer.GetDevice(),"AsciiFont");
-    FAssetHandle KFontHandle = AssetRegistry.EmplaceAsset<UKFont>( Renderer.GetDevice(),"KoreanFont","./Content/Metadata/NotoSansKR.meta");
-
-    UFont* Font = AssetRegistry.ResolveAsset<UFont>(KFontHandle);
-    AActor* TextActor = World.AdoptActor<AActor>();
-
-    if (TextActor != nullptr)
     {
-        UKTextRenderComponent* TextComponent = TextActor->AddComponent<UKTextRenderComponent>();
-        TextActor->SetRootComponent(TextComponent);
-        TextComponent->SetFontHandle(KFontHandle);
-        TextComponent->SetPipelineHandle(TextPipelineHandle);
-        TextComponent->SetCharacterHeight(0.5f);
-        TextComponent->SetLetterSpacing(0.0f);
-        TextComponent->SetLineSpacing(0.0f);
-        TextComponent->SetColor( FVector4{1.0f,1.0f,1.0f, 1.0f});
-        TextComponent->SetText(FString{ "크래프톤 정글3주차"});
-        TextComponent->GetComponentTransform().SetPosition(FVector3{0.0f, 0.0f, 0.0f});
+        AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(), "TexturedPipeline", "./Content/Metadata/TexturedTestPipeline.meta");
+        AssetRegistry.EmplaceAsset<UTexture>(Renderer.GetDevice(), "PlankTexture", "./Content/Metadata/TexturedTestTexture.meta");
+        AssetRegistry.EmplaceAsset<UTexturedMaterial>(Renderer.GetDevice(), "TexturedMaterial", "./Content/Metadata/TexturedTestMaterial.meta");
+
+        auto SkyDomeTextureHandle = AssetRegistry.EmplaceAsset<UTexture>(Renderer.GetDevice(), "SkyDomeTexture", "./Content/Metadata/SkyDomeTexture.meta");
+        auto SkyDomeMaterialHandle = AssetRegistry.EmplaceAsset<UTexturedMaterial>(Renderer.GetDevice(), "SkyDomeMaterial", "./Content/Metadata/SkyDomeMaterial.meta");
+        auto SkyDomePipelineHandle = AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(), "SkyDomePipeline", "./Content/Metadata/SkyDomePipeline.meta");
+		auto SkyDomeMeshHandle = AssetRegistry.EmplaceAsset<UMesh>(Renderer.GetDevice(), "SkyDome", "./Content/Metadata/SkyDomeMesh.meta");
+
+		AActor* SkyDomeActor = World.AdoptActor<AActor>();
+        UStaticMeshComponent* comp = SkyDomeActor->AddComponent<UStaticMeshComponent>();
+		comp->SetMeshHandle(SkyDomeMeshHandle);
+		comp->SetPipelineHandle(SkyDomePipelineHandle);
+		comp->SetMaterialHandle(SkyDomeMaterialHandle);
+
     }
+    FAssetHandle TextPipelineHandle = AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(),"TextPipeline", "./Content/Metadata/TextPipeline.meta");
+    FAssetHandle FontHandle = AssetRegistry.EmplaceAsset<UFreeTypeFont>(Renderer.GetDevice(),"DefaultFont","./Content/Metadata/NotoSansKR.meta");
+    //FAssetHandle FontHandle = AssetRegistry.EmplaceAsset<UFreeTypeFont>(Renderer.GetDevice(), "KRAFTON", "./Content/Metadata/KRAFTON.meta");
+    AActor* TextActor = World.AdoptActor<AActor>();
 
     const FAssetHandle MeshHandle = AssetRegistry.GetAsset("CubeMesh");
     const FAssetHandle PipelineHandle = AssetRegistry.GetAsset("BasePipeline");
@@ -366,6 +352,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     auto& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; 
 
+    io.Fonts->AddFontFromFileTTF("./Content/Font/NotoSansKR-Medium.ttf", 16.0f, nullptr, io.Fonts->GetGlyphRangesKorean());
+
     auto LastTickTime = std::chrono::steady_clock::now();
 
     //char BufferA[256] = "Player";
@@ -386,42 +374,45 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             const float DeltaTime = std::chrono::duration<float>(CurrentTickTime - LastTickTime).count();
             LastTickTime = CurrentTickTime;
 
-            Renderer.BeginFrame();
+			ImGui_ImplDX11_NewFrame();
+			ImGui_ImplWin32_NewFrame();
+			ImGui::NewFrame();
+			const ImGuiID DockSpaceId = ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+			EditorUIManager.Tick();
 
+			ImGui::SetNextWindowDockID(DockSpaceId, ImGuiCond_FirstUseEver);
+			ImGui::Begin("Viewport###SceneViewport");
+			const ImVec2 SceneViewportPosition = ImGui::GetCursorScreenPos();
+			const ImVec2 SceneViewportSize = ImGui::GetContentRegionAvail();
+			const ImVec2 MainViewportPosition = ImGui::GetMainViewport()->Pos;
+			const bool bSceneViewportHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem);
+			const bool bSceneViewportFocused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
+			const uint32 SceneViewportWidth = static_cast<uint32>(std::max(0.0f, SceneViewportSize.x));
+			const uint32 SceneViewportHeight = static_cast<uint32>(std::max(0.0f, SceneViewportSize.y));
+			Renderer.ResizeSceneSurface(SceneViewportWidth, SceneViewportHeight, SceneViewportPosition.x - MainViewportPosition.x, SceneViewportPosition.y - MainViewportPosition.y);
 
-            ImGui_ImplDX11_NewFrame();
-            ImGui_ImplWin32_NewFrame();
-            ImGui::NewFrame();
-            ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+			// 입력 상태는 WndProc의 ProcessWindowMessage에서 갱신한다.
+			EditorView.ProcessInput(GKeyboardInput, GMouseInput, !bSceneViewportHovered);
 
-            // 입력 상태는 WndProc의 ProcessWindowMessage에서 갱신한다.
-			EditorView.ProcessInput(GKeyboardInput, GMouseInput, ImGui::GetIO().WantCaptureMouse);
-
-            EditorUIManager.Tick();
-
-            GMouseInput.DispatchPendingWorldCommands(
-                DEFAULT_WINDOW_WIDTH,
-                DEFAULT_WINDOW_HEIGHT,
-                ImGui::GetIO().WantCaptureMouse);
-
-            GKeyboardInput.DispatchPendingWorldCommands(
-                DeltaTime,
-                ImGui::GetIO().WantCaptureKeyboard);
+			GMouseInput.DispatchPendingWorldCommands(SceneViewportWidth, SceneViewportHeight, !bSceneViewportHovered);
+			GKeyboardInput.DispatchPendingWorldCommands(DeltaTime, !bSceneViewportFocused || ImGui::GetIO().WantCaptureKeyboard);
 
             WorldCommandChannel.Dispatch();
             World.Tick(DeltaTime);
 
-            EditorContext.Dispatch();
+			EditorContext.Dispatch();
 
-            //UndoCommandChannel.Dispatch();
+			//UndoCommandChannel.Dispatch();
 
 			FRenderProbe& Probe{ World.BuildRenderProbe() };
-            
+			Renderer.BeginSceneRender();
 			EditorView.RenderInProbe(Probe);
-            Renderer.RenderScene(Probe);
+			Renderer.RenderScene(Probe);
             EditorView.RenderSceneGuides(Renderer.GetDeviceContext(),Probe);
-            Renderer.RenderGizmos(Probe);
-            EditorView.RenderOrientationAxis(Renderer.GetDeviceContext(),Probe.MainCameraProbe);
+			Renderer.RenderGizmos(Probe);
+			EditorView.RenderOrientationAxis(Renderer.GetDeviceContext(),Probe.MainCameraProbe);
+			ImGui::Image(reinterpret_cast<ImTextureID>(Renderer.GetSceneShaderResourceView()), SceneViewportSize);
+			ImGui::End();
             
             //ImGui::Begin("FName Test");      
             //ImGui::Separator();
@@ -447,8 +438,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             //ImGui::Text("B.ToString() : \"%s\"", NameB.ToString().c_str());
             //ImGui::End();
 
-            ImGui::Render();
-            ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+			ImGui::Render();
+			Renderer.BeginUiRender();
+			ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
             
             Renderer.EndFrame();
 
@@ -467,6 +459,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		World.SaveScene("test", &AssetRegistry);
     }
 
+    Renderer.Terminate();
+    Renderer.ReportLiveObjects(); 
     return (int) msg.wParam;
 }
 
@@ -589,17 +583,13 @@ extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam);
+    if (const auto result = ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam)) {
+        return result;
+    }
 
-    GMouseInput.ProcessWindowMessage(
-        message,
-        wParam,
-        lParam);
+    GMouseInput.ProcessWindowMessage(message, wParam, lParam);
 
-    GKeyboardInput.ProcessWindowMessage(
-        message,
-        wParam,
-        lParam);
+    GKeyboardInput.ProcessWindowMessage(message, wParam, lParam);
 
     switch (message)
     {

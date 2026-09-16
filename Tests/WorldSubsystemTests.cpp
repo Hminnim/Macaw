@@ -1,4 +1,4 @@
-#include "PCH.h"
+﻿#include "PCH.h"
 #include "doctest.h"
 
 #include "../Scene/AActor.h"
@@ -9,11 +9,14 @@
 #include "../Scene/FWorldEditorContext.h"
 #include "../Scene/Subsystem/UCameraSubsystem.h"
 #include "../Scene/Subsystem/UCollisionSubsystem.h"
+#include "../Scene/Subsystem/UPickingSubsystem.h"
 #include "../Scene/Subsystem/URenderSubsystem.h"
 #include "../Scene/UWorld.h"
 
 #include "../Core/Asset/UMesh.h"
+#include "../Core/Asset/UMaterial.h"
 #include "../Core/Asset/BasicGeometry/Plane.h"
+#include "../Render/Pipeline/UPipeline.h"
 
 namespace {
     template<typename T>
@@ -70,9 +73,11 @@ TEST_SUITE("CH6 World Subsystems") {
         UWorld World;
         CHECK(World.GetRenderSubsystem().IsInitialized());
         CHECK(World.GetCollisionSubsystem().IsInitialized());
+        CHECK(World.GetPickingSubsystem().IsInitialized());
         CHECK(World.GetCameraSubsystem().IsInitialized());
         CHECK_EQ(World.GetRenderSubsystem().GetWorld(), &World);
         CHECK_EQ(World.GetCollisionSubsystem().GetWorld(), &World);
+        CHECK_EQ(World.GetPickingSubsystem().GetWorld(), &World);
         CHECK_EQ(World.GetCameraSubsystem().GetWorld(), &World);
 
         AActor* Actor = World.AdoptActor<AActor>();
@@ -87,13 +92,42 @@ TEST_SUITE("CH6 World Subsystems") {
 
         CHECK(World.GetRenderSubsystem().ContainsComponent(Mesh));
         CHECK(World.GetCollisionSubsystem().ContainsComponent(Collision));
+        CHECK(World.GetPickingSubsystem().ContainsComponent(Mesh));
+        CHECK(World.GetPickingSubsystem().ContainsComponent(Collision));
         CHECK_EQ(World.GetCameraSubsystem().GetMainCamera(), Camera);
 
         Actor->SetWorld(nullptr);
 
         CHECK_FALSE(World.GetRenderSubsystem().ContainsComponent(Mesh));
         CHECK_FALSE(World.GetCollisionSubsystem().ContainsComponent(Collision));
+        CHECK_FALSE(World.GetPickingSubsystem().ContainsComponent(Mesh));
         CHECK_EQ(World.GetCameraSubsystem().GetMainCamera(), nullptr);
+    }
+
+    TEST_CASE("Static mesh components receive fallback material and pipeline assets") {
+        Microsoft::WRL::ComPtr<ID3D11Device> Device = CreateTestDevice();
+        REQUIRE(Device != nullptr);
+
+        FAssetRegistry AssetRegistry;
+        REQUIRE(AssetRegistry.Initialize(Device.Get()));
+
+        UWorld World;
+        World.SetAssetRegistry(&AssetRegistry);
+
+        AActor* Actor = World.AdoptActor<AActor>();
+        REQUIRE(Actor != nullptr);
+
+        UStaticMeshComponent* Mesh = Actor->AddComponent<UStaticMeshComponent>();
+        REQUIRE(Mesh != nullptr);
+
+        CHECK(AssetRegistry.ResolveAsset<UMaterial>(Mesh->GetMaterialHandle()) != nullptr);
+        CHECK(AssetRegistry.ResolveAsset<UPipeline>(Mesh->GetPipelineHandle()) != nullptr);
+
+        FRenderProbe Probe;
+        World.GetRenderSubsystem().BuildRenderProbes(&AssetRegistry, Probe);
+        REQUIRE_EQ(Probe.ActorProbes.size(), 1);
+        CHECK(Probe.ActorProbes[0].MaterialHandle == Mesh->GetMaterialHandle());
+        CHECK(Probe.ActorProbes[0].PipelineHandle == Mesh->GetPipelineHandle());
     }
 
     TEST_CASE("Editor context owns selection state and selected render flags") {
@@ -115,12 +149,12 @@ TEST_SUITE("CH6 World Subsystems") {
         SelectedActor->SetRootComponent(SelectedMesh);
         OtherActor->SetRootComponent(OtherMesh);
 
-        Context.SetSelectedCollider(Collider);
+        Context.SetSelectedActor(SelectedActor);
         CHECK_EQ(Context.GetSelectedActor(), SelectedActor);
         CHECK_EQ(Context.GetSelectedTransformTarget(), SelectedMesh);
 
         FRenderProbe Probe;
-        World.GetRenderSubsystem().BuildRenderProbes(Probe);
+        World.GetRenderSubsystem().BuildRenderProbes(World.GetAssetRegistry(), Probe);
         REQUIRE_EQ(Probe.ActorProbes.size(), 2);
         CHECK((Probe.ActorProbes[0].Flags & static_cast<uint32>(ERenderObjectFlags::Selected)) != 0);
         CHECK((Probe.ActorProbes[1].Flags & static_cast<uint32>(ERenderObjectFlags::Selected)) == 0);
@@ -153,10 +187,10 @@ TEST_SUITE("CH6 World Subsystems") {
         CHECK(Collider->GetExtent().x == doctest::Approx(1.0f));
         CHECK(Collider->GetExtent().z == doctest::Approx(1.0f));
         float MissDistance = 0.0f;
-        CHECK_FALSE(Collider->Raycast(FRay{ FVector3{ 0.75f, 0.75f, -1.0f }.ToSimpleMath(), FVector3{ 0.0f, 0.0f, 1.0f }.ToSimpleMath() }, MissDistance));
+        CHECK_FALSE(Collider->Raycast(FRay{ FVector3{ -0.75f, 0.75f, -1.0f }.ToSimpleMath(), FVector3{ 0.0f, 0.0f, 1.0f }.ToSimpleMath() }, MissDistance));
 
         float Distance = 0.0f;
-        CHECK(MeshComponent->RaycastMesh(FRay{ FVector3{ -0.5f, -0.5f, -1.0f }.ToSimpleMath(), FVector3{ 0.0f, 0.0f, 1.0f }.ToSimpleMath() }, Distance));
+        CHECK(MeshComponent->RaycastMesh(FRay{ FVector3{ 0.5f, -0.5f, -1.0f }.ToSimpleMath(), FVector3{ 0.0f, 0.0f, 1.0f }.ToSimpleMath() }, Distance));
 
         UBoxColliderComponent* BoundsOnly = Actor->AddComponent<UBoxColliderComponent>();
         REQUIRE(BoundsOnly != nullptr);
@@ -168,5 +202,40 @@ TEST_SUITE("CH6 World Subsystems") {
         REQUIRE(World.DestroyActor(Actor));
         World.FlushPendingDestroyActors();
         CHECK_FALSE(World.GetCollisionSubsystem().ContainsComponent(Collider));
+    }
+
+    TEST_CASE("Picking subsystem broad-phases primitives and narrow-phases mesh geometry") {
+        Microsoft::WRL::ComPtr<ID3D11Device> Device = CreateTestDevice();
+        REQUIRE(Device != nullptr);
+
+        UMesh Mesh;
+        REQUIRE(MakeTriangleMesh(Mesh, Device.Get()));
+
+        UWorld World;
+        AActor* Actor = World.AdoptActor<AActor>();
+        REQUIRE(Actor != nullptr);
+        UTestMeshComponent* MeshComponent = Actor->AddComponent<UTestMeshComponent>();
+        REQUIRE(MeshComponent != nullptr);
+        Actor->SetRootComponent(MeshComponent);
+        MeshComponent->Mesh = &Mesh;
+        MeshComponent->SetPickingBox(DirectX::BoundingOrientedBox{
+            DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.0f },
+            DirectX::XMFLOAT3{ 1.0f, 1.0f, 1.0f },
+            DirectX::XMFLOAT4{ 0.0f, 0.0f, 0.0f, 1.0f }
+        });
+
+        UPrimitiveComponent* PickedComponent = nullptr;
+        float Distance = 0.0f;
+        CHECK_FALSE(World.GetPickingSubsystem().Raycast(
+            FRay{ FVector3{ 0.0f, 0.5f, -2.0f }.ToSimpleMath(), FVector3{ 0.0f, 0.0f, 1.0f }.ToSimpleMath() },
+            PickedComponent,
+            Distance));
+
+        CHECK(World.GetPickingSubsystem().Raycast(
+            FRay{ FVector3{ 0.25f, -0.25f, -2.0f }.ToSimpleMath(), FVector3{ 0.0f, 0.0f, 1.0f }.ToSimpleMath() },
+            PickedComponent,
+            Distance));
+        CHECK_EQ(PickedComponent, MeshComponent);
+        CHECK(Distance == doctest::Approx(2.0f));
     }
 }

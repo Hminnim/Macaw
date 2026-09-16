@@ -1,4 +1,4 @@
-#include "PCH.h"
+﻿#include "PCH.h"
 #include "FMaterialChunkSignature.h"
 
 bool FMaterialChunkSignatureBuilder::AddTexture(FAssetHandle TextureHandle) {

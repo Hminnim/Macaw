@@ -16,6 +16,8 @@ public:
 	~USceneComponent() override = default;
 
 	virtual void OnUnregister() override;
+	void DestroyComponent(bool bPromoteChildren = false) override;
+	void DrawPanels(FPropertyEditorContext& Context) override;
 	void RemoveChild(USceneComponent* InChild);
 
 	JG_DECLARE_DERIVED_TYPEINFO(USceneComponent, UActorComponent)

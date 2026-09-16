@@ -11,7 +11,7 @@
 #include "../../Core/Asset/BasicGeometry/Corn.h"
 #include "../../Core/Asset/BasicGeometry/Cylinder.h"
 #include "../../Core/Asset/UColorMaterial.h"
-#include "../../Scene/Component/UCollisionComponent.h"
+#include "../../Scene/Component/UPrimitiveComponent.h"
 
 void FTransformGizmo::Initialize(ID3D11Device* Device, FAssetRegistry& AssetRegistry, FStateChannel<RenderWindowInfo>::FReader InWindowInfoReader, FWorldEditorContext& InEditorContext) {
 
@@ -36,16 +36,12 @@ void FTransformGizmo::Initialize(ID3D11Device* Device, FAssetRegistry& AssetRegi
 }
 
 void FTransformGizmo::ProcessInput(FKeyboardInput& KeyboardInput, FMouseInput& MouseInput, bool bMouseCapturedByUI) {
-	if (KeyboardInput.GetKeyState('T') == EKeyState::Pressed) {
- 		GizmoMode.Emplace(static_cast<uint8>(EModifyMode::Translate));
+	if (KeyboardInput.GetKeyState(VK_SPACE) == EKeyState::Pressed) {
+		GizmoMode.Emplace((GizmoModeChannel.GetReader().Read() + 1) % 3);
 	}
 
-	if (KeyboardInput.GetKeyState('R') == EKeyState::Pressed) {
-		GizmoMode.Emplace(static_cast<uint8>(EModifyMode::Rotate));
-	}
-
-	if (KeyboardInput.GetKeyState('Y') == EKeyState::Pressed) {
-		GizmoMode.Emplace(static_cast<uint8>(EModifyMode::Scale));
+	if (KeyboardInput.GetKeyState(VK_TAB) == EKeyState::Pressed) {
+		GizmoCoordinateSpace.Emplace((GizmoCoordinateSpaceChannel.GetReader().Read() + 1) % 2);
 	}
 
 	const EKeyState LeftState = MouseInput.GetKeyState(Left);
@@ -103,8 +99,7 @@ void FTransformGizmo::Update(const CameraProbe& Camera) {
 	}
 
 	USceneComponent* Target = EditorContext->GetSelectedTransformTarget();
-	UCollisionComponent* Collider = EditorContext->GetSelectedCollider();
-	if (Target == nullptr || Collider == nullptr) {
+	if (Target == nullptr) {
 		bVisible = false;
 		return;
 	}
@@ -163,11 +158,19 @@ void FTransformGizmo::Update(const CameraProbe& Camera) {
 		GizmoWorldTransform.m[2][1] = Up.y;
 		GizmoWorldTransform.m[2][2] = Up.z;
 	}
+
 	GizmoWorldTransform.Translation(TargetWorld.Translation());
 
 	FVector3 BoundsExtent{};
-	UpdateBoundsInGizmoSpace(*Collider, BoundsCenterInGizmoSpace, BoundsExtent);
 
+	const UPrimitiveComponent* TargetPrimitive = Target->GetTypeInfo()->IsA<UPrimitiveComponent>() ? static_cast<const UPrimitiveComponent*>(Target) : nullptr;
+
+	if (TargetPrimitive != nullptr) {
+		UpdateBoundsInGizmoSpace(*TargetPrimitive, BoundsCenterInGizmoSpace, BoundsExtent);
+	}
+	else {
+		BoundsCenterInGizmoSpace = FVector3::Zero;
+	}
 	const RenderWindowInfo& WindowInfo = WindowInfoReader.Read();
 	const float ViewportHeight = WindowInfo.Viewport.Height;
 	const float ProjectionYScale = Camera.Projection.m[1][1];
@@ -338,20 +341,14 @@ void FTransformGizmo::SetScale(const FVector3& Pivot, float WorldUnitsPerPixel) 
 	};
 }
 
-void FTransformGizmo::UpdateBoundsInGizmoSpace(const UCollisionComponent& Collider, FVector3& OutCenter, FVector3& OutExtent) const {
+void FTransformGizmo::UpdateBoundsInGizmoSpace(const UPrimitiveComponent& Primitive, FVector3& OutCenter, FVector3& OutExtent) const {
 	DirectX::BoundingOrientedBox LocalBounds{};
-	LocalBounds.Center = Collider.GetBoundsCenter().ToSimpleMath();
-	LocalBounds.Extents = Collider.GetExtent().ToSimpleMath();
-	const FQuat BoundsOrientation = Collider.GetBoundsOrientation();
-	LocalBounds.Orientation.x = BoundsOrientation.x;
-	LocalBounds.Orientation.y = BoundsOrientation.y;
-	LocalBounds.Orientation.z = BoundsOrientation.z;
-	LocalBounds.Orientation.w = BoundsOrientation.w;
+	LocalBounds = Primitive.GetPickingBox();
 
 	std::array<DirectX::XMFLOAT3, DirectX::BoundingOrientedBox::CORNER_COUNT> Corners{};
 	LocalBounds.GetCorners(Corners.data());
 
-	const FMatrix ColliderToGizmo = Collider.GetComponentToWorld() * GizmoWorldTransform.Invert();
+	const FMatrix PrimitiveToGizmo = Primitive.GetComponentToWorld() * GizmoWorldTransform.Invert();
 	FVector3 Minimum{
 		std::numeric_limits<float>::max(),
 		std::numeric_limits<float>::max(),
@@ -364,7 +361,7 @@ void FTransformGizmo::UpdateBoundsInGizmoSpace(const UCollisionComponent& Collid
 	};
 
 	for (const DirectX::XMFLOAT3& Corner : Corners) {
-		const FVector3 PointInGizmoSpace = FVector3::Transform(FVector3{ Corner }, ColliderToGizmo);
+		const FVector3 PointInGizmoSpace = FVector3::Transform(FVector3{ Corner }, PrimitiveToGizmo);
 		Minimum = FVector3::Min(Minimum, PointInGizmoSpace);
 		Maximum = FVector3::Max(Maximum, PointInGizmoSpace);
 	}

@@ -9,6 +9,7 @@
 #include "AActor.h"
 #include "Component/UCameraComponent.h"
 #include "Component/UStaticMeshComponent.h"
+#include "Component/UCollisionComponent.h"
 #include "Core/Asset/FAssetRegistry.h"
 #include "Core/Asset/UMesh.h"
 #include "Core/Base/TObjectRef.h"
@@ -27,15 +28,17 @@
 #include "../Render/RenderWindowInfo.h"
 
 #include "../Serialize/FEditorConfigManager.h"
+
 class AActor;
 class UCameraComponent;
 class UStaticMeshComponent;
-class UTextRenderComponent;
 struct ID3D11Device;
 class FAssetRegistry;
 class UCameraSubsystem;
 class UCollisionSubsystem;
+class UPickingSubsystem;
 class URenderSubsystem;
+class UTextSubsystem;
 
 class UWorld : public UObject
 {
@@ -77,8 +80,12 @@ public:
     const URenderSubsystem& GetRenderSubsystem() const;
     UCollisionSubsystem& GetCollisionSubsystem();
     const UCollisionSubsystem& GetCollisionSubsystem() const;
+    UPickingSubsystem& GetPickingSubsystem();
+    const UPickingSubsystem& GetPickingSubsystem() const;
     UCameraSubsystem& GetCameraSubsystem();
     const UCameraSubsystem& GetCameraSubsystem() const;
+    UTextSubsystem& GetTextSubsystem();
+    const UTextSubsystem& GetTextSubsystem() const;
 
     bool SaveScene(const FString& SceneName, FAssetRegistry* AssetRegistry);
     bool LoadScene(const std::filesystem::path& ScenePath, ID3D11Device* Device, FAssetRegistry* AssetRegistry);
@@ -86,17 +93,9 @@ public:
 	JG_DECLARE_DERIVED_TYPEINFO(UWorld, UObject);
 
     void HandleMousePickRequest(const FMousePickRequestMessage& Message);
-
     void HandleMouseCameraRotateRequest(const FMouseCameraRotateRequestMessage& Message);
-
-    void HandleEditorCameraRequest(const FMessageSetEditorCameraRequest& Message);
-
     void HandleKeyboardCameraMoveRequest(const FKeyboardCameraMoveRequestMessage& Message);
-
     void HandleSpawnPrimitive(const FMessageSpawnPrimitive& Message, FAssetRegistry& AssetRegistry);
-
-    void RegisterTextRenderable(UTextRenderComponent* Component);
-    void UnregisterTextRenderable(UTextRenderComponent* Component);
 
 	void UpdateEditorCameraState();
     void SetAssetRegistry(FAssetRegistry* InAssetRegistry);
@@ -119,10 +118,9 @@ private:
 private:
     TArray<std::unique_ptr<AActor>> Actors;
     TArray<AActor*> PendingDestroyActors;
+   
     TArray<UStaticMeshComponent*> RenderableComponents;
     TArray<TObjectRef<UCollisionComponent>> CollisionComponents;
-    TArray<UTextRenderComponent*> TextRenderableComponents{};
-
 
 	FStateChannel<RenderWindowInfo>::FReader WindowInfoReader;
 
@@ -131,7 +129,9 @@ private:
 
     std::unique_ptr<URenderSubsystem> RenderSubsystem;
     std::unique_ptr<UCollisionSubsystem> CollisionSubsystem;
+    std::unique_ptr<UPickingSubsystem> PickingSubsystem;
     std::unique_ptr<UCameraSubsystem> CameraSubsystem;
+	std::unique_ptr<UTextSubsystem> TextSubsystem;
 
     FRenderProbe Probe{};
 

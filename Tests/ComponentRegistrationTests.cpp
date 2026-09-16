@@ -1,4 +1,4 @@
-#include "PCH.h"
+﻿#include "PCH.h"
 #include "doctest.h"
 
 #include "../Core/Base/UObjectSystem.h"
@@ -135,7 +135,7 @@ TEST_SUITE("CH1 Component Registration")
                 Actor->AddComponent<URegistrationTrackingComponent>();
             const FObjectHandle ComponentHandle = Component->GetHandle();
 
-            REQUIRE(Actor->DestroyComponent(Component));
+            Component->DestroyComponent();
 
             CHECK_EQ(GRegistrationCounters.UnregisterCalls, 1);
             CHECK(GRegistrationCounters.OwnerWasAvailableOnUnregister);
