@@ -30,6 +30,7 @@ void FRenderer::Create(HWND WindowHandle, UINT width, UINT height) {
 	ModelContextArray.Initialize(Device.Get(), DeviceContext.Get(), 128);
 	RootConstants.Initialize(Device.Get());
 	TextRenderer.Initialize(Device.Get(),256);
+	BillboardRenderer.Initialize(Device.Get(), 64);
 
 #ifdef _DEBUG
 	Device.As(&DebugInterface);
@@ -60,6 +61,7 @@ void FRenderer::RenderScene(FRenderProbe& Probe) {
 
 	if (AssetRegistry != nullptr) {
 		TextRenderer.Render(DeviceContext.Get(),Probe.TextProbes,Probe.MainCameraProbe, AssetRegistry);
+		BillboardRenderer.Render(DeviceContext.Get(), Probe.BillboardProbes, Probe.MainCameraProbe, AssetRegistry);
 	}
 }
 

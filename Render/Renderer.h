@@ -20,6 +20,8 @@
 
 #include "../../Scene/FWorldEditorContext.h"
 
+#include "FBillboardRenderer.h"
+
 class FRenderer {
 	struct ModelContext {
 		FMatrix World{};
@@ -92,6 +94,7 @@ private:
 	TGraphicsRootConstants<64> RootConstants{};
 
 	FTextRenderer TextRenderer{};
+	FBillboardRenderer BillboardRenderer{};
 
 	const float ClearColor[4] = { 0.2f, 0.2f, 0.7f, 1.0f };
 

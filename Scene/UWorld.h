@@ -37,6 +37,7 @@ class FAssetRegistry;
 class UCameraSubsystem;
 class UCollisionSubsystem;
 class URenderSubsystem;
+class UBillboardSubsystem;
 
 class UWorld : public UObject
 {
@@ -87,6 +88,8 @@ public:
     const UCollisionSubsystem& GetCollisionSubsystem() const;
     UCameraSubsystem& GetCameraSubsystem();
     const UCameraSubsystem& GetCameraSubsystem() const;
+    UBillboardSubsystem& GetBillboardSubsystem();
+    const UBillboardSubsystem& GetBillboardSubsystem() const;
 
     bool SaveScene(const FString& SceneName, FAssetRegistry* AssetRegistry);
     bool LoadScene(const std::filesystem::path& ScenePath, ID3D11Device* Device, FAssetRegistry* AssetRegistry);
@@ -137,6 +140,7 @@ private:
     std::unique_ptr<URenderSubsystem> RenderSubsystem;
     std::unique_ptr<UCollisionSubsystem> CollisionSubsystem;
     std::unique_ptr<UCameraSubsystem> CameraSubsystem;
+    std::unique_ptr<UBillboardSubsystem> BillboardSubsystem;
 	// std::unique_ptr<TextRenderSubSystem> TextRenderSubsystem;
 
     FRenderProbe Probe{};

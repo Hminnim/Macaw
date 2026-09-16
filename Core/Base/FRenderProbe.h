@@ -28,6 +28,19 @@ struct FTextProbe
     TArray<FTextVertex> Vertices{};
 };
 
+struct FBillboardProbe
+{
+    FMatrix World{};
+
+    FAssetHandle TextureHandle{};
+    FAssetHandle PipelineHandle{};
+
+    FVector2 Size;
+    FVector2 UVMin;
+    FVector2 UVMax;
+    FVector4 Color;
+};
+
 enum class ERenderObjectFlags : uint32 {
 	None = 0,
 	Selected = 1u << 0
@@ -54,8 +67,8 @@ struct CameraProbe {
 struct FRenderProbe {
 	TArray<FActorProbe> ActorProbes{};
 	TArray<FActorProbe> GizmoProbes{};
-
     TArray<FTextProbe> TextProbes{};
+    TArray<FBillboardProbe> BillboardProbes{};
 
 	CameraProbe MainCameraProbe{}; 
 };

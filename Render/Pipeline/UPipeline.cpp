@@ -1,4 +1,4 @@
-﻿#include "PCH.h"
+#include "PCH.h"
 #include "UPipeline.h"
 
 #include "../../ErrorHandler.h"
@@ -75,12 +75,17 @@ bool UPipeline::Make(ID3D11Device* Device, const FPipelineDescription& Descripti
         NativeInputLayout.emplace_back(Element);
     }
 
-    HRESULT Result = Device->CreateInputLayout(NativeInputLayout.data(), static_cast<UINT>(NativeInputLayout.size()), Pipeline.VertexShader.GetByteCodeData(), Pipeline.VertexShader.GetByteCodeSize(), Pipeline.InputLayout.GetAddressOf());
+    HRESULT Result = S_OK;
+    if (!NativeInputLayout.empty()) {
+        Result = Device->CreateInputLayout(NativeInputLayout.data(), static_cast<UINT>(NativeInputLayout.size()), Pipeline.VertexShader.GetByteCodeData(), Pipeline.VertexShader.GetByteCodeSize(), Pipeline.InputLayout.GetAddressOf());
 
-    if (FAILED(Result)) {
-        ErrorHandler::ReportHRESULT(Result, "Pipeline::Initialize", "Failed to create the input layout.", ErrorHandler::EErrorLevel::Error);
-        Reset();
-        return false;
+        if (FAILED(Result)) {
+            ErrorHandler::ReportHRESULT(Result, "Pipeline::Initialize", "Failed to create the input layout.", ErrorHandler::EErrorLevel::Error);
+            Reset();
+            return false;
+        }
+    } else {
+        Pipeline.InputLayout.Reset();
     }
 
     D3D11_RASTERIZER_DESC RasterizerDesc{};

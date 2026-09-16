@@ -62,6 +62,9 @@
 #include "Scene/Component/UBillBoardTextComponent.h"
 #include "Scene/Component/UNameTagComponent.h"
 
+#include "Scene/Component/UBillboardComponent.h"
+#include "Scene/Component/USubUVComponent.h"
+
 #define MAX_LOADSTRING 100
 
 
@@ -194,6 +197,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     TypeRegistry::Register(UBillboardTextComponent::StaticTypeInfo());
     TypeRegistry::Register(UNameTagComponent::StaticTypeInfo());
 	
+    TypeRegistry::Register(UBillboardComponent::StaticTypeInfo());
+    TypeRegistry::Register(USubUVComponent::StaticTypeInfo());
 
 
     auto res = TypeRegistry::Find("UMesh")->Creator();
@@ -308,11 +313,31 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(), "TexturedPipeline", "./Content/Metadata/TexturedTestPipeline.meta");
 	AssetRegistry.EmplaceAsset<UTexture>(Renderer.GetDevice(), "PlankTexture", "./Content/Metadata/TexturedTestTexture.meta");
+    AssetRegistry.EmplaceAsset<UTexture>(Renderer.GetDevice(), "TestSprite", "./Content/Metadata/TestSprite.meta");
 	AssetRegistry.EmplaceAsset<UTexturedMaterial>(Renderer.GetDevice(), "TexturedMaterial", "./Content/Metadata/TexturedTestMaterial.meta");
 
     FAssetHandle TextPipelineHandle = AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(),"TextPipeline", "./Content/Metadata/TextPipeline.meta");
     FAssetHandle FontHandle = AssetRegistry.EmplaceAsset<UFreeTypeFont>(Renderer.GetDevice(),"DefaultFont","./Content/Metadata/NotoSansKR.meta");
     AActor* TextActor = World.AdoptActor<AActor>();
+
+    FAssetHandle BillboardPipelineHandle = AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(), "BillboardPipeline", "./Content/Metadata/BillboardPipeline.meta");
+
+    // test
+    AActor* SubUVActor = World.AdoptActor<AActor>();
+    if (SubUVActor != nullptr)
+    {
+        USubUVComponent* SubUVComp = SubUVActor->AddComponent<USubUVComponent>();
+        SubUVActor->SetRootComponent(SubUVComp);
+
+        SubUVComp->SetTextureHandle(AssetRegistry.GetAsset("TestSprite"));
+        SubUVComp->SetPipelineHandle(BillboardPipelineHandle);
+        SubUVComp->SetSize(FVector2{ 2.0f, 2.0f });
+        SubUVComp->SetColor(FVector4{ 1.0f, 1.0f, 1.0f, 1.0f });
+
+        SubUVComp->SetSubImage(4, 5, 19, 10.0f, true);
+
+        SubUVActor->SetActorRelativeLocation(FVector3{ 0.0f, 2.0f, 0.0f });
+    }
 
     const FAssetHandle MeshHandle = AssetRegistry.GetAsset("CubeMesh");
     const FAssetHandle PipelineHandle = AssetRegistry.GetAsset("BasePipeline");

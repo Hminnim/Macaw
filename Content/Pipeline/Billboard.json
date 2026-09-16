@@ -1,0 +1,47 @@
+{
+  "VertexShader": {
+    "Source": "./Content/Shader/Billboard.hlsl",
+    "EntryPoint": "mainVS",
+    "Profile": "vs_5_0"
+  },
+
+  "GeometryShader": {
+    "Source": "./Content/Shader/Billboard.hlsl",
+    "EntryPoint": "mainGS",
+    "Profile": "gs_5_0"
+  },
+
+  "PixelShader": {
+    "Source": "./Content/Shader/Billboard.hlsl",
+    "EntryPoint": "mainPS",
+    "Profile": "ps_5_0"
+  },
+
+  "InputLayout": [],
+
+  "PrimitiveTopology": "PointList",
+
+  "Rasterizer": {
+    "FillMode": "Solid",
+    "CullMode": "None",
+    "FrontCounterClockwise": false,
+    "DepthClipEnable": true,
+    "ScissorEnable": false
+  },
+
+  "DepthStencil": {
+    "DepthEnable": true,
+    "DepthWriteEnable": false,
+    "DepthFunc": "LessEqual"
+  },
+
+  "Blend": {
+    "BlendEnable": true,
+    "SrcBlend": "SrcAlpha",
+    "DestBlend": "InvSrcAlpha",
+    "BlendOp": "Add",
+    "SrcBlendAlpha": "One",
+    "DestBlendAlpha": "InvSrcAlpha",
+    "BlendOpAlpha": "Add"
+  }
+}

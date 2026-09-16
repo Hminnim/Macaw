@@ -10,6 +10,7 @@
 #include "Subsystem/UCameraSubsystem.h"
 #include "Subsystem/UCollisionSubsystem.h"
 #include "Subsystem/URenderSubsystem.h"
+#include "Subsystem/UBillboardSubsystem.h"
 #include "Component/UCollisionComponent.h"
 #include "Component/UBillboardTextComponent.h"
 #include "FMouseCameraRotateRequestMessage.h"
@@ -261,10 +262,12 @@ void UWorld::InitializeSubsystems() {
 	RenderSubsystem = std::make_unique<URenderSubsystem>();
 	CollisionSubsystem = std::make_unique<UCollisionSubsystem>();
 	CameraSubsystem = std::make_unique<UCameraSubsystem>();
+	BillboardSubsystem = std::make_unique<UBillboardSubsystem>();
 
 	RenderSubsystem->Initialize(this);
 	CollisionSubsystem->Initialize(this);
 	CameraSubsystem->Initialize(this);
+	BillboardSubsystem->Initialize(this);
 }
 
 void UWorld::DeinitializeSubsystems() {
@@ -277,12 +280,17 @@ void UWorld::DeinitializeSubsystems() {
 	if (RenderSubsystem != nullptr) {
 		RenderSubsystem->Deinitialize();
 	}
+	if (BillboardSubsystem != nullptr)
+	{
+		BillboardSubsystem->Deinitialize();
+	}
 }
 
 FRenderProbe& UWorld::BuildRenderProbe() {
 	Probe.ActorProbes.clear();
     Probe.GizmoProbes.clear();
     Probe.TextProbes.clear();
+	Probe.BillboardProbes.clear();
 
  /*   for (const UStaticMeshComponent* Component : RenderableComponents)
     {
@@ -326,6 +334,8 @@ FRenderProbe& UWorld::BuildRenderProbe() {
 		Probe.MainCameraProbe.ViewProjection =
 			Camera->GetViewProjectionMatrix();
 	}
+
+	BillboardSubsystem->BuildRenderProbes(AssetRegistry, Probe);
 	return Probe;
 }
 
@@ -379,6 +389,16 @@ UCameraSubsystem& UWorld::GetCameraSubsystem() {
 
 const UCameraSubsystem& UWorld::GetCameraSubsystem() const {
 	return *CameraSubsystem;
+}
+
+UBillboardSubsystem& UWorld::GetBillboardSubsystem()
+{
+	return *BillboardSubsystem;
+}
+
+const UBillboardSubsystem& UWorld::GetBillboardSubsystem() const
+{
+	return *BillboardSubsystem;
 }
 
 
