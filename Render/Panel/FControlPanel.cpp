@@ -118,7 +118,7 @@ void FControlPanel::DrawPanel()
         }
 
         float MoveSensitivity = EditorContext->GetWorld()->GetSettings().MoveSensitivity;
-        if (ImGui::SliderFloat("MoveSensitivity", &MoveSensitivity, 0.1f, 10.0f))
+        if (ImGui::SliderFloat("MoveSensitivity", &MoveSensitivity, 1.f, 100.0f))
         {
             EditorContext->GetWorld()->GetSettings().MoveSensitivity = MoveSensitivity;
         }
