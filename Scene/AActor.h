@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "Common.h"
 
@@ -71,10 +71,6 @@ public:
         return nullptr;
     }
 
-    /// <summary>소유 Component를 등록 해제하고 Actor에서 제거합니다.</summary>
-    /// <param name="Component">제거할 소유 Component입니다.</param>
-    /// <returns>Component를 소유하고 있어 제거했으면 true입니다.</returns>
-    bool DestroyComponent(UActorComponent* component);
     /// <summary>Actor가 RAII 방식으로 소유하는 모든 Component를 반환합니다.</summary>
     const std::vector<std::unique_ptr<UActorComponent>>& GetComponents() const;
 
@@ -88,6 +84,9 @@ public:
     void SetWorld(UWorld* InWorld);
     /// <summary>현재 소속된 World를 반환합니다.</summary>
     UWorld* GetWorld() const;
+    /// <summary>소속 World에 Actor의 지연 파괴를 요청합니다.</summary>
+    /// <returns>파괴 요청이 수락되었으면 true입니다.</returns>
+    bool Destroy();
     /// <summary>Actor가 소유한 SceneComponent를 RootComponent로 지정합니다.</summary>
     /// <param name="InRootComponent">새 RootComponent 또는 nullptr입니다.</param>
     /// <returns>Component가 Actor 소유이거나 nullptr이면 true입니다.</returns>
@@ -155,8 +154,6 @@ public:
 
     /// <summary>Actor가 BeginPlay 수명 주기를 완료했는지 반환합니다.</summary>
     bool HasBegunPlay() const;
-    const FGuid& GetFolderGuid() const { return FolderGuid; }
-    void SetFolderGuid(FGuid InFolderGuid) { FolderGuid = InFolderGuid; }
     /// <summary>활성 Component에 프레임 Tick을 전달합니다.</summary>
     /// <param name="DeltaTime">이전 프레임 이후 경과 시간입니다.</param>
     virtual void Tick(float DeltaTime);
@@ -184,11 +181,14 @@ protected:
     void Serialize(FArchive& Archive) override;
 
 private:
+    friend class UActorComponent;
+
+    void RemoveOwnedComponent(UActorComponent* Component);
+
     std::vector<std::unique_ptr<UActorComponent>> Components{};
     USceneComponent* RootComponent = nullptr;
 
     FGuid PendingRootComponentGuid{};
-    FGuid FolderGuid{};
 
     UWorld* World = nullptr;
     bool bHasBegunPlay = false;

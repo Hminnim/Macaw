@@ -214,7 +214,21 @@ inline D3D11_COMPARISON_FUNC ConvertCompareFunc(ECompareFunc Value) {
         return D3D11_COMPARISON_ALWAYS;
     }
 }
-
+inline D3D11_STENCIL_OP ConvertStencillOp(EStencillOp Value) {
+    switch (Value) {
+    case EStencillOp::Keep: return D3D11_STENCIL_OP_KEEP;
+    case EStencillOp::Zero: return D3D11_STENCIL_OP_ZERO;
+    case EStencillOp::Replace: return D3D11_STENCIL_OP_REPLACE;
+    case EStencillOp::IncrementClamp: return D3D11_STENCIL_OP_INCR_SAT;
+    case EStencillOp::IncrementWrap: return D3D11_STENCIL_OP_INCR;
+    case EStencillOp::DecrementClamp: return D3D11_STENCIL_OP_DECR_SAT;
+    case EStencillOp::DecrementWrap: return D3D11_STENCIL_OP_DECR;
+    case EStencillOp::Invert: return D3D11_STENCIL_OP_INVERT;
+    default:
+        ErrorHandler::Report("ConvertCompareFunc", "The comparison function is invalid.", ErrorHandler::EErrorLevel::Error);
+        return D3D11_STENCIL_OP_KEEP;
+    }
+}
 inline EBlend ParseBlend(const char* Value) {
     if (std::strcmp(Value, "Zero") == 0) return EBlend::Zero;
     if (std::strcmp(Value, "One") == 0) return EBlend::One;

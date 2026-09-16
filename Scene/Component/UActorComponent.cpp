@@ -90,6 +90,19 @@ void UActorComponent::UnregisterComponent() {
     ParentWorld = nullptr;
 }
 
+void UActorComponent::DestroyComponent(bool /*bPromoteChildren*/) {
+    if (bIsBeingDestroyed) {
+        return;
+    }
+
+    bIsBeingDestroyed = true;
+    UnregisterComponent();
+
+    if (Owner != nullptr) {
+        Owner->RemoveOwnedComponent(this);
+    }
+}
+
 bool UActorComponent::ResolveLoadedReferences() {
     return true;
 }

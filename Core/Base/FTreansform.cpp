@@ -113,14 +113,13 @@ bool FTransform::MakeRelativeTo(const FTransform& Parent, FTransform& OutRelativ
 
 void FTransform::Serialize(FArchive& Archive) {
     Archive.Serialize("Position", Position);
-    FVector3 SerializedRotation = RotationEuler;
-    Archive.Serialize("Rotation", SerializedRotation);
+    Archive.Serialize("Rotation", Rotation);
     Archive.Serialize("Scale", Scale);
     Archive.Serialize("bAbsoluteLocation", bAbsoluteLocation);
     Archive.Serialize("bAbsoluteRotation", bAbsoluteRotation);
     Archive.Serialize("bAbsoluteScale", bAbsoluteScale);
 
     if (Archive.IsLoading()) {
-        SetRotation(FRotator(SerializedRotation));
+        SetRotation(Rotation);
     }
 }

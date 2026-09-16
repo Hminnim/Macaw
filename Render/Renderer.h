@@ -1,7 +1,8 @@
-﻿#pragma once 
+#pragma once
 #include <d3d11.h>
 #include <wrl/client.h>
 #include <array>
+#include <memory>
 
 #include "../Core/Base/FRenderProbe.h"
 #include "../Core/Asset/FAssetRegistry.h"
@@ -17,6 +18,7 @@
 #include "RenderWindowInfo.h"
 
 #include "FTextRenderer.h"
+#include "FSceneRenderSurface.h"
 
 #include "../../Scene/FWorldEditorContext.h"
 
@@ -42,11 +44,16 @@ public:
 public:
 	void Create(HWND WindowHandle, UINT width, UINT height);
 
-	void BeginFrame();
+	void BeginSceneRender();
+	void BeginUiRender();
 	void RenderScene(FRenderProbe& Probe);
 	void RenderGizmos(FRenderProbe& Probe);
-	void RenderActorList(TArray<FActorProbe>& ActorProbes, const CameraProbe& Camera);
+	void RenderOutline(const TArray<FActorProbe>& ActorProbes, const CameraProbe& MainCameraProbe);
+	void RenderText(const FRenderProbe& Probe);
+	void RenderActorList(TArray<FActorProbe>& ActorProbes, const CameraProbe& Camera, bool bOutline = false);
 	void EndFrame();
+	void ResizeSceneSurface(uint32 Width, uint32 Height, float Left, float Top);
+	ID3D11ShaderResourceView* GetSceneShaderResourceView() const { return SceneSurface != nullptr ? SceneSurface->GetShaderResourceView() : nullptr; }
 
 	ID3D11Device* GetDevice() const { return Device.Get(); }
 	ID3D11DeviceContext* GetDeviceContext() const { return DeviceContext.Get(); }
@@ -62,9 +69,8 @@ public:
 private:
 	void CreateDeviceAndSwapChain(HWND WindowHandle);
 	
-	void CreateRTV();
-	void CreateDSV();
 	void CreateSamplerStates();
+	void BindSamplerStates();
 
 private:
 #ifdef _DEBUG
@@ -75,11 +81,8 @@ private:
 
 	Microsoft::WRL::ComPtr<IDXGISwapChain> SwapChain;
 	
-	Microsoft::WRL::ComPtr<ID3D11Texture2D> BackBuffer;
-	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> RenderTargetView;
-	
-	Microsoft::WRL::ComPtr<ID3D11Texture2D> DepthStencilBuffer;
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> DepthStencilView;
+	std::unique_ptr<IRenderSurface> BackBufferSurface{};
+	std::unique_ptr<IRenderSurface> SceneSurface{};
 
 	// s0: LinearWrap, s1: LinearClamp, s2: PointClamp, s3: PointWrap, s4: AnisotropicWrap, s5: ShadowCompare.
 	std::array<Microsoft::WRL::ComPtr<ID3D11SamplerState>, 6> SamplerStates{};
@@ -90,7 +93,8 @@ private:
 
 	FAssetRegistry* AssetRegistry{ nullptr };
 
-	TGraphicsArray<ModelContext> ModelContextArray{};
+	TGraphicsArray<ModelContext, true, true> ModelContextArray{};
+	TArray<ModelContext> FrameContexts{};
 	TGraphicsRootConstants<64> RootConstants{};
 
 	FTextRenderer TextRenderer{};

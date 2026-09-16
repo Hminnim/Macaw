@@ -1,6 +1,6 @@
 #pragma once
 
-#include "UBillboardComponent.h"
+#include "UPrimitiveComponent.h"
 
 #include "Core/Asset/FAssetHandle.h"
 #include "Core/Base/FRenderProbe.h"
@@ -9,14 +9,14 @@
 class UFont;
 class FPropertyEditorContext;
 
-class UBillboardTextComponent : public UBillboardComponent
+class UBillboardTextComponent : public UPrimitiveComponent
 {
 public:
     UBillboardTextComponent() = default;
     ~UBillboardTextComponent() override = default;
 
     // UNameTagComponent가 상속해야 하므로 final을 붙이지 않는다.
-    JG_DECLARE_DERIVED_TYPEINFO(UBillboardTextComponent, UBillboardComponent);
+    JG_DECLARE_DERIVED_TYPEINFO(UBillboardTextComponent, UPrimitiveComponent);
 
     void SetFontHandle(FAssetHandle InFontHandle);
     void SetPipelineHandle(FAssetHandle InPipelineHandle);
@@ -49,6 +49,7 @@ public:
     void DrawPanels(FPropertyEditorContext& Context) override;
 
 protected:
+    virtual bool TryGetTextWorld(FMatrix& OutWorld) const;
     void Serialize(FArchive& Archive) override;
     // Dynamic Font에서 글리프를 요청하고 FTextVertex 배열을 다시 생성한다.
     void RebuildTextGeometry();

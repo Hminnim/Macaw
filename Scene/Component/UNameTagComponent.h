@@ -28,9 +28,12 @@ public:
 
     const FVector3& GetObjectOffset() const;
     bool ResolveLoadedReferences() override;
+    void RefreshGuidText();
+    void OnRegister() override;
+    void DrawPanels(FPropertyEditorContext& Context) override;
 
 protected:
-    bool TryGetBillBoardWorld(FMatrix& OutWorld) const override;
+    bool TryGetTextWorld(FMatrix& OutWorld) const override;
     void Serialize(FArchive& Archive) override;
 
 private:
@@ -41,5 +44,5 @@ private:
     FGuid ExplicitTargetGuid{};
 
     // Target Actor의 로컬 좌표 기준 Offset.
-    FVector3 TargetLocalOffset{0.0f,0.0f, 2.0f};
+    FVector3 TargetLocalOffset{0.0f,1.0f, 0.0f};
 };

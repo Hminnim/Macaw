@@ -1,15 +1,55 @@
 ﻿#include "PCH.h"
 #include "FAssetRegistry.h"
 #include "../../ErrorHandler.h"
+#include "UColorMaterial.h"
+#include "Render/Pipeline/UPipeline.h"
 
 #include "FAssetRegistry.h"
+
+namespace {
+    constexpr const char* DefaultStaticMeshMaterialName = "__DefaultStaticMeshMaterial";
+    constexpr const char* DefaultStaticMeshPipelineName = "__DefaultStaticMeshPipeline";
+    constexpr const char* DefaultStaticMeshMaterialMetadataPath = "./Content/Metadata/DefaultStaticMeshMaterial.meta";
+    constexpr const char* DefaultStaticMeshPipelineMetadataPath = "./Content/Metadata/DefaultStaticMeshPipeline.meta";
+}
 
 bool FAssetRegistry::Initialize(ID3D11Device* Device, uint32 MaxMaterialCount) {
     if (Device == nullptr) {
         return false;
     }
 
-    return MaterialBuffer.Initialize(Device, MaxMaterialCount);
+    if (!MaterialBuffer.Initialize(Device, MaxMaterialCount)) {
+        return false;
+    }
+
+    this->Device = Device;
+    return true;
+}
+
+FAssetHandle FAssetRegistry::EnsureDefaultStaticMeshMaterial() {
+    const FAssetHandle ExistingHandle = GetAsset(DefaultStaticMeshMaterialName);
+    if (ResolveAsset<UMaterial>(ExistingHandle) != nullptr) {
+        return ExistingHandle;
+    }
+
+    if (ExistingHandle || Device == nullptr) {
+        return {};
+    }
+
+    return EmplaceAsset<UColorMaterial>(Device, DefaultStaticMeshMaterialName, DefaultStaticMeshMaterialMetadataPath);
+}
+
+FAssetHandle FAssetRegistry::EnsureDefaultStaticMeshPipeline() {
+    const FAssetHandle ExistingHandle = GetAsset(DefaultStaticMeshPipelineName);
+    if (ResolveAsset<UPipeline>(ExistingHandle) != nullptr) {
+        return ExistingHandle;
+    }
+
+    if (ExistingHandle || Device == nullptr) {
+        return {};
+    }
+
+    return EmplaceAsset<UPipeline>(Device, DefaultStaticMeshPipelineName, DefaultStaticMeshPipelineMetadataPath);
 }
 
 FAssetHandle FAssetRegistry::AdoptAsset(ID3D11Device* Device, const FGuid& ID, const FString& Name, const std::filesystem::path& MetadataPath, std::unique_ptr<UObject>&& Asset) {

@@ -14,6 +14,7 @@
 #include "Scene/Component/USceneComponent.h"
 #include "Scene/Component/UStaticMeshComponent.h"
 #include "Scene/Component/UBillboardTextComponent.h"
+#include "Scene/Component/UNameTagComponent.h"
 // 목록, 선택, 구조 변경만 담당합니다. 타입별 Details는 Component::DrawPanels()로 위임합니다.
 class FPropertyPanel : public IEditorPanel {
 public:
@@ -46,7 +47,7 @@ public:
             ImGui::PushID(Component);
             Component->DrawPanels(PropertyEditor);
             ImGui::Separator();
-            DrawDeleteButton(*Actor, *Component);
+            HandleDeleteShortcut(*Actor, *Component);
             ImGui::PopID();
         }
         else {
@@ -94,6 +95,7 @@ private:
             if (ImGui::MenuItem("Camera Component")) AddSceneComponent<UCameraComponent>(Actor);
             if (ImGui::MenuItem("Box Collider Component")) AddSceneComponent<UBoxColliderComponent>(Actor);
             if (ImGui::MenuItem("Billboard Text Component")) AddSceneComponent<UBillboardTextComponent>(Actor);
+            if (ImGui::MenuItem("Name Tag Component")) AddSceneComponent<UNameTagComponent>(Actor);
             ImGui::EndPopup();
         }
 
@@ -150,32 +152,14 @@ private:
         EditorContext->SetSelectedComponent(NewComponent);
     }
 
-    void DrawDeleteButton(AActor& Actor, UActorComponent& Component) {
-        auto* SceneComponent = dynamic_cast<USceneComponent*>(&Component);
-        const bool bDeletingRootWithoutReplacement = SceneComponent == Actor.GetRootComponent() && FindReplacementRoot(Actor, SceneComponent) == nullptr;
-        if (bDeletingRootWithoutReplacement) ImGui::BeginDisabled();
-        const bool bDeleteClicked = ImGui::Button("Delete Component");
-        if (bDeletingRootWithoutReplacement) {
-            ImGui::EndDisabled();
-            ImGui::SameLine();
-            ImGui::TextDisabled("Add another Scene Component before deleting the root.");
+    void HandleDeleteShortcut(AActor& Actor, UActorComponent& Component) {
+        const ImGuiIO& IO = ImGui::GetIO();
+        if (!ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) || IO.WantTextInput || ImGui::IsAnyItemActive() || !ImGui::IsKeyPressed(ImGuiKey_Delete, false)) {
+            return;
         }
-        if (!bDeleteClicked || bDeletingRootWithoutReplacement) return;
-        if (SceneComponent == Actor.GetRootComponent()) {
-            USceneComponent* NewRoot = FindReplacementRoot(Actor, SceneComponent);
-            NewRoot->DetachFromComponent(EAttachmentTransformRule::KeepWorldTransform);
-            Actor.SetRootComponent(NewRoot);
-        }
-        Actor.DestroyComponent(&Component);
-        EditorContext->SetSelectedActor(&Actor);
-    }
 
-    static USceneComponent* FindReplacementRoot(AActor& Actor, USceneComponent* Excluded) {
-        for (const std::unique_ptr<UActorComponent>& Candidate : Actor.GetComponents()) {
-            auto* SceneComponent = dynamic_cast<USceneComponent*>(Candidate.get());
-            if (SceneComponent != nullptr && SceneComponent != Excluded) return SceneComponent;
-        }
-        return nullptr;
+        Component.DestroyComponent();
+        EditorContext->SetSelectedActor(&Actor);
     }
 
 private:

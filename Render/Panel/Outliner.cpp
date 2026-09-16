@@ -1,4 +1,4 @@
-﻿#include "PCH.h"
+#include "PCH.h"
 
 #include "Outliner.h"
 
@@ -27,54 +27,24 @@ void FOutlinerPanel::DrawPanel() {
     }
 
     ImGui::SetNextItemWidth(-FLT_MIN);
-
     if (ImGui::InputTextWithHint("##ActorFilter", "Search", ActorFilter.InputBuf, IM_ARRAYSIZE(ActorFilter.InputBuf))) {
         ActorFilter.Build();
     }
 
-    const int ColumnCount = 2;
     const ImGuiTableFlags TableFlags = ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_ScrollY;
-    if (ImGui::BeginTable("OutlinerActorList", ColumnCount, TableFlags, ImVec2(0.0f, -ImGui::GetFrameHeightWithSpacing()))) {
+    if (ImGui::BeginTable("OutlinerActorList", 2, TableFlags, ImVec2(0.0f, -ImGui::GetFrameHeightWithSpacing()))) {
         ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthStretch, 0.70f);
-
         ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthStretch, 0.24f);
-        
         ImGui::TableHeadersRow();
-
-        for (const std::unique_ptr<Folder>& FolderRecord : World->GetFolders()) {
-            if (FolderRecord->IsRootFolder()) {
-                DrawFolder(*FolderRecord);
-            }
-        }
         DrawRootActors();
         ImGui::EndTable();
     }
 
-    ImGui::TextDisabled("%zu Actors | %zu Folders", World->GetActors().size(), World->GetFolders().size());
+    HandleDeleteShortcut();
+    ImGui::TextDisabled("%zu Actors", World->GetActors().size());
     ImGui::End();
     ImGui::PopStyleColor(4);
     ImGui::PopStyleVar(2);
-}
-
-bool FOutlinerPanel::MatchesFolder(const Folder& FolderRecord) const {
-    const FString Label = FolderRecord.GetID().ToString();
-    if (ActorFilter.PassFilter(Label.c_str())) {
-        return true;
-    }
-
-    for (const std::unique_ptr<Folder>& ChildFolder : World->GetFolders()) {
-        if (ChildFolder->GetParentFolderGuid() == FolderRecord.GetID() && MatchesFolder(*ChildFolder)) {
-            return true;
-        }
-    }
-
-    for (const std::unique_ptr<AActor>& Actor : World->GetActors()) {
-        if (Actor->GetFolderGuid() == FolderRecord.GetID() && IsActorRootInFolder(*Actor) && MatchesActor(*Actor)) {
-            return true;
-        }
-    }
-
-    return false;
 }
 
 bool FOutlinerPanel::MatchesActor(const AActor& Actor) const {
@@ -84,13 +54,9 @@ bool FOutlinerPanel::MatchesActor(const AActor& Actor) const {
         return true;
     }
 
-    for (const std::unique_ptr<AActor>& ChildActor : World->GetActors()) {
-        if (ChildActor->GetFolderGuid() == Actor.GetFolderGuid() && IsActorAttachedTo(*ChildActor, Actor) && MatchesActor(*ChildActor)) {
-            return true;
-        }
-    }
-
-    return false;
+    return std::ranges::any_of(World->GetActors(), [this, &Actor](const std::unique_ptr<AActor>& ChildActor) {
+        return IsActorAttachedTo(*ChildActor, Actor) && MatchesActor(*ChildActor);
+    });
 }
 
 bool FOutlinerPanel::IsActorAttachedTo(const AActor& Actor, const AActor& ParentActor) const {
@@ -99,74 +65,29 @@ bool FOutlinerPanel::IsActorAttachedTo(const AActor& Actor, const AActor& Parent
     return ParentComponent != nullptr && ParentComponent->GetOwner() == &ParentActor && &Actor != &ParentActor;
 }
 
-bool FOutlinerPanel::IsActorRootInFolder(const AActor& Actor) const {
+bool FOutlinerPanel::IsRootActor(const AActor& Actor) const {
     const USceneComponent* RootComponent = Actor.GetRootComponent();
     const USceneComponent* ParentComponent = RootComponent != nullptr ? RootComponent->GetParent() : nullptr;
     const AActor* ParentActor = ParentComponent != nullptr ? ParentComponent->GetOwner() : nullptr;
-    return ParentActor == nullptr || ParentActor == &Actor || ParentActor->GetFolderGuid() != Actor.GetFolderGuid();
-}
-
-bool FOutlinerPanel::HasChildFolders(const Folder& FolderRecord) const {
-    return std::ranges::any_of(World->GetFolders(), [&FolderRecord](const std::unique_ptr<Folder>& ChildFolder) {
-        return ChildFolder->GetParentFolderGuid() == FolderRecord.GetID();
-    });
-}
-
-bool FOutlinerPanel::HasFolderActors(const Folder& FolderRecord) const {
-    return std::ranges::any_of(World->GetActors(), [this, &FolderRecord](const std::unique_ptr<AActor>& Actor) {
-        return Actor->GetFolderGuid() == FolderRecord.GetID() && IsActorRootInFolder(*Actor);
-    });
+    return ParentActor == nullptr || ParentActor == &Actor;
 }
 
 bool FOutlinerPanel::HasActorChildren(const AActor& Actor) const {
     return std::ranges::any_of(World->GetActors(), [this, &Actor](const std::unique_ptr<AActor>& ChildActor) {
-        return ChildActor->GetFolderGuid() == Actor.GetFolderGuid() && IsActorAttachedTo(*ChildActor, Actor);
+        return IsActorAttachedTo(*ChildActor, Actor);
     });
 }
 
-void FOutlinerPanel::DrawFolder(const Folder& FolderRecord) {
-    if (!MatchesFolder(FolderRecord)) {
+void FOutlinerPanel::HandleDeleteShortcut() {
+    const ImGuiIO& IO = ImGui::GetIO();
+    if (!ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) || IO.WantTextInput || ImGui::IsAnyItemActive() || !ImGui::IsKeyPressed(ImGuiKey_Delete, false)) {
         return;
     }
 
-    const FString Label = FolderRecord.GetID().ToString();
-    const bool bHasChildren = HasChildFolders(FolderRecord) || HasFolderActors(FolderRecord);
-    ImGui::TableNextRow();
-    ImGui::TableSetColumnIndex(0);
-    ImGui::PushID(Label.c_str());
-
-    ImGuiTreeNodeFlags Flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAllColumns | ImGuiTreeNodeFlags_DefaultOpen;
-    if (!bHasChildren) {
-        Flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+    AActor* Actor = EditorContext->GetSelectedActor();
+    if (Actor != nullptr && World->DestroyActor(Actor)) {
+        World->FlushPendingDestroyActors();
     }
-    if (SelectedFolderGuid == FolderRecord.GetID()) {
-        Flags |= ImGuiTreeNodeFlags_Selected;
-    }
-
-    const bool bOpen = ImGui::TreeNodeEx("Folder", Flags, "%s", Label.c_str());
-    if (ImGui::IsItemClicked()) {
-        SelectedFolderGuid = FolderRecord.GetID();
-        EditorContext->ClearSelection();
-    }
-
-    ImGui::TableSetColumnIndex(2);
-    ImGui::TextDisabled("-");
-
-    if (bHasChildren && bOpen) {
-        for (const std::unique_ptr<Folder>& ChildFolder : World->GetFolders()) {
-            if (ChildFolder->GetParentFolderGuid() == FolderRecord.GetID()) {
-                DrawFolder(*ChildFolder);
-            }
-        }
-        for (const std::unique_ptr<AActor>& Actor : World->GetActors()) {
-            if (Actor->GetFolderGuid() == FolderRecord.GetID() && IsActorRootInFolder(*Actor)) {
-                DrawActor(*Actor);
-            }
-        }
-        ImGui::TreePop();
-    }
-
-    ImGui::PopID();
 }
 
 void FOutlinerPanel::DrawActor(AActor& Actor) {
@@ -174,7 +95,7 @@ void FOutlinerPanel::DrawActor(AActor& Actor) {
         return;
     }
 
-    const FString Label = Actor.GetGuid().ToString(); // FNAME
+    const FString Label = Actor.GetGuid().ToString();
     const std::string_view TypeName = Actor.GetTypeInfo()->TypeName;
     const bool bHasChildren = HasActorChildren(Actor);
     ImGui::TableNextRow();
@@ -191,18 +112,15 @@ void FOutlinerPanel::DrawActor(AActor& Actor) {
 
     const bool bOpen = ImGui::TreeNodeEx("Actor", Flags, "%s", Label.c_str());
     if (ImGui::IsItemClicked()) {
-        SelectedFolderGuid = {};
         EditorContext->SetSelectedActor(&Actor);
     }
 
-  
     ImGui::TableSetColumnIndex(1);
-    ImGui::TextDisabled("%.*s", static_cast<int>(TypeName.size()), TypeName.data()); // Type 
-    
+    ImGui::TextDisabled("%.*s", static_cast<int>(TypeName.size()), TypeName.data());
 
     if (bHasChildren && bOpen) {
         for (const std::unique_ptr<AActor>& ChildActor : World->GetActors()) {
-            if (ChildActor->GetFolderGuid() == Actor.GetFolderGuid() && IsActorAttachedTo(*ChildActor, Actor)) {
+            if (IsActorAttachedTo(*ChildActor, Actor)) {
                 DrawActor(*ChildActor);
             }
         }
@@ -214,7 +132,7 @@ void FOutlinerPanel::DrawActor(AActor& Actor) {
 
 void FOutlinerPanel::DrawRootActors() {
     for (const std::unique_ptr<AActor>& Actor : World->GetActors()) {
-        if ((!Actor->GetFolderGuid().IsValid() || World->FindFolder(Actor->GetFolderGuid()) == nullptr) && IsActorRootInFolder(*Actor)) {
+        if (IsRootActor(*Actor)) {
             DrawActor(*Actor);
         }
     }
