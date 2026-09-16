@@ -43,7 +43,8 @@ struct FBillboardProbe
 
 enum class ERenderObjectFlags : uint32 {
 	None = 0,
-	Selected = 1u << 0
+	Selected = 1u << 0,
+	Unlit = 1u << 1
 };
 
 enum class ERenderLayer : uint32 {
@@ -54,8 +55,7 @@ enum class ERenderLayer : uint32 {
 	Gizmo = 4
 };
 
-// GPU light records use this value directly, so keep the underlying type
-// compatible with HLSL's uint.
+
 enum class ELightType : uint32 {
     Directional,
     Point,
@@ -104,7 +104,11 @@ struct FRenderProbe {
 	TArray<FActorProbe> GizmoProbes{};
     TArray<FTextProbe> TextProbes{};
     TArray<FBillboardProbe> BillboardProbes{};
-    TArray<FLightProbe> LightProbes{};
+	TArray<FLightProbe> LightProbes{};
+
+	// The editor's global render mode. Billboard and text passes are already
+	// unlit; this flag disables lighting for every mesh material pass.
+	bool bForceUnlit{ false };
 
 	CameraProbe MainCameraProbe{}; 
 };

@@ -14,14 +14,8 @@ void FWorldEditorContext::SetWorld(UWorld* InWorld) {
 void FWorldEditorContext::InitializeChannels(FAssetRegistry& AssetRegistry, ID3D11Device* Device) {
     if (World == nullptr) return;
 
-    EditorToWorld.TryBind<FMessageSpawnPrimitive>([this, &AssetRegistry](const FMessageSpawnPrimitive& Message) {
-        World->HandleSpawnPrimitive(Message, AssetRegistry);
-    });
-    EditorToWorld.TryBind<FMessageDeletePrimitive>([this](const FMessageDeletePrimitive&) {
-        if (AActor* Actor = GetSelectedActor()) {
-            World->DestroyActor(Actor);
-            World->FlushPendingDestroyActors();
-        }
+    EditorToWorld.TryBind<FMessageSpawnComponent>([this, &AssetRegistry](const FMessageSpawnComponent& Message) {
+        World->HandleSpawnComponent(Message, AssetRegistry);
     });
     EditorToWorld.TryBind<FMessageSaveScene>([this, &AssetRegistry](const FMessageSaveScene& Message) {
         World->SaveScene(Message.SceneName, &AssetRegistry);

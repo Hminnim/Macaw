@@ -54,6 +54,8 @@ public:
         return ComponentPtr;
     }
 
+    UActorComponent* AddComponent(const FTypeInfo& Type);
+
     /// <summary>지정한 타입과 호환되는 첫 번째 소유 Component를 찾습니다.</summary>
     /// <typeparam name="T">찾을 UActorComponent 파생 타입입니다.</typeparam>
     /// <returns>찾은 Component 또는 없으면 nullptr입니다.</returns>

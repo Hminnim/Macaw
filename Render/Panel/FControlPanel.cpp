@@ -6,6 +6,9 @@
 #include <filesystem>
 
 #include "../../Serialize/FEditorConfigManager.h"
+#include "../../Core/Base/TypeRegistry.h"
+#include "../../Scene/Component/UActorComponent.h"
+#include "../../Scene/Component/UStaticMeshComponent.h"
 #include "../../Scene/UWorld.h"
 void FControlPanel::DrawPanel()  
 {
@@ -23,7 +26,7 @@ void FControlPanel::DrawPanel()
         return;
     }
 
-    const char* PrimitiveTypes[] =
+    const char* PrimitiveMeshTypes[] =
     {
         "CubeMesh", "SphereMesh", "PlaneMesh", "CylinderMesh",
         "CapsuleMesh", "ConeMesh", "TorusMesh", "PyrimidMesh"
@@ -32,26 +35,77 @@ void FControlPanel::DrawPanel()
     // Create: 기존의 Primitive 생성/삭제 기능을 한 그룹으로 유지한다.
     if (ImGui::BeginMenu("Create"))
     {
-        ImGui::TextDisabled("Spawn Primitive");
-        ImGui::SetNextItemWidth(180.0f);
-        ImGui::Combo("Type", &SelectedPrimitiveIndex, PrimitiveTypes, IM_ARRAYSIZE(PrimitiveTypes));
-        ImGui::InputInt("Number of Objects to Spawn", &SpawnCountToRequest);
-
-        if (SpawnCountToRequest < 1)
+        std::vector<const FTypeInfo*> SpawnableComponentTypes;
+        for (const FTypeInfo* Type : TypeRegistry::GetRegisteredTypes())
         {
-            SpawnCountToRequest = 1;
+            if (Type != nullptr && Type->Creator != nullptr &&
+                Type->IsA(UActorComponent::StaticTypeInfo()))
+            {
+                SpawnableComponentTypes.push_back(Type);
+            }
         }
 
-        if (ImGui::Button("Spawn Object(s)"))
+        ImGui::TextDisabled("Spawn Component");
+        if (SpawnableComponentTypes.empty())
         {
-            EditorToWorldSender.TryEmplace<FMessageSpawnPrimitive>(
-                FString(PrimitiveTypes[SelectedPrimitiveIndex]),
-                static_cast<uint32>(SpawnCountToRequest));
+            ImGui::TextDisabled("No spawnable component types are registered.");
         }
-
-        if (ImGui::Button("Delete Object"))
+        else
         {
-            EditorToWorldSender.TryEmplace<FMessageDeletePrimitive>();
+            if (SelectedComponentIndex < 0)
+            {
+                const auto StaticMeshType = std::ranges::find_if(SpawnableComponentTypes, [](const FTypeInfo* Type) {
+                    return Type->IsA(UStaticMeshComponent::StaticTypeInfo());
+                });
+
+                SelectedComponentIndex = StaticMeshType != SpawnableComponentTypes.end()
+                    ? static_cast<int>(std::distance(SpawnableComponentTypes.begin(), StaticMeshType))
+                    : 0;
+            }
+            SelectedComponentIndex = std::clamp(
+                SelectedComponentIndex, 0, static_cast<int>(SpawnableComponentTypes.size()) - 1);
+            const FTypeInfo* SelectedComponentType = SpawnableComponentTypes[SelectedComponentIndex];
+
+            ImGui::SetNextItemWidth(220.0f);
+            if (ImGui::BeginCombo("Component", SelectedComponentType->TypeName.data()))
+            {
+                for (int Index = 0; Index < static_cast<int>(SpawnableComponentTypes.size()); ++Index)
+                {
+                    const bool bIsSelected = Index == SelectedComponentIndex;
+                    if (ImGui::Selectable(SpawnableComponentTypes[Index]->TypeName.data(), bIsSelected))
+                    {
+                        SelectedComponentIndex = Index;
+                        SelectedComponentType = SpawnableComponentTypes[Index];
+                    }
+
+                    if (bIsSelected)
+                    {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                }
+                ImGui::EndCombo();
+            }
+
+            const bool bIsStaticMesh = SelectedComponentType->IsA(UStaticMeshComponent::StaticTypeInfo());
+            if (bIsStaticMesh)
+            {
+                ImGui::SetNextItemWidth(180.0f);
+                ImGui::Combo("Mesh", &SelectedMeshIndex, PrimitiveMeshTypes, IM_ARRAYSIZE(PrimitiveMeshTypes));
+            }
+
+            ImGui::InputInt("Number of Objects to Spawn", &SpawnCountToRequest);
+            if (SpawnCountToRequest < 1)
+            {
+                SpawnCountToRequest = 1;
+            }
+
+            if (ImGui::Button("Spawn Object(s)"))
+            {
+                EditorToWorldSender.TryEmplace<FMessageSpawnComponent>(
+                    FString(SelectedComponentType->TypeName.data()),
+                    FString(bIsStaticMesh ? PrimitiveMeshTypes[SelectedMeshIndex] : ""),
+                    static_cast<uint32>(SpawnCountToRequest));
+            }
         }
 
         ImGui::EndMenu();

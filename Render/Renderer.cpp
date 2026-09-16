@@ -72,6 +72,12 @@ void FRenderer::RenderScene(FRenderProbe& Probe) {
 		return;
 	}
 
+	if (Probe.bForceUnlit) {
+		for (FActorProbe& ActorProbe : Probe.ActorProbes) {
+			ActorProbe.Flags |= static_cast<uint32>(ERenderObjectFlags::Unlit);
+		}
+	}
+
 	if (AssetRegistry != nullptr) {
 		AssetRegistry->GetMaterialBuffer().Flush(DeviceContext.Get());
 	}

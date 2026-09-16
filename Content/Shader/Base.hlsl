@@ -48,6 +48,7 @@ struct PS_INPUT
     float3 WorldPosition : TEXCOORD1;
     nointerpolation uint MaterialIndex : Jungle1;
     nointerpolation float3 ColorCoefficient : Jungle2;
+    nointerpolation uint Flags : Jungle3;
 };
 
 PS_INPUT mainVS(VS_INPUT Input, uint InstanceID : SV_InstanceID)
@@ -63,6 +64,7 @@ PS_INPUT mainVS(VS_INPUT Input, uint InstanceID : SV_InstanceID)
     Output.UV = Input.UV;
     Output.WorldPosition = WorldPosition.xyz;
     Output.MaterialIndex = ModelContext.MaterialIndex;
+    Output.Flags = ModelContext.Flags;
    
     if ((ModelContext.Flags & 1) != 0)
     {
@@ -81,6 +83,15 @@ PS_INPUT mainVS(VS_INPUT Input, uint InstanceID : SV_InstanceID)
 float4 mainPS(PS_INPUT Input) : SV_TARGET
 {
     float4 Color = MaterialBuffer[Input.MaterialIndex].BaseColor;
-    Color.rgb *= Input.ColorCoefficient * CalculateDirectLighting(Input.WorldPosition, Input.Normal, LightCount);
+    // ERenderObjectFlags::Unlit (1 << 1): editor helpers and global Unlit mode
+    // retain their material color regardless of the scene's light set.
+    if ((Input.Flags & 2u) != 0)
+    {
+        Color.rgb *= Input.ColorCoefficient;
+    }
+    else
+    {
+        Color.rgb *= Input.ColorCoefficient * CalculateDirectLighting(Input.WorldPosition, Input.Normal, LightCount);
+    }
     return Color;
 }

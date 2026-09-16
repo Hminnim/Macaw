@@ -6,6 +6,8 @@
 
 #include "AActor.h"
 #include "Component/UCameraComponent.h"
+#include "Component/UActorComponent.h"
+#include "Component/USceneComponent.h"
 #include "Component/UStaticMeshComponent.h"
 #include "Subsystem/UCameraSubsystem.h"
 #include "Subsystem/UCollisionSubsystem.h"
@@ -21,6 +23,7 @@
 #include "FWorldEditorContext.h"
 #include "FKeyboardCameraMoveRequestMessage.h"
 #include "Render/Panel/FEditorInfo.h"
+#include "Render/Pipeline/UPipeline.h"
 #include "Core/Asset/UMesh.h"
 
 #include "../Serialize/FArchiveJson.h"
@@ -224,6 +227,8 @@ FRenderProbe& UWorld::BuildRenderProbe() {
 	Probe.TextProbes.clear();
 	Probe.BillboardProbes.clear();
 	Probe.LightProbes.clear();
+	Probe.bForceUnlit = EditorContext != nullptr &&
+		EditorContext->GetRenderModeState() == static_cast<size_t>(ERenderMode::Unlit);
 
 	RenderSubsystem->BuildRenderProbes(AssetRegistry, Probe);
 	LightSubsystem->BuildLightProbes(Probe);
@@ -678,22 +683,28 @@ void UWorld::HandleKeyboardCameraMoveRequest(
 }
 
 
-void UWorld::HandleSpawnPrimitive(
-	const FMessageSpawnPrimitive& Message, FAssetRegistry& AssetRegistry)
+void UWorld::HandleSpawnComponent(
+	const FMessageSpawnComponent& Message, FAssetRegistry& AssetRegistry)
 {
 	static std::mt19937 RandomEngine{ std::random_device{}() };
-	// test
-	const FAssetHandle MeshHandle = AssetRegistry.GetAsset(Message.PrimitiveType);
-	const FAssetHandle PipelineHandle = AssetRegistry.GetAsset("BasePipeline");
-	
+	const FTypeInfo* ComponentType = TypeRegistry::Find(Message.ComponentType);
+	if (ComponentType == nullptr || ComponentType->Creator == nullptr ||
+		!ComponentType->IsA(UActorComponent::StaticTypeInfo())) {
+		return;
+	}
 
+	const bool bIsStaticMesh = ComponentType->IsA(UStaticMeshComponent::StaticTypeInfo());
+	const FAssetHandle MeshHandle = bIsStaticMesh ? AssetRegistry.GetAsset(Message.MeshType) : FAssetHandle{};
+	if (bIsStaticMesh && AssetRegistry.ResolveAsset<UMesh>(MeshHandle) == nullptr) {
+		return;
+	}
+	const FAssetHandle PipelineHandle = bIsStaticMesh ? AssetRegistry.GetAsset("BasePipeline") : FAssetHandle{};
 	const FAssetHandle Materials[] = {
 		AssetRegistry.GetAsset("GreyMaterial"),
 		AssetRegistry.GetAsset("RedMaterial"),
 		AssetRegistry.GetAsset("GreenMaterial"),
 		AssetRegistry.GetAsset("BlueMaterial"),
 		AssetRegistry.GetAsset("YellowMaterial"),
-
 		AssetRegistry.GetAsset("AmberMaterial"),
 		AssetRegistry.GetAsset("BrownMaterial"),
 		AssetRegistry.GetAsset("CyanMaterial"),
@@ -706,17 +717,8 @@ void UWorld::HandleSpawnPrimitive(
 		AssetRegistry.GetAsset("TealMaterial"),
 		AssetRegistry.GetAsset("WhiteMaterial"),
 	};
-
-	int count = _countof(Materials); 
-
-	std::uniform_int_distribution<decltype(count)> r(0, count - 1); 
-
-	const FAssetHandle MaterialHandle = Materials[r(RandomEngine)];
-
-	if (AssetRegistry.ResolveAsset<UMesh>(MeshHandle) == nullptr)
-	{
-		return;
-	}
+	std::uniform_int_distribution<size_t> MaterialIndex(0, std::size(Materials) - 1);
+	const FAssetHandle MaterialHandle = bIsStaticMesh ? Materials[MaterialIndex(RandomEngine)] : FAssetHandle{};
 
 
 	std::uniform_real_distribution<float> RandomX(-5.0f, 5.0f);
@@ -727,9 +729,36 @@ void UWorld::HandleSpawnPrimitive(
 
 	for (uint32 Index = 0; Index < Message.SpawnCount;  ++Index)
 	{
-		SpawnActor(MeshHandle, PipelineHandle, MaterialHandle,
-			FVector3{ SpawnCenter.x + RandomX(RandomEngine),SpawnCenter.y + RandomY(RandomEngine), SpawnCenter.z + RandomZ(RandomEngine) });
+		AActor* Actor = AdoptActor<AActor>();
+		if (Actor == nullptr) {
+			continue;
+		}
+
+		UActorComponent* Component = Actor->AddComponent(*ComponentType);
+		if (Component == nullptr) {
+			DestroyActor(Actor);
+			continue;
+		}
+
+		if (ComponentType->IsA(USceneComponent::StaticTypeInfo())) {
+			auto* SceneComponent = static_cast<USceneComponent*>(Component);
+			Actor->SetRootComponent(SceneComponent);
+			SceneComponent->SetRelativeLocation(FVector3{
+				SpawnCenter.x + RandomX(RandomEngine),
+				SpawnCenter.y + RandomY(RandomEngine),
+				SpawnCenter.z + RandomZ(RandomEngine)
+			});
+		}
+
+		if (bIsStaticMesh) {
+			auto* StaticMeshComponent = static_cast<UStaticMeshComponent*>(Component);
+			StaticMeshComponent->SetMeshHandle(MeshHandle);
+			StaticMeshComponent->SetPipelineHandle(PipelineHandle);
+			StaticMeshComponent->SetMaterialHandle(MaterialHandle);
+		}
 	}
+
+	FlushPendingDestroyActors();
 }
 
 

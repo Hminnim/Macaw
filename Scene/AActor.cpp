@@ -17,6 +17,38 @@ AActor::~AActor() {
     }
 }
 
+UActorComponent* AActor::AddComponent(const FTypeInfo& Type) {
+    if (Type.Creator == nullptr) {
+        return nullptr;
+    }
+
+    std::unique_ptr<UObject> CreatedObject = Type.Creator();
+    if (CreatedObject == nullptr ||
+        !CreatedObject->GetTypeInfo()->IsA(UActorComponent::StaticTypeInfo())) {
+        return nullptr;
+    }
+
+    std::unique_ptr<UActorComponent> NewComponent(
+        static_cast<UActorComponent*>(CreatedObject.release())
+    );
+    UActorComponent* ComponentPtr = NewComponent.get();
+
+    ComponentPtr->SetOwner(this);
+    UObjectSystem::Register(ComponentPtr);
+    Components.push_back(std::move(NewComponent));
+
+    if (World != nullptr) {
+        ComponentPtr->RegisterComponent(World);
+
+        if (bHasBegunPlay) {
+            ComponentPtr->InitializeComponent();
+            ComponentPtr->BeginPlay();
+        }
+    }
+
+    return ComponentPtr;
+}
+
 void AActor::RemoveOwnedComponent(UActorComponent* Component) {
     auto It = std::ranges::find_if(Components, [Component](const std::unique_ptr<UActorComponent>& Ptr) {
             return Ptr.get() == Component;

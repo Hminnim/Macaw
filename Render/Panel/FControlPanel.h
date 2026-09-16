@@ -32,7 +32,8 @@ private:
 private:
     char SceneNameBuffer[256] = "NewScene";
 
-    int SelectedPrimitiveIndex = 0;
+    int SelectedComponentIndex = -1;
+    int SelectedMeshIndex = 0;
     int SpawnCountToRequest = 1;
 
     FVector3 CachedCamPos{};

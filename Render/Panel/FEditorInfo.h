@@ -46,22 +46,20 @@ struct FMessageSetEditorCameraRequest
 // =========================================================
 // [Event] 단방향 메시지 데이터 (FMessageChannel 용)
 // =========================================================
-struct FMessageSpawnPrimitive
+struct FMessageSpawnComponent
 {
-    FString PrimitiveType;
+    FString ComponentType;
+    FString MeshType;
     uint32 SpawnCount;
 
-    JG_DECLARE_EDITOR_MESSAGE(FMessageSpawnPrimitive);
+    JG_DECLARE_EDITOR_MESSAGE(FMessageSpawnComponent);
 
-    FMessageSpawnPrimitive(FString InputType, uint32 InputCount) noexcept
-        : PrimitiveType(std::move(InputType)), SpawnCount(InputCount)
+    FMessageSpawnComponent(FString InputComponentType, FString InputMeshType, uint32 InputCount) noexcept
+        : ComponentType(std::move(InputComponentType))
+        , MeshType(std::move(InputMeshType))
+        , SpawnCount(InputCount)
     {
     }
-};
-
-struct FMessageDeletePrimitive
-{
-    JG_DECLARE_EDITOR_MESSAGE(FMessageDeletePrimitive);
 };
 
 struct FMessageSaveScene

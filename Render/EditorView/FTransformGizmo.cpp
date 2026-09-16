@@ -811,7 +811,8 @@ void FTransformGizmo::Render(FRenderProbe& Probe) {
 				.World = LocalTransform * GizmoWorldTransform,
 				.MeshHandle = MeshHandle,
 				.MaterialHandle = MaterialHandle,
-				.PipelineHandle = GizmoPipeline
+				.PipelineHandle = GizmoPipeline,
+				.Flags = static_cast<uint32>(ERenderObjectFlags::Unlit)
 				});
 		};
 

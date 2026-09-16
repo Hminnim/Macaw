@@ -102,7 +102,7 @@ public:
     void HandleMousePickRequest(const FMousePickRequestMessage& Message);
     void HandleMouseCameraRotateRequest(const FMouseCameraRotateRequestMessage& Message);
     void HandleKeyboardCameraMoveRequest(const FKeyboardCameraMoveRequestMessage& Message);
-    void HandleSpawnPrimitive(const FMessageSpawnPrimitive& Message, FAssetRegistry& AssetRegistry);
+    void HandleSpawnComponent(const FMessageSpawnComponent& Message, FAssetRegistry& AssetRegistry);
 
 	void UpdateEditorCameraState();
     void SetAssetRegistry(FAssetRegistry* InAssetRegistry);

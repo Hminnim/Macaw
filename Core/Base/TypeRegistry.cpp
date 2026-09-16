@@ -19,3 +19,19 @@ const FTypeInfo* TypeRegistry::Find(std::string_view TypeName) {
 	}
 	return nullptr;
 }
+
+std::vector<const FTypeInfo*> TypeRegistry::GetRegisteredTypes() {
+	std::vector<const FTypeInfo*> Types;
+	Types.reserve(TypeMap.size());
+
+	for (const auto& [TypeName, Type] : TypeMap) {
+		(void)TypeName;
+		Types.push_back(Type);
+	}
+
+	std::ranges::sort(Types, [](const FTypeInfo* Left, const FTypeInfo* Right) {
+		return Left->TypeName < Right->TypeName;
+	});
+
+	return Types;
+}
