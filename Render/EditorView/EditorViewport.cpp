@@ -94,11 +94,101 @@ void EditorViewport::RenderBounds(ELineDepthMode DepthMode) {
 	if (EditorContext == nullptr) return;
 
 	const UActorComponent* SelectedComponent = EditorContext->GetSelectedComponent();
-	if (SelectedComponent == nullptr || !SelectedComponent->GetTypeInfo()->IsA<UCollisionComponent>()) return;
+	if (SelectedComponent == nullptr) return;
 
-	const auto* CollisionComponent = static_cast<const UCollisionComponent*>(SelectedComponent);
+	if (SelectedComponent->GetTypeInfo()->IsA<UCollisionComponent>()) {
+		const auto* CollisionComponent = static_cast<const UCollisionComponent*>(SelectedComponent);
+		CollisionComponent->DrawEditorBounds(*LineRenderer, DepthMode);	
+	}
+	else if (SelectedComponent->GetTypeInfo()->IsA<UMeshComponent>()) {
+		const auto* MeshComponent = static_cast<const UMeshComponent*>(SelectedComponent);
+		
+		auto& BB = MeshComponent->GetPickingBox(); 
+		DirectX::BoundingOrientedBox WorldBB{};
+		BB.Transform(WorldBB, MeshComponent->GetComponentToWorld().ToSimpleMath());
 
-	CollisionComponent->DrawEditorBounds(*LineRenderer, DepthMode);
+
+		std::array<DirectX::XMFLOAT3, DirectX::BoundingOrientedBox::CORNER_COUNT> Corners{};
+		WorldBB.GetCorners(Corners.data());
+
+		const FVector4 LineColor = FVector4{ 0.0f, 0.0f, 1.0f, 1.0f };
+		const float Thickness = 1.0f;
+		const auto AddEdge = [this, &Corners, LineColor, Thickness, DepthMode](size_t Start, size_t End) {
+			LineRenderer->AddLine(FVector3{ Corners[Start] }, FVector3{ Corners[End] }, LineColor, Thickness, DepthMode);
+			};
+
+		AddEdge(0, 1);
+		AddEdge(1, 2);
+		AddEdge(2, 3);
+		AddEdge(3, 0);
+		AddEdge(4, 5);
+		AddEdge(5, 6);
+		AddEdge(6, 7);
+		AddEdge(7, 4);
+		AddEdge(0, 4);
+		AddEdge(1, 5);
+		AddEdge(2, 6);
+		AddEdge(3, 7);
+
+
+		DirectX::XMFLOAT3 Min = Corners[0];
+		DirectX::XMFLOAT3 Max = Corners[0];
+
+		for (const auto& Corner : Corners)
+		{
+			Min.x = std::min(Min.x, Corner.x);
+			Min.y = std::min(Min.y, Corner.y);
+			Min.z = std::min(Min.z, Corner.z);
+
+			Max.x = std::max(Max.x, Corner.x);
+			Max.y = std::max(Max.y, Corner.y);
+			Max.z = std::max(Max.z, Corner.z);
+		}
+
+		std::array<DirectX::XMFLOAT3, 8> AABBCorners =
+		{
+			DirectX::XMFLOAT3{ Min.x, Min.y, Min.z },
+			DirectX::XMFLOAT3{ Max.x, Min.y, Min.z },
+			DirectX::XMFLOAT3{ Max.x, Max.y, Min.z },
+			DirectX::XMFLOAT3{ Min.x, Max.y, Min.z },
+
+			DirectX::XMFLOAT3{ Min.x, Min.y, Max.z },
+			DirectX::XMFLOAT3{ Max.x, Min.y, Max.z },
+			DirectX::XMFLOAT3{ Max.x, Max.y, Max.z },
+			DirectX::XMFLOAT3{ Min.x, Max.y, Max.z }
+		};
+
+		const FVector4 AABBColor =
+			FVector4{ 1.0f, 0.0f, 0.0f, 1.0f };
+
+		const auto AddAABBEdge =
+			[this, &AABBCorners, AABBColor, Thickness, DepthMode]
+			(size_t Start, size_t End)
+			{
+				LineRenderer->AddLine(
+					FVector3{ AABBCorners[Start] },
+					FVector3{ AABBCorners[End] },
+					AABBColor,
+					Thickness,
+					DepthMode
+				);
+			};
+
+		AddAABBEdge(0, 1);
+		AddAABBEdge(1, 2);
+		AddAABBEdge(2, 3);
+		AddAABBEdge(3, 0);
+
+		AddAABBEdge(4, 5);
+		AddAABBEdge(5, 6);
+		AddAABBEdge(6, 7);
+		AddAABBEdge(7, 4);
+
+		AddAABBEdge(0, 4);
+		AddAABBEdge(1, 5);
+		AddAABBEdge(2, 6);
+		AddAABBEdge(3, 7);
+	}
 }
 
 void EditorViewport::RenderOrientationAxis(ID3D11DeviceContext* Context, CameraProbe& Probe) {

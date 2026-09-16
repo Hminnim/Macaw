@@ -477,8 +477,7 @@ void UWorld::HandleMousePickRequest(const FMousePickRequestMessage& Message) {
 		FMatrix InverseViewProjection;
 		if (!Camera->GetViewProjectionMatrix().TryInverse(InverseViewProjection)) return;
 		FVector3 RayOrigin, RayEnd;
-		if (!InverseViewProjection.TransformCoord({NdcX, NdcY, 0.0f}, RayOrigin)
-			|| !InverseViewProjection.TransformCoord({NdcX, NdcY, 1.0f}, RayEnd)) return;
+		if (!InverseViewProjection.TransformCoord({NdcX, NdcY, 0.0f}, RayOrigin) || !InverseViewProjection.TransformCoord({NdcX, NdcY, 1.0f}, RayEnd)) return;
 		FVector3 RayDirection = RayEnd - RayOrigin;
 
 		if (RayDirection.LengthSquared() > 0.0f) {
@@ -529,7 +528,7 @@ void UWorld::HandleMouseCameraRotateRequest(const FMouseCameraRotateRequestMessa
 		return;
 	}
 
-	constexpr float RotationSensitivity = 0.003f;
+	float RotationSensitivity = EditorContext->GetWorld()->GetSettings().RotationSensitivity * 0.001f;
 	constexpr float MaximumPitch = 0.99f;
 
 	FTransform& CameraTransform = Camera->GetRelativeTransform();
