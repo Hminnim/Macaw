@@ -129,6 +129,65 @@ void EditorViewport::RenderBounds(ELineDepthMode DepthMode) {
 		AddEdge(1, 5);
 		AddEdge(2, 6);
 		AddEdge(3, 7);
+
+
+		DirectX::XMFLOAT3 Min = Corners[0];
+		DirectX::XMFLOAT3 Max = Corners[0];
+
+		for (const auto& Corner : Corners)
+		{
+			Min.x = std::min(Min.x, Corner.x);
+			Min.y = std::min(Min.y, Corner.y);
+			Min.z = std::min(Min.z, Corner.z);
+
+			Max.x = std::max(Max.x, Corner.x);
+			Max.y = std::max(Max.y, Corner.y);
+			Max.z = std::max(Max.z, Corner.z);
+		}
+
+		std::array<DirectX::XMFLOAT3, 8> AABBCorners =
+		{
+			DirectX::XMFLOAT3{ Min.x, Min.y, Min.z },
+			DirectX::XMFLOAT3{ Max.x, Min.y, Min.z },
+			DirectX::XMFLOAT3{ Max.x, Max.y, Min.z },
+			DirectX::XMFLOAT3{ Min.x, Max.y, Min.z },
+
+			DirectX::XMFLOAT3{ Min.x, Min.y, Max.z },
+			DirectX::XMFLOAT3{ Max.x, Min.y, Max.z },
+			DirectX::XMFLOAT3{ Max.x, Max.y, Max.z },
+			DirectX::XMFLOAT3{ Min.x, Max.y, Max.z }
+		};
+
+		const FVector4 AABBColor =
+			FVector4{ 1.0f, 0.0f, 0.0f, 1.0f };
+
+		const auto AddAABBEdge =
+			[this, &AABBCorners, AABBColor, Thickness, DepthMode]
+			(size_t Start, size_t End)
+			{
+				LineRenderer->AddLine(
+					FVector3{ AABBCorners[Start] },
+					FVector3{ AABBCorners[End] },
+					AABBColor,
+					Thickness,
+					DepthMode
+				);
+			};
+
+		AddAABBEdge(0, 1);
+		AddAABBEdge(1, 2);
+		AddAABBEdge(2, 3);
+		AddAABBEdge(3, 0);
+
+		AddAABBEdge(4, 5);
+		AddAABBEdge(5, 6);
+		AddAABBEdge(6, 7);
+		AddAABBEdge(7, 4);
+
+		AddAABBEdge(0, 4);
+		AddAABBEdge(1, 5);
+		AddAABBEdge(2, 6);
+		AddAABBEdge(3, 7);
 	}
 }
 
