@@ -92,7 +92,7 @@ HWND gHWND;
 FRenderer Renderer;
 
 namespace {
-    constexpr bool bLoadTestScene = true;
+    constexpr bool bLoadTestScene = false;
     constexpr bool bEnableSceneSave = true;
 
     void ConfigureTestStaticMesh(UStaticMeshComponent* MeshComponent, const FAssetHandle& MeshHandle, const FAssetHandle& PipelineHandle, const FAssetHandle& MaterialHandle, const FVector3& Location) {
@@ -326,6 +326,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     }
     FAssetHandle TextPipelineHandle = AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(),"TextPipeline", "./Content/Metadata/TextPipeline.meta");
     FAssetHandle FontHandle = AssetRegistry.EmplaceAsset<UFreeTypeFont>(Renderer.GetDevice(),"DefaultFont","./Content/Metadata/NotoSansKR.meta");
+    //FAssetHandle FontHandle = AssetRegistry.EmplaceAsset<UFreeTypeFont>(Renderer.GetDevice(), "KRAFTON", "./Content/Metadata/KRAFTON.meta");
     AActor* TextActor = World.AdoptActor<AActor>();
 
     const FAssetHandle MeshHandle = AssetRegistry.GetAsset("CubeMesh");

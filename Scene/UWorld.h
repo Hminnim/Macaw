@@ -9,6 +9,7 @@
 #include "AActor.h"
 #include "Component/UCameraComponent.h"
 #include "Component/UStaticMeshComponent.h"
+#include "Component/UCollisionComponent.h"
 #include "Core/Asset/FAssetRegistry.h"
 #include "Core/Asset/UMesh.h"
 #include "Core/Base/TObjectRef.h"
@@ -31,13 +32,13 @@
 class AActor;
 class UCameraComponent;
 class UStaticMeshComponent;
-class UBillboardTextComponent;
 struct ID3D11Device;
 class FAssetRegistry;
 class UCameraSubsystem;
 class UCollisionSubsystem;
 class UPickingSubsystem;
 class URenderSubsystem;
+class UTextSubsystem;
 
 class UWorld : public UObject
 {
@@ -83,6 +84,8 @@ public:
     const UPickingSubsystem& GetPickingSubsystem() const;
     UCameraSubsystem& GetCameraSubsystem();
     const UCameraSubsystem& GetCameraSubsystem() const;
+    UTextSubsystem& GetTextSubsystem();
+    const UTextSubsystem& GetTextSubsystem() const;
 
     bool SaveScene(const FString& SceneName, FAssetRegistry* AssetRegistry);
     bool LoadScene(const std::filesystem::path& ScenePath, ID3D11Device* Device, FAssetRegistry* AssetRegistry);
@@ -93,9 +96,6 @@ public:
     void HandleMouseCameraRotateRequest(const FMouseCameraRotateRequestMessage& Message);
     void HandleKeyboardCameraMoveRequest(const FKeyboardCameraMoveRequestMessage& Message);
     void HandleSpawnPrimitive(const FMessageSpawnPrimitive& Message, FAssetRegistry& AssetRegistry);
-
-    void RegisterBillboardText(UBillboardTextComponent* Component);
-    void UnregisterBillboardText(UBillboardTextComponent* Component);
 
 	void UpdateEditorCameraState();
     void SetAssetRegistry(FAssetRegistry* InAssetRegistry);
@@ -121,7 +121,6 @@ private:
    
     TArray<UStaticMeshComponent*> RenderableComponents;
     TArray<TObjectRef<UCollisionComponent>> CollisionComponents;
-    TArray<UBillboardTextComponent*> TextComponents{};
 
 	FStateChannel<RenderWindowInfo>::FReader WindowInfoReader;
 
@@ -132,7 +131,7 @@ private:
     std::unique_ptr<UCollisionSubsystem> CollisionSubsystem;
     std::unique_ptr<UPickingSubsystem> PickingSubsystem;
     std::unique_ptr<UCameraSubsystem> CameraSubsystem;
-	// std::unique_ptr<TextRenderSubSystem> TextRenderSubsystem;
+	std::unique_ptr<UTextSubsystem> TextSubsystem;
 
     FRenderProbe Probe{};
 

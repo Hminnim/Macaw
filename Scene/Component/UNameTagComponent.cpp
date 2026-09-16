@@ -1,8 +1,12 @@
 #include "PCH.h"
 #include "UNameTagComponent.h"
+#include "Core/Asset/UFont.h"
+
+#include "Render/Panel/FPropertyEditorContext.h"
+#include "Render/Pipeline/UPipeline.h"
 
 #include "Scene/AActor.h"
-
+#include "Scene/UWorld.h"
 #include "Core/Base/UObjectSystem.h"
 
 void UNameTagComponent::SetTargetActor(AActor* InTargetActor)
@@ -62,13 +66,8 @@ FGuid UNameTagComponent::GetObjectGuid() const
     return Owner != nullptr ? Owner->GetGuid() : FGuid{};
 }
 
-bool UNameTagComponent::TryGetBillBoardWorld(FMatrix& OutWorld) const
+bool UNameTagComponent::TryGetTextWorld(FMatrix& OutWorld) const
 {
-    if (!CanRenderBillBoard())
-    {
-        return false;
-    }
-
     AActor* Target = GetTargetActor();
 
     if (Target == nullptr || Target->GetRootComponent() == nullptr)
@@ -133,17 +132,13 @@ void UNameTagComponent::RefreshGuidText()
     }
 }
 
-void UBillboardTextComponent::DrawPanels(FPropertyEditorContext& Context)
+void UNameTagComponent::DrawPanels(FPropertyEditorContext& Context)
 {
-    /*
-    UBillboardComponent::DrawPanels(Context);
-
-    if (!Context.BeginCategory("Billboard Text"))
+    if (!Context.BeginCategory("Name Tag"))
     {
         return;
     }
 
- 
     Context.DrawColor("Color", GetColor(), [this](const FVector4& NewColor) { SetColor(NewColor);});
     Context.DrawFloat("Character Height", GetCharacterHeight(), 0.01f, 0.001f, 1000.0f, [this](float NewHeight) {SetCharacterHeight(NewHeight);});
     Context.DrawFloat("Letter Spacing", GetLetterSpacing(), 0.01f, -100.0f, 100.0f, [this](float NewSpacing) {SetLetterSpacing(NewSpacing);});
@@ -161,5 +156,4 @@ void UBillboardTextComponent::DrawPanels(FPropertyEditorContext& Context)
 
     Context.DrawAssetPicker("Font", *Registry, *UFont::StaticTypeInfo(), GetFontHandle(), [this](FAssetHandle NewHandle) {SetFontHandle(NewHandle);});
     Context.DrawAssetPicker("Pipeline", *Registry, *UPipeline::StaticTypeInfo(), GetPipelineHandle(), [this](FAssetHandle NewHandle) {SetPipelineHandle(NewHandle); });
-    */
 }

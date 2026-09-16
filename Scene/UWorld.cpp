@@ -11,6 +11,7 @@
 #include "Subsystem/UCollisionSubsystem.h"
 #include "Subsystem/UPickingSubsystem.h"
 #include "Subsystem/URenderSubsystem.h"
+#include "Subsystem/UTextSubsystem.h"
 #include "Component/UCollisionComponent.h"
 #include "Component/UBillboardTextComponent.h"
 #include "FMouseCameraRotateRequestMessage.h"
@@ -35,6 +36,7 @@
 #include <rapidjson/prettywriter.h>
 
 #include "../Serialize/FEditorConfigManager.h"
+#include "Component/UNameTagComponent.h"
 
 UWorld::UWorld() {
 	InitializeSubsystems();
@@ -69,6 +71,18 @@ bool UWorld::SpawnActor(const FAssetHandle& MeshHandle, const FAssetHandle& Pipe
 			Position.y,
 			Position.z
 		});
+	
+	UNameTagComponent* NameTagComponent = Actor->AddComponent<UNameTagComponent>();
+	NameTagComponent->AttachToComponent(MeshComponent);
+	NameTagComponent->SetTargetActor(nullptr);
+	NameTagComponent->SetTargetLocalOffset(NameTagComponent->GetTargetLocalOffset());
+	NameTagComponent->SetVisible(true);
+	NameTagComponent->SetActive(false);
+	if (AssetRegistry != nullptr)
+	{
+		NameTagComponent->SetPipelineHandle(AssetRegistry->GetAsset("TextPipeline"));
+		NameTagComponent->SetFontHandle(AssetRegistry->GetAsset("DefaultFont"));
+	}
 
 	return true;
 }
@@ -140,11 +154,13 @@ void UWorld::InitializeSubsystems() {
 	CollisionSubsystem = std::make_unique<UCollisionSubsystem>();
 	PickingSubsystem = std::make_unique<UPickingSubsystem>();
 	CameraSubsystem = std::make_unique<UCameraSubsystem>();
+	TextSubsystem = std::make_unique<UTextSubsystem>();
 
 	RenderSubsystem->Initialize(this);
 	CollisionSubsystem->Initialize(this);
 	PickingSubsystem->Initialize(this);
 	CameraSubsystem->Initialize(this);
+	TextSubsystem->Initialize(this);
 
 	if (!FEditorConfigManager::Load(Settings))
 	{
@@ -165,6 +181,19 @@ void UWorld::DeinitializeSubsystems() {
 	if (RenderSubsystem != nullptr) {
 		RenderSubsystem->Deinitialize();
 	}
+	if (TextSubsystem != nullptr) {
+		TextSubsystem->Deinitialize();
+	}
+}
+
+UTextSubsystem& UWorld::GetTextSubsystem()
+{
+	return *TextSubsystem;
+}
+
+const UTextSubsystem& UWorld::GetTextSubsystem() const
+{
+	return *TextSubsystem;
 }
 
 FRenderProbe& UWorld::BuildRenderProbe() {
@@ -173,22 +202,7 @@ FRenderProbe& UWorld::BuildRenderProbe() {
     Probe.TextProbes.clear();
 
 	RenderSubsystem->BuildRenderProbes(AssetRegistry, Probe);
-
-    for (const UBillboardTextComponent* Component : TextComponents)
-    {
-        if (Component == nullptr)
-        {
-            continue;
-        }
-
-        FTextProbe TextProbe{};
-
-        if (Component->MakeTextRender(TextProbe))
-        {
-            Probe.TextProbes.push_back(std::move(TextProbe));
-        }
-    }
-
+	TextSubsystem->BuildTextProbes(Probe);
 	
     if (CameraSubsystem->GetMainCamera() != nullptr)
     {
@@ -476,19 +490,32 @@ void UWorld::HandleMousePickRequest(const FMousePickRequestMessage& Message) {
 				Console::AddLog(Console::STDOutHandle, ELogLevel::Log, ELogCategory::Etc, "Raycast hit primitive component %f", NearestDistance);
 			}
 
-			if (NearestPrimitive != nullptr)
+			AActor* PreviousActor = EditorContext != nullptr ? EditorContext->GetSelectedActor() : nullptr;
+			AActor* SelectedActor = NearestPrimitive != nullptr ? NearestPrimitive->GetOwner() : nullptr;
+
+			if (PreviousActor != nullptr && PreviousActor != SelectedActor)
 			{
-				if (EditorContext != nullptr) {
-					EditorContext->SetSelectedActor(NearestPrimitive->GetOwner());
+				if (UNameTagComponent* NameTag = PreviousActor->GetComponent<UNameTagComponent>())
+				{
+					NameTag->SetActive(false);
+				}
+			}
+			if (SelectedActor != nullptr)
+			{
+				if (EditorContext != nullptr)
+				{
+					EditorContext->SetSelectedActor(SelectedActor);
+				}
+
+				if (UNameTagComponent* NameTag = SelectedActor->GetComponent<UNameTagComponent>())
+				{
+					NameTag->SetActive(true);
 				}
 			}
 			else if (EditorContext != nullptr) {
 				EditorContext->ClearSelection();
 			}
 		}
-
-			
-		
 	}
 
 }
@@ -754,22 +781,4 @@ void UWorld::PublishEditorCameraState()
 	};
 
 	EditorContext->PublishCameraState(CameraState);
-}
-
-void UWorld::RegisterBillboardText(UBillboardTextComponent* Component)
-{
-    if (Component == nullptr)
-    {
-        return;
-    }
-    if (std::ranges::find(TextComponents,Component) != TextComponents.end())
-    {
-        return;
-    }
-    TextComponents.push_back(Component);
-}
-
-void UWorld::UnregisterBillboardText(UBillboardTextComponent* Component)
-{
-    std::erase(TextComponents,Component);
 }

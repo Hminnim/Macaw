@@ -10,6 +10,8 @@
 #include "Scene/AActor.h"
 #include "Scene/UWorld.h"
 
+#include "Scene/Subsystem/UTextSubsystem.h"
+
 namespace
 {
     bool DecodeKoreanUTF8(const FString& Text, TArray<char32_t>& OutCodePoints)
@@ -155,13 +157,13 @@ const TArray<FTextVertex>& UBillboardTextComponent::GetVertices() const
 
 bool UBillboardTextComponent::MakeTextRender(FTextProbe& OutProbe) const
 {
-    if (!FontHandle ||!PipelineHandle || Vertices.empty())
+    if (!IsActive() || !IsVisible() || !FontHandle ||!PipelineHandle || Vertices.empty())
     {
         return false;
     }
 
     // UBillBoardComponent가 World Transform을 계산한다.
-    if (!TryGetBillBoardWorld(OutProbe.World))
+    if (!TryGetTextWorld(OutProbe.World))
     {
         return false;
     }
@@ -299,15 +301,14 @@ void UBillboardTextComponent::RebuildTextGeometry()
 
 void UBillboardTextComponent::OnRegister()
 {
-    UBillboardComponent::OnRegister();
+    UPrimitiveComponent::OnRegister();
 
     UWorld* World = GetBelongingWorld();
 
     if (World != nullptr)
     {
-        World->RegisterBillboardText(this);
+        World->GetTextSubsystem().RegisterComponent(this);
     }
-
     RebuildTextGeometry();
 }
 
@@ -317,15 +318,15 @@ void UBillboardTextComponent::OnUnregister()
 
     if (World != nullptr)
     {
-        World->UnregisterBillboardText(this);
+        World->GetTextSubsystem().UnregisterComponent(this);
     }
 
-    UBillboardComponent::OnUnregister();
+    UPrimitiveComponent::OnUnregister();
 }
 
 void UBillboardTextComponent::DrawPanels(FPropertyEditorContext& Context)
 {
-    UBillboardComponent::DrawPanels(Context);
+    UPrimitiveComponent::DrawPanels(Context);
 
     if (!Context.BeginCategory("Billboard Text"))
     {
@@ -355,7 +356,16 @@ void UBillboardTextComponent::DrawPanels(FPropertyEditorContext& Context)
 
 void UBillboardTextComponent::Serialize(FArchive& Archive)
 {
-    UBillboardComponent::Serialize(Archive);
-    // Font/Pipeline handle, Text, Color,
-    // CharacterHeight, LetterSpacing, LineSpacing 직렬화
+    UPrimitiveComponent::Serialize(Archive);
+    Archive.Serialize("Text", Text);
+    Archive.Serialize("Color", Color);
+    Archive.Serialize("CharacterHeight", CharacterHeight);
+    Archive.Serialize("LetterSpacing", LetterSpacing);
+    Archive.Serialize("LineSpacing", LineSpacing);
+}
+
+bool UBillboardTextComponent::TryGetTextWorld(FMatrix& OutWorld) const
+{
+    OutWorld = GetComponentToWorld();
+    return true;
 }

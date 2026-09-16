@@ -33,7 +33,7 @@ public:
     void DrawPanels(FPropertyEditorContext& Context) override;
 
 protected:
-    bool TryGetBillBoardWorld(FMatrix& OutWorld) const override;
+    bool TryGetTextWorld(FMatrix& OutWorld) const override;
     void Serialize(FArchive& Archive) override;
 
 private:
