@@ -11,7 +11,10 @@
 #include "Scene/Component/UActorComponent.h"
 #include "Scene/Component/UBoxColliderComponent.h"
 #include "Scene/Component/UCameraComponent.h"
+#include "Scene/Component/UDirectionalLightComponent.h"
+#include "Scene/Component/UPointLightComponent.h"
 #include "Scene/Component/USceneComponent.h"
+#include "Scene/Component/USpotLightComponent.h"
 #include "Scene/Component/UStaticMeshComponent.h"
 #include "Scene/Component/UBillboardTextComponent.h"
 #include "Scene/Component/UNameTagComponent.h"
@@ -93,6 +96,9 @@ private:
             if (ImGui::MenuItem("Scene Component")) AddSceneComponent<USceneComponent>(Actor);
             if (ImGui::MenuItem("Static Mesh Component")) AddSceneComponent<UStaticMeshComponent>(Actor);
             if (ImGui::MenuItem("Camera Component")) AddSceneComponent<UCameraComponent>(Actor);
+			if (ImGui::MenuItem("Directional Light Component")) AddSceneComponent<UDirectionalLightComponent>(Actor);
+			if (ImGui::MenuItem("Point Light Component")) AddSceneComponent<UPointLightComponent>(Actor);
+			if (ImGui::MenuItem("Spot Light Component")) AddSceneComponent<USpotLightComponent>(Actor);
             if (ImGui::MenuItem("Box Collider Component")) AddSceneComponent<UBoxColliderComponent>(Actor);
             if (ImGui::MenuItem("Billboard Text Component")) AddSceneComponent<UBillboardTextComponent>(Actor);
             if (ImGui::MenuItem("Name Tag Component")) AddSceneComponent<UNameTagComponent>(Actor);

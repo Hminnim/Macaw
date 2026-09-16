@@ -10,7 +10,7 @@ struct FBillboardData
 
 StructuredBuffer<FBillboardData> Billboards : register(t0);
 
-Texture2D SpriteTexture : register(t2);
+Texture2D SpriteTexture : register(t3);
 SamplerState LinearClamp : register(s1);
 
 cbuffer BillboardViewConstans : register(b0)

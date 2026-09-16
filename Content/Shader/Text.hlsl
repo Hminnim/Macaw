@@ -1,4 +1,4 @@
-Texture2D FontAtlas : register(t2);
+Texture2D FontAtlas : register(t3);
 SamplerState PointClamp : register(s2);
 
 cbuffer TextConstants : register(b0)

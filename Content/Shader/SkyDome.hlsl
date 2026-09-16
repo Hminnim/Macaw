@@ -6,7 +6,7 @@ struct FModelContext
 };
 
 StructuredBuffer<FModelContext> ModelContexts : register(t0);
-Texture2D BaseColorTexture : register(t2);
+Texture2D BaseColorTexture : register(t3);
 SamplerState LinearWrap : register(s0);
 
 cbuffer RootConstants : register(b0)

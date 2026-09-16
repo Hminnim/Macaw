@@ -54,6 +54,14 @@ enum class ERenderLayer : uint32 {
 	Gizmo = 4
 };
 
+// GPU light records use this value directly, so keep the underlying type
+// compatible with HLSL's uint.
+enum class ELightType : uint32 {
+    Directional,
+    Point,
+    Spot
+};
+
 constexpr uint32 operator|(ERenderObjectFlags Left, ERenderObjectFlags Right) {
 	return static_cast<uint32>(Left) | static_cast<uint32>(Right);
 }
@@ -72,11 +80,31 @@ struct CameraProbe {
 	FMatrix Projection{};
 };
 
+// World-space, renderer-facing light data. This layout deliberately matches
+// the StructuredBuffer element consumed by the lighting shader.
+struct FLightProbe {
+    FVector3 Color{ 1.0f, 1.0f, 1.0f };
+    float Intensity{ 1.0f };
+
+    FVector3 Position{};
+    float AttenuationRadius{};
+
+    FVector3 Direction{ 0.0f, 0.0f, 1.0f };
+    float InnerConeCos{ 1.0f };
+
+    float OuterConeCos{ 1.0f };
+    ELightType Type{ ELightType::Directional };
+    FVector2 Padding{};
+};
+
+static_assert(sizeof(FLightProbe) == 64);
+
 struct FRenderProbe {
 	TArray<FActorProbe> ActorProbes{};
 	TArray<FActorProbe> GizmoProbes{};
     TArray<FTextProbe> TextProbes{};
     TArray<FBillboardProbe> BillboardProbes{};
+    TArray<FLightProbe> LightProbes{};
 
 	CameraProbe MainCameraProbe{}; 
 };

@@ -13,6 +13,7 @@
 #include "Subsystem/URenderSubsystem.h"
 #include "Subsystem/UTextSubsystem.h"
 #include "Subsystem/UBillboardSubsystem.h"
+#include "Subsystem/ULightSubsystem.h"
 #include "Component/UCollisionComponent.h"
 #include "Component/UBillboardTextComponent.h"
 #include "FMouseCameraRotateRequestMessage.h"
@@ -157,12 +158,14 @@ void UWorld::InitializeSubsystems() {
 	CameraSubsystem = std::make_unique<UCameraSubsystem>();
 	TextSubsystem = std::make_unique<UTextSubsystem>();
 	BillboardSubsystem = std::make_unique<UBillboardSubsystem>();
+    LightSubsystem = std::make_unique<ULightSubsystem>();
 
 	RenderSubsystem->Initialize(this);
 	CollisionSubsystem->Initialize(this);
 	PickingSubsystem->Initialize(this);
 	CameraSubsystem->Initialize(this);
 	TextSubsystem->Initialize(this);
+	LightSubsystem->Initialize(this);
 
 	if (!FEditorConfigManager::Load(Settings))
 	{
@@ -192,6 +195,9 @@ void UWorld::DeinitializeSubsystems() {
 	{
 		BillboardSubsystem->Deinitialize();
 	}
+	if (LightSubsystem != nullptr) {
+		LightSubsystem->Deinitialize();
+	}
 }
 
 UTextSubsystem& UWorld::GetTextSubsystem()
@@ -204,13 +210,23 @@ const UTextSubsystem& UWorld::GetTextSubsystem() const
 	return *TextSubsystem;
 }
 
+ULightSubsystem& UWorld::GetLightSubsystem() {
+    return *LightSubsystem;
+}
+
+const ULightSubsystem& UWorld::GetLightSubsystem() const {
+    return *LightSubsystem;
+}
+
 FRenderProbe& UWorld::BuildRenderProbe() {
 	Probe.ActorProbes.clear();
     Probe.GizmoProbes.clear();
-    Probe.TextProbes.clear();
+	Probe.TextProbes.clear();
 	Probe.BillboardProbes.clear();
+	Probe.LightProbes.clear();
 
 	RenderSubsystem->BuildRenderProbes(AssetRegistry, Probe);
+	LightSubsystem->BuildLightProbes(Probe);
 	TextSubsystem->BuildTextProbes(Probe);
 	
     if (CameraSubsystem->GetMainCamera() != nullptr)

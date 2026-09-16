@@ -6,7 +6,8 @@ struct FModelContext
 };
 
 StructuredBuffer<FModelContext> ModelContexts : register(t0);
-Texture2D BaseColorTexture : register(t2);
+#include "Lighting.hlsli"
+Texture2D BaseColorTexture : register(t3);
 SamplerState LinearWrap : register(s0);
 
 cbuffer RootConstants : register(b0)
@@ -16,6 +17,7 @@ cbuffer RootConstants : register(b0)
     row_major float4x4 ViewProjection;
 
     uint ModelContextStart;
+    uint LightCount;
 };
 
 struct VS_INPUT
@@ -30,6 +32,7 @@ struct PS_INPUT
     float4 Position : SV_POSITION;
     float3 Normal : NORMAL;
     float2 UV : TEXCOORD0;
+    float3 WorldPosition : TEXCOORD1;
     nointerpolation uint MaterialIndex : Jungle1;
     nointerpolation float3 ColorCoefficient : Jungle2;
 };
@@ -44,6 +47,7 @@ PS_INPUT mainVS(VS_INPUT Input, uint InstanceID : SV_InstanceID)
     Output.Position = mul(WorldPosition, ViewProjection);
     Output.Normal = mul(Input.Normal, (float3x3)ModelContext.World);
     Output.UV = Input.UV;
+    Output.WorldPosition = WorldPosition.xyz;
     Output.MaterialIndex = ModelContext.MaterialIndex;
     Output.ColorCoefficient = (ModelContext.Flags & 1) != 0
         ? float3(1.0f, 0.0f, 0.0f)
@@ -55,6 +59,6 @@ PS_INPUT mainVS(VS_INPUT Input, uint InstanceID : SV_InstanceID)
 float4 mainPS(PS_INPUT Input) : SV_TARGET
 {
     float4 Color = BaseColorTexture.Sample(LinearWrap, Input.UV);
-    Color.rgb *= Input.ColorCoefficient;
+    Color.rgb *= Input.ColorCoefficient * CalculateDirectLighting(Input.WorldPosition, Input.Normal, LightCount);
     return Color;
 }

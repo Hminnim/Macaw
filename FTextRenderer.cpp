@@ -106,7 +106,7 @@ void FTextRenderer::Render(ID3D11DeviceContext* Context, const TArray<FTextProbe
 		UINT Offset = 0;
 		Context->IASetVertexBuffers(0,1,&Buffer,&Stride,&Offset);
 		Context->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0);
-		Context->PSSetShaderResources(2, 1, &AtlasSRV);
+		Context->PSSetShaderResources(3, 1, &AtlasSRV);
 		FTextConstants Constants{
 			.World = Probe.World,
 			.ViewwProjection = Camera.ViewProjection,

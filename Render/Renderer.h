@@ -71,6 +71,7 @@ private:
 	
 	void CreateSamplerStates();
 	void BindSamplerStates();
+	bool UploadLightContext(const FRenderProbe& Probe);
 
 private:
 #ifdef _DEBUG
@@ -94,6 +95,7 @@ private:
 	FAssetRegistry* AssetRegistry{ nullptr };
 
 	TGraphicsArray<ModelContext, true, true> ModelContextArray{};
+	TGraphicsArray<FLightProbe, true, true> LightContextArray{};
 	TArray<ModelContext> FrameContexts{};
 	TGraphicsRootConstants<64> RootConstants{};
 
@@ -105,4 +107,5 @@ private:
 	//FWorldEditorContext* EditorContext = ;
 
 	size_t RenderIndex = 0;
+	uint32 FrameLightCount = 0;
 };

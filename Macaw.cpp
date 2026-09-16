@@ -28,6 +28,9 @@
 #include "Scene/Component/UCameraComponent.h"
 #include "Scene/Component/UStaticMeshComponent.h"
 #include "Scene/Component/UBoxColliderComponent.h"
+#include "Scene/Component/UDirectionalLightComponent.h"
+#include "Scene/Component/UPointLightComponent.h"
+#include "Scene/Component/USpotLightComponent.h"
 #include "Scene/FWorldEditorContext.h"
 
 #include "Core/Base/TypeRegistry.h"
@@ -193,6 +196,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	TypeRegistry::Register(UStaticMeshComponent::StaticTypeInfo());
     TypeRegistry::Register(UCollisionComponent::StaticTypeInfo());
     TypeRegistry::Register(UBoxColliderComponent::StaticTypeInfo());
+	TypeRegistry::Register(UDirectionalLightComponent::StaticTypeInfo());
+	TypeRegistry::Register(UPointLightComponent::StaticTypeInfo());
+	TypeRegistry::Register(USpotLightComponent::StaticTypeInfo());
 	TypeRegistry::Register(UActorComponent::StaticTypeInfo());
 	TypeRegistry::Register(USceneComponent::StaticTypeInfo());
 	TypeRegistry::Register(UCollisionComponent::StaticTypeInfo());

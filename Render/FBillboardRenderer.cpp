@@ -114,7 +114,7 @@ void FBillboardRenderer::Render(ID3D11DeviceContext* Context, const TArray<FBill
 		ID3D11ShaderResourceView* BufferSRV = InstanceBufferSRV.Get();
 		Context->GSSetShaderResources(0, 1, &BufferSRV);		
 		ID3D11ShaderResourceView* TextureSRV = Texture->GetSRV();
-		Context->PSSetShaderResources(2, 1, &TextureSRV);	
+		Context->PSSetShaderResources(3, 1, &TextureSRV);
 		Context->DrawInstanced(1, InstanceCount, 0, 0);
 	}
 }

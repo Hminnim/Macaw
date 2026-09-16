@@ -34,6 +34,7 @@ void FRenderer::Create(HWND WindowHandle, UINT width, UINT height) {
 	FRenderer::CreateSamplerStates();
 
 	ModelContextArray.Initialize(Device.Get(), DeviceContext.Get(), 128);
+	LightContextArray.Initialize(Device.Get(), DeviceContext.Get(), 16);
 	FrameContexts.reserve(128);
 	RootConstants.Initialize(Device.Get());
 	TextRenderer.Initialize(Device.Get(),256);
@@ -67,6 +68,10 @@ void FRenderer::EndFrame() {
 }
 
 void FRenderer::RenderScene(FRenderProbe& Probe) {
+	if (!UploadLightContext(Probe)) {
+		return;
+	}
+
 	if (AssetRegistry != nullptr) {
 		AssetRegistry->GetMaterialBuffer().Flush(DeviceContext.Get());
 	}
@@ -79,6 +84,16 @@ void FRenderer::RenderScene(FRenderProbe& Probe) {
 		TextRenderer.Render(DeviceContext.Get(),Probe.TextProbes,Probe.MainCameraProbe, AssetRegistry);
 		BillboardRenderer.Render(DeviceContext.Get(), Probe.BillboardProbes, Probe.MainCameraProbe, AssetRegistry);
 	}
+}
+
+bool FRenderer::UploadLightContext(const FRenderProbe& Probe) {
+	if (!LightContextArray.UploadDiscard(Device.Get(), DeviceContext.Get(), Probe.LightProbes)) {
+		return false;
+	}
+
+	FrameLightCount = LightContextArray.GetCount();
+	DeviceContext->PSSetShaderResources(2, 1, LightContextArray.GetSRV());
+	return true;
 }
 
 
@@ -181,6 +196,7 @@ void FRenderer::RenderActorList(TArray<FActorProbe>& ActorProbes, const CameraPr
 		.ViewProjection = MainCameraProbe.ViewProjection
 		}, 0);
 
+	RootConstants.SetGraphicsRoot32BitConstant(FrameLightCount, 49);
 	RootConstants.Bind(DeviceContext.Get(), 0, EGraphicsShaderStage::Graphics);
 	uint32 InstanceCount{ 0 };
 	FMaterialChunkSignature BoundTextureSet{};
@@ -211,7 +227,7 @@ void FRenderer::RenderActorList(TArray<FActorProbe>& ActorProbes, const CameraPr
 			}
 
 			if (Signature.TextureFieldCount > 0) {
-				DeviceContext->PSSetShaderResources(2, Signature.TextureFieldCount, TextureSRVs.data());
+				DeviceContext->PSSetShaderResources(3, Signature.TextureFieldCount, TextureSRVs.data());
 			}
 
 			BoundTextureSet = Signature;

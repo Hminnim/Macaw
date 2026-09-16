@@ -40,6 +40,7 @@ class UPickingSubsystem;
 class URenderSubsystem;
 class UBillboardSubsystem;
 class UTextSubsystem;
+class ULightSubsystem;
 
 class UWorld : public UObject
 {
@@ -90,6 +91,8 @@ public:
 
     UTextSubsystem& GetTextSubsystem();
     const UTextSubsystem& GetTextSubsystem() const;
+    ULightSubsystem& GetLightSubsystem();
+    const ULightSubsystem& GetLightSubsystem() const;
 
     bool SaveScene(const FString& SceneName, FAssetRegistry* AssetRegistry);
     bool LoadScene(const std::filesystem::path& ScenePath, ID3D11Device* Device, FAssetRegistry* AssetRegistry);
@@ -138,6 +141,7 @@ private:
 
     std::unique_ptr<UBillboardSubsystem> BillboardSubsystem;
 	std::unique_ptr<UTextSubsystem> TextSubsystem;
+    std::unique_ptr<ULightSubsystem> LightSubsystem;
 
     FRenderProbe Probe{};
 
