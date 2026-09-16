@@ -17,6 +17,9 @@ private:
     bool IsActorAttachedTo(const AActor& Actor, const AActor& ParentActor) const;
     bool IsRootActor(const AActor& Actor) const;
     bool HasActorChildren(const AActor& Actor) const;
+    void DrawActorDragSource(AActor& Actor);
+    void AcceptActorChildDrop(AActor& ParentActor);
+    void DrawRootActorDropTarget();
     void HandleDeleteShortcut();
     void DrawActor(AActor& Actor);
     void DrawRootActors();

@@ -4,7 +4,12 @@
 #include "../../Scene/Component/UNameTagComponent.h"
 #include "Scene/FWorldEditorContext.h"
 
+#include <algorithm>
 #include <ranges>
+
+namespace {
+constexpr const char* ActorDragDropPayloadType = "OUTLINER_ACTOR";
+}
 
 FOutlinerPanel::FOutlinerPanel(UWorld& InWorld, FWorldEditorContext& InEditorContext)
     : World(&InWorld)
@@ -37,6 +42,7 @@ void FOutlinerPanel::DrawPanel() {
         ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthStretch, 0.24f);
         ImGui::TableHeadersRow();
         DrawRootActors();
+        DrawRootActorDropTarget();
         ImGui::EndTable();
     }
 
@@ -76,6 +82,58 @@ bool FOutlinerPanel::HasActorChildren(const AActor& Actor) const {
     return std::ranges::any_of(World->GetActors(), [this, &Actor](const std::unique_ptr<AActor>& ChildActor) {
         return IsActorAttachedTo(*ChildActor, Actor);
     });
+}
+
+void FOutlinerPanel::DrawActorDragSource(AActor& Actor) {
+    if (ImGui::BeginDragDropSource()) {
+        AActor* DraggedActor = &Actor;
+        ImGui::SetDragDropPayload(ActorDragDropPayloadType, &DraggedActor, sizeof(DraggedActor));
+        ImGui::TextUnformatted(Actor.GetName().ToString().c_str());
+        ImGui::EndDragDropSource();
+    }
+}
+
+void FOutlinerPanel::AcceptActorChildDrop(AActor& ParentActor) {
+    if (!ImGui::BeginDragDropTarget()) {
+        return;
+    }
+
+    if (const ImGuiPayload* Payload = ImGui::AcceptDragDropPayload(ActorDragDropPayloadType);
+        Payload != nullptr && Payload->Delivery && Payload->DataSize == sizeof(AActor*)) {
+        AActor* DraggedActor = *static_cast<AActor* const*>(Payload->Data);
+        USceneComponent* DraggedRoot = DraggedActor != nullptr ? DraggedActor->GetRootComponent() : nullptr;
+        USceneComponent* ParentRoot = ParentActor.GetRootComponent();
+
+        if (DraggedActor != nullptr && DraggedActor != &ParentActor && DraggedActor->GetWorld() == World &&
+            ParentActor.GetWorld() == World && DraggedRoot != nullptr && ParentRoot != nullptr) {
+            DraggedRoot->AttachToComponent(ParentRoot, EAttachmentTransformRule::KeepWorldTransform);
+        }
+    }
+
+    ImGui::EndDragDropTarget();
+}
+
+void FOutlinerPanel::DrawRootActorDropTarget() {
+    const float AvailableHeight = std::max(ImGui::GetFrameHeight(), ImGui::GetContentRegionAvail().y);
+    ImGui::TableNextRow(ImGuiTableRowFlags_None, AvailableHeight);
+    ImGui::TableSetColumnIndex(0);
+    ImGui::PushID("OutlinerRootActorDropTarget");
+    ImGui::Selectable("##RootActorDropTarget", false, ImGuiSelectableFlags_SpanAllColumns, ImVec2(0.0f, AvailableHeight));
+
+    if (ImGui::BeginDragDropTarget()) {
+        if (const ImGuiPayload* Payload = ImGui::AcceptDragDropPayload(ActorDragDropPayloadType);
+            Payload != nullptr && Payload->Delivery && Payload->DataSize == sizeof(AActor*)) {
+            AActor* DraggedActor = *static_cast<AActor* const*>(Payload->Data);
+            USceneComponent* DraggedRoot = DraggedActor != nullptr ? DraggedActor->GetRootComponent() : nullptr;
+
+            if (DraggedActor != nullptr && DraggedActor->GetWorld() == World && DraggedRoot != nullptr) {
+                DraggedRoot->DetachFromComponent(EAttachmentTransformRule::KeepWorldTransform);
+            }
+        }
+        ImGui::EndDragDropTarget();
+    }
+
+    ImGui::PopID();
 }
 
 void FOutlinerPanel::HandleDeleteShortcut() {
@@ -129,6 +187,9 @@ void FOutlinerPanel::DrawActor(AActor& Actor) {
         }
 
     }
+
+    DrawActorDragSource(Actor);
+    AcceptActorChildDrop(Actor);
 
     ImGui::TableSetColumnIndex(1);
     ImGui::TextDisabled("%.*s", static_cast<int>(TypeName.size()), TypeName.data());
