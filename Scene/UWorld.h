@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <filesystem>
 #include <memory>
@@ -26,7 +26,7 @@
 
 #include "../Render/RenderWindowInfo.h"
 
-#include "Folder.h"
+#include "../Serialize/FEditorConfigManager.h"
 
 class AActor;
 class UCameraComponent;
@@ -36,6 +36,7 @@ struct ID3D11Device;
 class FAssetRegistry;
 class UCameraSubsystem;
 class UCollisionSubsystem;
+class UPickingSubsystem;
 class URenderSubsystem;
 
 class UWorld : public UObject
@@ -57,6 +58,8 @@ public:
             return nullptr;
         }
 
+        ActorPtr->SetName(MakeUniqueObjectName(ActorPtr->GetTypeInfo()->TypeName));
+
         return ActorPtr;
     }
 
@@ -65,13 +68,6 @@ public:
     void FlushPendingDestroyActors();
 
     const TArray<std::unique_ptr<AActor>>& GetActors() const;
-    Folder* CreateFolder(FString InName, FGuid InParentFolderGuid = {});
-    bool DestroyFolder(FGuid FolderGuid);
-    bool SetFolderParent(FGuid FolderGuid, FGuid InParentFolderGuid);
-    Folder* FindFolder(FGuid FolderGuid);
-    const Folder* FindFolder(FGuid FolderGuid) const;
-    const TArray<std::unique_ptr<Folder>>& GetFolders() const;
-    bool SetActorFolder(AActor* Actor, FGuid FolderGuid);
     FRenderProbe& BuildRenderProbe();
     
     void SetEditorContext(FWorldEditorContext* InEditorContext);
@@ -83,6 +79,8 @@ public:
     const URenderSubsystem& GetRenderSubsystem() const;
     UCollisionSubsystem& GetCollisionSubsystem();
     const UCollisionSubsystem& GetCollisionSubsystem() const;
+    UPickingSubsystem& GetPickingSubsystem();
+    const UPickingSubsystem& GetPickingSubsystem() const;
     UCameraSubsystem& GetCameraSubsystem();
     const UCameraSubsystem& GetCameraSubsystem() const;
 
@@ -107,15 +105,17 @@ public:
 
     void ResetWorld(FAssetRegistry* AssetRegistry, ID3D11Device* Device);
 
+    FName MakeUniqueObjectName(std::string_view SourceName);
+    AActor* FindActorByName(FName InName) const;
+
+    FEditorSettings& GetSettings() { return Settings; }
 private:
 	void InitializeSubsystems();
 	void DeinitializeSubsystems();
-    bool AdoptFolder(std::unique_ptr<Folder> InFolder);
-    bool ValidateFolderHierarchy() const;
 
     void PublishEditorCameraState();
+
 private:
-    TArray<std::unique_ptr<Folder>> Folders;
     TArray<std::unique_ptr<AActor>> Actors;
     TArray<AActor*> PendingDestroyActors;
    
@@ -130,8 +130,11 @@ private:
 
     std::unique_ptr<URenderSubsystem> RenderSubsystem;
     std::unique_ptr<UCollisionSubsystem> CollisionSubsystem;
+    std::unique_ptr<UPickingSubsystem> PickingSubsystem;
     std::unique_ptr<UCameraSubsystem> CameraSubsystem;
 	// std::unique_ptr<TextRenderSubSystem> TextRenderSubsystem;
 
     FRenderProbe Probe{};
+
+    FEditorSettings Settings;
 };

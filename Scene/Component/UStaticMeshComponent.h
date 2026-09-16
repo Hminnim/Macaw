@@ -25,6 +25,8 @@ protected:
     void Serialize(FArchive& Archive) override;
 
 private:
+    void EnsureDefaultRenderAssets();
+
     FAssetHandle MaterialHandle;
     FAssetHandle PipelineHandle;
 };

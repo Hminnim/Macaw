@@ -4,6 +4,9 @@
 #include "Core/Base/TypeInfo.h"
 #include "Serialize/FArchive.h"
 
+class ILineRenderer;
+enum class ELineDepthMode : uint8;
+
 class UCollisionComponent : public UPrimitiveComponent {
 public:
     UCollisionComponent() = default;
@@ -17,6 +20,7 @@ public:
     void DrawPanels(FPropertyEditorContext& Context) override;
 
     bool Raycast(const FRay& Ray, float& OutDistance) const;
+    virtual void DrawEditorBounds(ILineRenderer& LineRenderer, ELineDepthMode DepthMode) const = 0;
 
     void MakeRender(FActorProbe& OutProbe) const override;
 
@@ -24,10 +28,6 @@ public:
 
     virtual bool RaycastBounds(const FRay& Ray, float& OutDistance) const = 0;
     virtual class UMeshComponent* GetMeshComponent() const { return nullptr; }
-    virtual FVector3 GetBoundsCenter() const = 0;
-    virtual FVector3 GetExtent() const = 0;
-    virtual FQuat GetBoundsOrientation() const = 0;
-    virtual void SetExtent(const FVector3& InExtent) = 0;
 
 protected:
     void Serialize(FArchive& Archive) override;

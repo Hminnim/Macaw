@@ -1,4 +1,4 @@
-﻿// Macaw.cpp : 애플리케이션에 대한 진입점을 정의합니다.
+// Macaw.cpp : 애플리케이션에 대한 진입점을 정의합니다.
 //
 #include "PCH.h"
  
@@ -62,6 +62,8 @@
 #include "Scene/Component/UBillBoardTextComponent.h"
 #include "Scene/Component/UNameTagComponent.h"
 
+#include "Serialize/FEditorConfigManager.h"
+
 #define MAX_LOADSTRING 100
 
 
@@ -90,8 +92,8 @@ HWND gHWND;
 FRenderer Renderer;
 
 namespace {
-    constexpr bool bLoadTestScene = false;
-    constexpr bool bEnableSceneSave = false;
+    constexpr bool bLoadTestScene = true;
+    constexpr bool bEnableSceneSave = true;
 
     void ConfigureTestStaticMesh(UStaticMeshComponent* MeshComponent, const FAssetHandle& MeshHandle, const FAssetHandle& PipelineHandle, const FAssetHandle& MaterialHandle, const FVector3& Location) {
         MeshComponent->SetMeshHandle(MeshHandle);
@@ -305,11 +307,23 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "PurpleMaterial", "./Content/Metadata/PurpleMaterial.meta");
     AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "TealMaterial", "./Content/Metadata/TealMaterial.meta");
     AssetRegistry.EmplaceAsset<UColorMaterial>(Renderer.GetDevice(), "WhiteMaterial", "./Content/Metadata/WhiteMaterial.meta");
+    {
+        AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(), "TexturedPipeline", "./Content/Metadata/TexturedTestPipeline.meta");
+        AssetRegistry.EmplaceAsset<UTexture>(Renderer.GetDevice(), "PlankTexture", "./Content/Metadata/TexturedTestTexture.meta");
+        AssetRegistry.EmplaceAsset<UTexturedMaterial>(Renderer.GetDevice(), "TexturedMaterial", "./Content/Metadata/TexturedTestMaterial.meta");
 
-	AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(), "TexturedPipeline", "./Content/Metadata/TexturedTestPipeline.meta");
-	AssetRegistry.EmplaceAsset<UTexture>(Renderer.GetDevice(), "PlankTexture", "./Content/Metadata/TexturedTestTexture.meta");
-	AssetRegistry.EmplaceAsset<UTexturedMaterial>(Renderer.GetDevice(), "TexturedMaterial", "./Content/Metadata/TexturedTestMaterial.meta");
+        auto SkyDomeTextureHandle = AssetRegistry.EmplaceAsset<UTexture>(Renderer.GetDevice(), "SkyDomeTexture", "./Content/Metadata/SkyDomeTexture.meta");
+        auto SkyDomeMaterialHandle = AssetRegistry.EmplaceAsset<UTexturedMaterial>(Renderer.GetDevice(), "SkyDomeMaterial", "./Content/Metadata/SkyDomeMaterial.meta");
+        auto SkyDomePipelineHandle = AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(), "SkyDomePipeline", "./Content/Metadata/SkyDomePipeline.meta");
+		auto SkyDomeMeshHandle = AssetRegistry.EmplaceAsset<UMesh>(Renderer.GetDevice(), "SkyDome", "./Content/Metadata/SkyDomeMesh.meta");
 
+		AActor* SkyDomeActor = World.AdoptActor<AActor>();
+        UStaticMeshComponent* comp = SkyDomeActor->AddComponent<UStaticMeshComponent>();
+		comp->SetMeshHandle(SkyDomeMeshHandle);
+		comp->SetPipelineHandle(SkyDomePipelineHandle);
+		comp->SetMaterialHandle(SkyDomeMaterialHandle);
+
+    }
     FAssetHandle TextPipelineHandle = AssetRegistry.EmplaceAsset<UPipeline>(Renderer.GetDevice(),"TextPipeline", "./Content/Metadata/TextPipeline.meta");
     FAssetHandle FontHandle = AssetRegistry.EmplaceAsset<UFreeTypeFont>(Renderer.GetDevice(),"DefaultFont","./Content/Metadata/NotoSansKR.meta");
     AActor* TextActor = World.AdoptActor<AActor>();
@@ -322,6 +336,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     AActor* CameraActor = World.AdoptActor<AActor>();
     UCameraComponent* Camera = CameraActor->AddComponent<UCameraComponent>();
 
+    Camera->SetMoveSensitivity(World.GetSettings().MoveSensitivity);
+    Camera->SetRotationSensitivity(World.GetSettings().RotationSensitivity);
     CameraActor->SetRootComponent(Camera);
 
     }
@@ -339,6 +355,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     auto LastTickTime = std::chrono::steady_clock::now();
 
+    //char BufferA[256] = "Player";
+    //char BufferB[256] = "player";
+
     while (true) {
         if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
             if (msg.message == WM_QUIT) {
@@ -354,52 +373,81 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             const float DeltaTime = std::chrono::duration<float>(CurrentTickTime - LastTickTime).count();
             LastTickTime = CurrentTickTime;
 
-            Renderer.BeginFrame();
+			ImGui_ImplDX11_NewFrame();
+			ImGui_ImplWin32_NewFrame();
+			ImGui::NewFrame();
+			const ImGuiID DockSpaceId = ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+			EditorUIManager.Tick();
 
+			ImGui::SetNextWindowDockID(DockSpaceId, ImGuiCond_FirstUseEver);
+			ImGui::Begin("Viewport###SceneViewport");
+			const ImVec2 SceneViewportPosition = ImGui::GetCursorScreenPos();
+			const ImVec2 SceneViewportSize = ImGui::GetContentRegionAvail();
+			const ImVec2 MainViewportPosition = ImGui::GetMainViewport()->Pos;
+			const bool bSceneViewportHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem);
+			const bool bSceneViewportFocused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
+			const uint32 SceneViewportWidth = static_cast<uint32>(std::max(0.0f, SceneViewportSize.x));
+			const uint32 SceneViewportHeight = static_cast<uint32>(std::max(0.0f, SceneViewportSize.y));
+			Renderer.ResizeSceneSurface(SceneViewportWidth, SceneViewportHeight, SceneViewportPosition.x - MainViewportPosition.x, SceneViewportPosition.y - MainViewportPosition.y);
 
-            ImGui_ImplDX11_NewFrame();
-            ImGui_ImplWin32_NewFrame();
-            ImGui::NewFrame();
-            ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+			// 입력 상태는 WndProc의 ProcessWindowMessage에서 갱신한다.
+			EditorView.ProcessInput(GKeyboardInput, GMouseInput, !bSceneViewportHovered);
 
-            // 입력 상태는 WndProc의 ProcessWindowMessage에서 갱신한다.
-			EditorView.ProcessInput(GKeyboardInput, GMouseInput, ImGui::GetIO().WantCaptureMouse);
-
-            EditorUIManager.Tick();
-
-            GMouseInput.DispatchPendingWorldCommands(
-                DEFAULT_WINDOW_WIDTH,
-                DEFAULT_WINDOW_HEIGHT,
-                ImGui::GetIO().WantCaptureMouse);
-
-            GKeyboardInput.DispatchPendingWorldCommands(
-                DeltaTime,
-                ImGui::GetIO().WantCaptureKeyboard);
+			GMouseInput.DispatchPendingWorldCommands(SceneViewportWidth, SceneViewportHeight, !bSceneViewportHovered);
+			GKeyboardInput.DispatchPendingWorldCommands(DeltaTime, !bSceneViewportFocused || ImGui::GetIO().WantCaptureKeyboard);
 
             WorldCommandChannel.Dispatch();
             World.Tick(DeltaTime);
 
-            EditorContext.Dispatch();
+			EditorContext.Dispatch();
 
-            //UndoCommandChannel.Dispatch();
+			//UndoCommandChannel.Dispatch();
 
 			FRenderProbe& Probe{ World.BuildRenderProbe() };
-            
+			Renderer.BeginSceneRender();
 			EditorView.RenderInProbe(Probe);
-            Renderer.RenderScene(Probe);
+			Renderer.RenderScene(Probe);
             EditorView.RenderSceneGuides(Renderer.GetDeviceContext(),Probe);
-            Renderer.RenderGizmos(Probe);
-            EditorView.RenderOrientationAxis(Renderer.GetDeviceContext(),Probe.MainCameraProbe);
+			Renderer.RenderGizmos(Probe);
+			EditorView.RenderOrientationAxis(Renderer.GetDeviceContext(),Probe.MainCameraProbe);
+			ImGui::Image(reinterpret_cast<ImTextureID>(Renderer.GetSceneShaderResourceView()), SceneViewportSize);
+			ImGui::End();
+            
+            //ImGui::Begin("FName Test");      
+            //ImGui::Separator();
+            //
+            //ImGui::InputText("String A", BufferA, sizeof(BufferA));
+            //ImGui::InputText("String B", BufferB, sizeof(BufferB));
 
-            ImGui::Render();
-            ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+            //FName NameA(BufferA);
+            //FName NameB(BufferB);
+
+            //bool bIsEqual = (NameA == NameB);
+            //if (bIsEqual)
+            //{
+            //    ImGui::Text("operator== : true");               
+            //}
+            //else
+            //{
+            //    ImGui::Text("operator== : false");            
+            //}
+
+            //ImGui::Text("=== 2. Display Result (Case Preservation) ===");
+            //ImGui::Text("A.ToString() : \"%s\"", NameA.ToString().c_str());
+            //ImGui::Text("B.ToString() : \"%s\"", NameB.ToString().c_str());
+            //ImGui::End();
+
+			ImGui::Render();
+			Renderer.BeginUiRender();
+			ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
             
             Renderer.EndFrame();
 
             GMouseInput.EndFrame();
         }
     }
-   
+    
+    FEditorConfigManager::Save(World.GetSettings());
 
     // ImGui 소멸
     ImGui_ImplDX11_Shutdown();

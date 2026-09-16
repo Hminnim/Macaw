@@ -68,10 +68,14 @@ void USceneComponent::DrawPanels(FPropertyEditorContext& Context) {
     const char* Preview = CurrentParent != nullptr ? CurrentParent->GetTypeInfo()->TypeName.data() : "None";
     std::vector<FPropertyReferenceOption> Candidates;
     for (const std::unique_ptr<UActorComponent>& Candidate : Actor->GetComponents()) {
-        auto* Parent = dynamic_cast<USceneComponent*>(Candidate.get());
-        if (Parent == nullptr || Parent == this) {
+        UActorComponent* CandidateComponent = Candidate.get();
+        if (CandidateComponent == nullptr || !CandidateComponent->GetTypeInfo()->IsA<USceneComponent>()) {
             continue;
         }
+
+        auto* Parent = static_cast<USceneComponent*>(CandidateComponent);
+        if (Parent == this) continue;
+
         Candidates.push_back({ Parent, FString(Parent->GetTypeInfo()->TypeName), Parent == CurrentParent, [this, Parent] {
             AttachToComponent(Parent, EAttachmentTransformRule::KeepWorldTransform);
         } });
@@ -132,19 +136,30 @@ void USceneComponent::Serialize(FArchive& Archive) {
 
 
 void USceneComponent::OnUnregister() {
-    for (TObjectRef<USceneComponent>& ChildRef : Children) {
+    UActorComponent::OnUnregister();
+}
+
+void USceneComponent::DestroyComponent(bool bPromoteChildren) {
+    AActor* Actor = GetOwner();
+    if (Actor != nullptr && Actor->GetRootComponent() == this && Actor->Destroy()) {
+        return;
+    }
+
+    USceneComponent* ParentComponent = GetParent();
+    std::vector<USceneComponent*> ChildrenToDetach;
+    ChildrenToDetach.reserve(Children.size());
+    for (const TObjectRef<USceneComponent>& ChildRef : Children) {
         if (USceneComponent* Child = ChildRef.Get()) {
-            Child->Parent.Reset();
+            ChildrenToDetach.push_back(Child);
         }
     }
-    Children.clear();
 
-    if (USceneComponent* ParentComponent = Parent.Get()) {
-        ParentComponent->RemoveChild(this);
+    for (USceneComponent* Child : ChildrenToDetach) {
+        Child->AttachToComponent(bPromoteChildren ? ParentComponent : nullptr,EAttachmentTransformRule::KeepWorldTransform);
     }
-    Parent.Reset();
 
-    UActorComponent::OnUnregister();
+    DetachFromComponent(EAttachmentTransformRule::KeepWorldTransform);
+    UActorComponent::DestroyComponent(bPromoteChildren);
 }
 
 void USceneComponent::RemoveChild(USceneComponent* InChild) {

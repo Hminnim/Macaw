@@ -194,6 +194,18 @@ public:
 	}
 	FNameEntryId Find(std::string_view NameString) const
 	{
+		if (NameString.empty())
+		{
+			return FNameEntryId();
+		}
+
+		if (NameString.length() >= NAME_SIZE)
+		{
+			assert(false && "FName string too long! FName is only meant for identifiers (<= 1023 chars).");
+
+			NameString = NameString.substr(0, NAME_SIZE - 1);
+		}
+
 		// Display
 		FNameDisplayValue DisplayValue(NameString);
 		FNameEntryId Existing = FNamePool::FindValue(DisplayHashBuckets, DisplayValue, true);
@@ -209,9 +221,16 @@ public:
 	}
 	FNameEntryId Store(std::string_view NameString)
 	{
-		if (NameString.length() <= 0)
+		if (NameString.empty())
 		{
 			return FNameEntryId();
+		}
+
+		if (NameString.length() >= NAME_SIZE)
+		{
+			assert(false && "FName string too long! FName is only meant for identifiers (<= 1023 chars).");
+
+			NameString = NameString.substr(0, NAME_SIZE - 1);
 		}
 
 		FNameDisplayValue DisplayValue(NameString);
@@ -324,6 +343,7 @@ private:
 
 		return NewHandle;
 	}
+
 	FNameEntryId StoreComparisonValue(const FNameValue& InValue, bool& bOutAdded)
 	{
 		FNameEntryId ExistingId = FNamePool::FindValue(ComparisonHashBuckets, InValue, false);
@@ -381,6 +401,7 @@ private:
 
 		return NewHandle;
 	}
+
 	void InsertSlot(TArray<FNameSlot>& Buckets, const FNameValue& InValue, FNameEntryId InEntryId)
 	{
 		uint32 CapacityMask = static_cast<uint32>(Buckets.size() - 1);
@@ -408,20 +429,34 @@ private:
 	TArray<FNameSlot> DisplayHashBuckets;
 };
 
-FName::FName(const char* pStr)
+FName::FName(std::string_view str)
 {
-	if (pStr)
+	if (str.length() > 0)
 	{
-		DisplayId = FNamePool::Get().Store(pStr);
+		std::string_view BaseStr;
+		SplitNameAndNumber(str, BaseStr, Number);
+
+		DisplayId = FNamePool::Get().Store(BaseStr);
 		ComparisonId = FNamePool::Get().Resolve(DisplayId).GetComparisonId();
 	}
 }
 
+FName::FName(const char* pStr)
+	: FName(pStr ? FName(std::string_view(pStr)) : FName())
+{	
+}
+
 FName::FName(FString str)
+	: FName(std::string_view(str))
+{	
+}
+
+FName::FName(std::string_view BaseName, int32 InNumber)
 {
-	if (str.length() > 0)
+	if (!BaseName.empty())
 	{
-		DisplayId = FNamePool::Get().Store(str);
+		Number = (InNumber >= 0) ? (InNumber + 1) : 0;
+		DisplayId = FNamePool::Get().Store(BaseName);
 		ComparisonId = FNamePool::Get().Resolve(DisplayId).GetComparisonId();
 	}
 }
@@ -433,7 +468,7 @@ int32 FName::Compare(const FName& Rhs) const
 
 bool FName::operator==(const FName& Rhs) const
 {
-	return this->ComparisonId == Rhs.ComparisonId;
+	return this->ComparisonId == Rhs.ComparisonId && this->Number == Rhs.Number;
 }
 
 bool FName::operator<(const FName& Rhs) const
@@ -450,5 +485,12 @@ FString FName::ToString() const
 
 	const FNameEntry& Entry = FNamePool::Get().Resolve(DisplayId);
 
-	return FString(Entry.GetName(), Entry.GetNameLength());
+	FString Result = FString(Entry.GetName(), Entry.GetNameLength());
+
+	if (Number > 0)
+	{
+		Result += "_" + std::to_string(Number - 1);
+	}
+
+	return Result;
 }

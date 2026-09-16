@@ -19,6 +19,8 @@
 #include "../../FMouseInput.h"
 #include "../../FKeyboardInput.h"
 
+class UPrimitiveComponent;
+
 class FTransformGizmo {
 	enum class EAxis : std::uint8_t {
 		None,
@@ -83,7 +85,7 @@ private:
 	FAssetHandle GetAxisMaterial(EAxis Axis) const;
 	void AddRenderPart(EAxis Axis,const FMatrix& LocalTransform,FAssetHandle MeshHandle);
 
-	void UpdateBoundsInGizmoSpace(const UCollisionComponent& Collider, FVector3& OutCenter, FVector3& OutExtent) const;
+	void UpdateBoundsInGizmoSpace(const UPrimitiveComponent& Primitive, FVector3& OutCenter, FVector3& OutExtent) const;
 
 	std::optional<FRay> MakeWorldRay(const POINT& ScreenPosition) const;
 	std::optional<FAxisHit> HitTest(const FRay& WorldRay) const;

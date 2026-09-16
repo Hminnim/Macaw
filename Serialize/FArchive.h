@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "../Core/Base/FGuid.h"
+#include "../FName.h"
 
 enum class EArchiveMode : uint8
 {
@@ -68,6 +69,17 @@ public:
         }
 
         EndArrayScope();
+    }
+
+    void Serialize(std::string_view Name, FName& Value)
+    {
+        FString Str = Value.ToString();
+        Serialize(Name, Str);
+
+        if (IsLoading())
+        {
+            Value = FName(Str);
+        }
     }
 
     // ---------------------------------------------------

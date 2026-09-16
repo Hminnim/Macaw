@@ -63,6 +63,18 @@ enum class EBlendOp {
     Max
 };
 
+enum class EStencillOp {
+    Keep,
+    Zero,
+    Replace,
+    IncrementClamp,
+    IncrementWrap,
+    DecrementClamp,
+    DecrementWrap,
+    Invert,
+    Max
+};
+
 struct FInputElementDescription {
     std::string SemanticName{};
     UINT SemanticIndex{ 0 };
@@ -85,6 +97,15 @@ struct FDepthStencilDescription {
     bool DepthEnable{ true };
     bool DepthWriteEnable{ true };
     ECompareFunc DepthFunc{ ECompareFunc::LessEqual };
+
+    bool StencilEnable{ true };
+    uint8 StencilReadMask{ 255 };
+    uint8 StencilWriteMask{ 255 };
+
+    ECompareFunc StencilFunc{ ECompareFunc::Always };
+    EStencillOp StencilPassOp{ EStencillOp::Replace };
+    EStencillOp StencilFailOp{ EStencillOp::Keep };
+    EStencillOp StencilDepthFailOp{ EStencillOp::Keep };
 };
 
 struct FBlendDescription {

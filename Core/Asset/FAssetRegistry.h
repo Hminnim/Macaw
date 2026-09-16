@@ -29,6 +29,10 @@ public:
 public:
     bool Initialize(ID3D11Device* Device, uint32 MaxMaterialCount = 4096);
 
+    // Lazily creates the fallback render assets used by unconfigured static meshes.
+    FAssetHandle EnsureDefaultStaticMeshMaterial();
+    FAssetHandle EnsureDefaultStaticMeshPipeline();
+
     FAssetHandle AdoptAsset(ID3D11Device* Device, const FGuid& ID, const FString& Name, const std::filesystem::path& MetadataPath, std::unique_ptr<UObject>&& Asset);
 
     template<typename T> requires std::is_base_of_v<UAsset, T>
@@ -116,6 +120,7 @@ public:
         AssetNameToHandle.clear();
         AssetIDToHandle.clear();
         MaterialBuffer.Reset();
+        Device = nullptr;
     }
 
     void Finalize();
@@ -132,4 +137,6 @@ private:
     TMap<FGuid, FAssetHandle> AssetIDToHandle{};
 
     FMaterialBuffer MaterialBuffer{};
+
+    ID3D11Device* Device{ nullptr };
 };

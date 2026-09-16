@@ -12,6 +12,7 @@
 #include "BasicGeometry/Plane.h"
 #include "BasicGeometry/Sphere.h"
 #include "BasicGeometry/Torus.h"
+#include "BasicGeometry/InverseSphere.h"
 
 void UMesh::Initialize(ID3D11Device* Device, const std::filesystem::path& metaData) {
 	UAsset::Initialize(Device, metaData);
@@ -91,6 +92,13 @@ void UMesh::Initialize(ID3D11Device* Device, const std::filesystem::path& metaDa
 				MakeVertexAttribute<EVertexAttribute::Position>(Geometry.Positions),
 				MakeVertexAttribute<EVertexAttribute::Normal>(Geometry.Normals),
 				MakeVertexAttribute<EVertexAttribute::UV>(Geometry.TexCoords)
+			);
+		}
+		else if (MeshType == "SkyDome") {
+			UMesh::Make(Device, BasicGeometry::SkyDome::Indices,
+				MakeVertexAttribute<EVertexAttribute::Position>(BasicGeometry::SkyDome::Positions),
+				MakeVertexAttribute<EVertexAttribute::Normal>(BasicGeometry::SkyDome::Normals),
+				MakeVertexAttribute<EVertexAttribute::UV>(BasicGeometry::SkyDome::TexCoords)
 			);
 		}
 		else {
