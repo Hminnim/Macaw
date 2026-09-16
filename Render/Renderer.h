@@ -47,6 +47,7 @@ public:
 	void RenderScene(FRenderProbe& Probe);
 	void RenderGizmos(FRenderProbe& Probe);
 	void RenderOutline(const TArray<FActorProbe>& ActorProbes, const CameraProbe& MainCameraProbe);
+	void RenderText(const FRenderProbe& Probe);
 	void RenderActorList(TArray<FActorProbe>& ActorProbes, const CameraProbe& Camera, bool bOutline = false);
 	void EndFrame();
 	void ResizeSceneSurface(uint32 Width, uint32 Height, float Left, float Top);

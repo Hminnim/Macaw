@@ -69,13 +69,8 @@ void FRenderer::RenderScene(FRenderProbe& Probe) {
 	}
 
 	RenderActorList(Probe.ActorProbes,Probe.MainCameraProbe);
-
 	RenderOutline(Probe.ActorProbes, Probe.MainCameraProbe);
 
-	if (AssetRegistry != nullptr)
-	{
-		TextRenderer.Render(DeviceContext.Get(),Probe.TextProbes,Probe.MainCameraProbe, AssetRegistry);
-	}
 }
 
 
@@ -358,4 +353,12 @@ void FRenderer::CreateSamplerStates() {
 	ShadowDescription.BorderColor[2] = 1.0f;
 	ShadowDescription.BorderColor[3] = 1.0f;
 	CreateSampler(5, ShadowDescription, "ShadowCompare");
+}
+
+void FRenderer::RenderText(const FRenderProbe& Probe)
+{
+	if (AssetRegistry != nullptr)
+	{
+			TextRenderer.Render(DeviceContext.Get(),Probe.TextProbes,Probe.MainCameraProbe,AssetRegistry);
+	}
 }

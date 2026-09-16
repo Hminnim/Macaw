@@ -409,6 +409,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 			EditorView.RenderInProbe(Probe);
 			Renderer.RenderScene(Probe);
             EditorView.RenderSceneGuides(Renderer.GetDeviceContext(),Probe);
+            Renderer.RenderText(Probe);
 			Renderer.RenderGizmos(Probe);
 			EditorView.RenderOrientationAxis(Renderer.GetDeviceContext(),Probe.MainCameraProbe);
 			ImGui::Image(reinterpret_cast<ImTextureID>(Renderer.GetSceneShaderResourceView()), SceneViewportSize);
