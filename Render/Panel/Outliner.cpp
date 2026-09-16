@@ -1,7 +1,7 @@
 #include "PCH.h"
 
 #include "Outliner.h"
-
+#include "../../Scene/Component/UNameTagComponent.h"
 #include "Scene/FWorldEditorContext.h"
 
 #include <ranges>
@@ -112,7 +112,22 @@ void FOutlinerPanel::DrawActor(AActor& Actor) {
 
     const bool bOpen = ImGui::TreeNodeEx("Actor", Flags, "%s", Label.c_str());
     if (ImGui::IsItemClicked()) {
+
+		auto prev = EditorContext->GetSelectedActor();
+        
+        if (prev != nullptr) {
+            if (UNameTagComponent* NameTag = prev->GetComponent<UNameTagComponent>()) {
+                NameTag->SetActive(false);
+            }
+        }
+
         EditorContext->SetSelectedActor(&Actor);
+
+
+        if (UNameTagComponent* NameTag = Actor.GetComponent<UNameTagComponent>()) {
+            NameTag->SetActive(true);
+        }
+
     }
 
     ImGui::TableSetColumnIndex(1);
