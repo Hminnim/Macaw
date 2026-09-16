@@ -12,7 +12,7 @@
 #include "../../Core/Asset/BasicGeometry/Cylinder.h"
 #include "../../Core/Asset/UColorMaterial.h"
 #include "../../Scene/Component/UPrimitiveComponent.h"
-
+#include "../../Scene/UWorld.h"
 void FTransformGizmo::Initialize(ID3D11Device* Device, FAssetRegistry& AssetRegistry, FStateChannel<RenderWindowInfo>::FReader InWindowInfoReader, FWorldEditorContext& InEditorContext) {
 
 	CylinderMesh = AssetRegistry.EmplaceAsset<UMesh>(Device, "CylinderMesh", "./Content/Metadata/CylinderMesh.meta");
@@ -505,6 +505,7 @@ bool FTransformGizmo::BeginDrag(EAxis Axis, const FRay& WorldRay) {
 	NewSession.AxisWorld = AxisWorld;
 	NewSession.InteractionPivotWorld = InteractionPivotWorld;
 	NewSession.WorkUnitsPerPixel = CurrentWorkUnitsPerPixel;
+	NewSession.AccumulatedDelta = 0.0f;
 
 	// Rotation은 링 평면을 사용한다.
 	if (CurrentMode == EModifyMode::Rotate) {
@@ -684,11 +685,28 @@ void FTransformGizmo::UpdateDrag(const FRay& WorldRay) {
 		}
 
 		const float Delta = CurrentAxisParameter - Session.PreviousAxisParameter;
+		Session.PreviousAxisParameter = CurrentAxisParameter;
 		FTransform DesiredWorldTransform = Target->GetComponentTransform();
 
 		if (Session.ModifyMode == EModifyMode::Translate) 
 		{
-			DesiredWorldTransform.SetPosition(DesiredWorldTransform.GetPosition() + Session.AxisWorld * Delta);
+			Session.AccumulatedDelta += Delta;
+			const float GridSize = EditorContext->GetWorld()->GetSettings().GridSize;
+
+			if (GridSize > 0.0f && abs(Session.AccumulatedDelta) >= GridSize) {
+				const float Steps = truncf(Session.AccumulatedDelta / GridSize);
+				const float StepDelta = Steps * GridSize;
+
+				DesiredWorldTransform.SetPosition(DesiredWorldTransform.GetPosition() + Session.AxisWorld * StepDelta);
+				Session.AccumulatedDelta -= StepDelta;
+			}
+			else if (GridSize <= 0.0f) {
+				DesiredWorldTransform.SetPosition(DesiredWorldTransform.GetPosition() + Session.AxisWorld * Delta);
+			}
+			else {
+				return;
+			}
+
 		}
 		else if (Session.ModifyMode== EModifyMode::Scale)
 		{

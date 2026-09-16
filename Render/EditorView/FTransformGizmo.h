@@ -55,6 +55,7 @@ class FTransformGizmo {
 		EGizmoCoordinateSpace CoordinateSpace = EGizmoCoordinateSpace::World;
 		FVector3 PreviousRotationDirection{};
 		float WorkUnitsPerPixel = 1.0f;
+		float AccumulatedDelta = 0.0f;
 	};
 
 public:
