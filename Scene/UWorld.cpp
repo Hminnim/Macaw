@@ -503,7 +503,7 @@ void UWorld::HandleMousePickRequest(const FMousePickRequestMessage& Message) {
 			{
 				if (EditorContext != nullptr)
 				{
-					EditorContext->SetSelectedActor(SelectedActor);
+					EditorContext->SetSelectedComponent(NearestPrimitive);
 				}
 
 				if (UNameTagComponent* NameTag = SelectedActor->GetComponent<UNameTagComponent>())
