@@ -1,308 +1,308 @@
 {
     "Assets": [
         {
-            "Guid": "1581E738-42DC-9F28-DE3E-D885F89FFE42",
+            "Guid": "A6DCC2F0-490C-4547-38F2-859131F54ABE",
             "TypeName": "UMesh",
             "Name": "",
             "AssetName": "CylinderMesh",
             "AssetMetaDataPath": "./Content/Metadata/CylinderMesh.meta"
         },
         {
-            "Guid": "EB87CC30-4588-9791-FE1B-D399EF63068B",
+            "Guid": "2FB2C6E6-4E4A-69C0-9BD3-BA880788DA72",
             "TypeName": "UMesh",
             "Name": "",
             "AssetName": "ConeMesh",
             "AssetMetaDataPath": "./Content/Metadata/ConeMesh.meta"
         },
         {
-            "Guid": "747B20EC-4EF1-E221-16F7-129516704AD9",
+            "Guid": "0981E121-4713-FD4A-8718-12B4F90C5A3C",
             "TypeName": "UMesh",
             "Name": "",
             "AssetName": "CubeMesh",
             "AssetMetaDataPath": "./Content/Metadata/CubeMesh.meta"
         },
         {
-            "Guid": "BF5FAD2A-41CF-EAEA-95D2-53BEF1036E4F",
+            "Guid": "23BC6107-47CB-CB19-0DA4-8CAE9BA18F50",
             "TypeName": "UMesh",
             "Name": "",
             "AssetName": "GizmoTorusMesh",
             "AssetMetaDataPath": "./Content/Metadata/GizmoTorusMesh.meta"
         },
         {
-            "Guid": "FD688E10-43DC-8BA5-4151-C9A1BCA5A328",
+            "Guid": "9C66D394-411B-7C65-C67C-F1A446530765",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "Red",
             "AssetMetaDataPath": "./Content/Metadata/RedMaterial.meta"
         },
         {
-            "Guid": "609C4168-41DB-48D4-8FA4-B48FAAE4B177",
+            "Guid": "F9E7BA29-4E67-4E50-8225-F6A982355415",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "Green",
             "AssetMetaDataPath": "./Content/Metadata/GreenMaterial.meta"
         },
         {
-            "Guid": "0AC37D67-4C32-98EB-B182-88911EF0A0BF",
+            "Guid": "A884785E-45EA-37DB-46B5-5F882673E4F3",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "Blue",
             "AssetMetaDataPath": "./Content/Metadata/BlueMaterial.meta"
         },
         {
-            "Guid": "ED99E8B4-4630-0A31-9B5E-6EB5CE8286F7",
+            "Guid": "1DBA9B27-4A0E-B26A-BEEA-D1B352D1F79F",
             "TypeName": "UPipeline",
             "Name": "",
             "AssetName": "GizmoPipeline",
             "AssetMetaDataPath": "./Content/Metadata/GizmoPipeline.meta"
         },
         {
-            "Guid": "A48EB277-4B2A-26F3-C7A4-8F90B68E9ACB",
+            "Guid": "1ADB12C8-46AA-336D-529B-93B7D8CBE82B",
             "TypeName": "UPipeline",
             "Name": "",
             "AssetName": "BasePipeline",
             "AssetMetaDataPath": "./Content/Metadata/BasePipeline.meta"
         },
         {
-            "Guid": "E442D6DB-4E4B-4E02-10E1-E380945B5DD0",
+            "Guid": "21741067-4523-862F-4EC3-ADA9E7FA3F39",
             "TypeName": "UPipeline",
             "Name": "",
             "AssetName": "AlternatePipeline",
             "AssetMetaDataPath": "./Content/Metadata/AlternatePipeline.meta"
         },
         {
-            "Guid": "25C5624D-4ADF-0BAD-D4E9-948320010A40",
+            "Guid": "F1C7C3DA-4996-88FB-4FD7-BE93773D23A6",
             "TypeName": "UMesh",
             "Name": "",
             "AssetName": "SphereMesh",
             "AssetMetaDataPath": "./Content/Metadata/SphereMesh.meta"
         },
         {
-            "Guid": "5B7A2077-470B-B9AB-0A8F-32AC0C722CFF",
+            "Guid": "32971E4E-4A8C-924F-5521-8181A3F3F3CB",
             "TypeName": "UMesh",
             "Name": "",
             "AssetName": "PlaneMesh",
             "AssetMetaDataPath": "./Content/Metadata/PlaneMesh.meta"
         },
         {
-            "Guid": "0E9660CA-43E7-7407-87F9-A48691BA11AF",
+            "Guid": "771371A0-4E72-C8C4-083E-A1836FD5373B",
             "TypeName": "UMesh",
             "Name": "",
             "AssetName": "TorusMesh",
             "AssetMetaDataPath": "./Content/Metadata/TorusMesh.meta"
         },
         {
-            "Guid": "E3C4DF7F-403F-0F2D-CCA4-ADA5F75411AF",
+            "Guid": "1582CD2C-4C9E-7E15-EBBB-8193E6433C44",
             "TypeName": "UMesh",
             "Name": "",
             "AssetName": "CapsuleMesh",
             "AssetMetaDataPath": "./Content/Metadata/CapsuleMesh.meta"
         },
         {
-            "Guid": "484C0DF0-4139-766E-7870-0885A9429D7D",
+            "Guid": "7469C4D6-4FEC-A575-B1B5-528555DF2329",
             "TypeName": "UMesh",
             "Name": "",
             "AssetName": "PyrimidMesh",
             "AssetMetaDataPath": "./Content/Metadata/PyramidMesh.meta"
         },
         {
-            "Guid": "D8F0A7BF-48D9-A848-127D-4A9E60FCB976",
+            "Guid": "7F3C5740-4742-9546-3692-CD9CD0DC3D3B",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "GreyMaterial",
             "AssetMetaDataPath": "./Content/Metadata/GreyMaterial.meta"
         },
         {
-            "Guid": "10A811F1-4841-BEB4-70A5-11B602976B27",
+            "Guid": "D4866A54-45F7-9B37-53F1-C2A7DA71EF71",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "RedMaterial",
             "AssetMetaDataPath": "./Content/Metadata/RedMaterial.meta"
         },
         {
-            "Guid": "BB64A770-42B2-4616-D6AB-7484A4494C06",
+            "Guid": "1F6642E1-4574-F160-0EBE-9E8957AE4BA7",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "GreenMaterial",
             "AssetMetaDataPath": "./Content/Metadata/GreenMaterial.meta"
         },
         {
-            "Guid": "0E0A350D-4176-473C-0348-FE8A3F549A95",
+            "Guid": "DE2B0E9F-459C-791F-2E96-8DA976FB836D",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "BlueMaterial",
             "AssetMetaDataPath": "./Content/Metadata/BlueMaterial.meta"
         },
         {
-            "Guid": "CA9E1411-49BF-8EF9-CC15-76BAE6F7D3F6",
+            "Guid": "E0ED8643-49B7-C44E-0D16-6BA7941A0B2C",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "YellowMaterial",
             "AssetMetaDataPath": "./Content/Metadata/YellowMaterial.meta"
         },
         {
-            "Guid": "34A6A449-417E-EACE-A3E4-1CA5C950D7FC",
+            "Guid": "7936E3C5-4487-A35B-8DA4-A7914064CC88",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "AmberMaterial",
             "AssetMetaDataPath": "./Content/Metadata/AmberMaterial.meta"
         },
         {
-            "Guid": "75FC0C3F-40EA-CE54-21C1-BDA0C9671C19",
+            "Guid": "819A7CB2-49FF-A0F6-C41A-58B7D0D97B66",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "BrownMaterial",
             "AssetMetaDataPath": "./Content/Metadata/BrownMaterial.meta"
         },
         {
-            "Guid": "AC160E12-4F7B-E4D4-E21A-A3B737392B66",
+            "Guid": "BA47E90B-43C9-6970-6C3A-95A693AF6EB6",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "CyanMaterial",
             "AssetMetaDataPath": "./Content/Metadata/CyanMaterial.meta"
         },
         {
-            "Guid": "0DBAD903-47EC-29EF-5255-D0A26578FD32",
+            "Guid": "6BBA1B85-4C0F-3B74-FD89-FEBDEA3E7F36",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "LimeMaterial",
             "AssetMetaDataPath": "./Content/Metadata/LimeMaterial.meta"
         },
         {
-            "Guid": "960E30C9-4C67-754A-7291-988E48DC546C",
+            "Guid": "DD6824DF-408B-7BEE-CFF8-D9A719F8DE04",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "MagentaMaterial",
             "AssetMetaDataPath": "./Content/Metadata/MagentaMaterial.meta"
         },
         {
-            "Guid": "C26219E7-40B2-AB9D-8109-FB9977C07121",
+            "Guid": "44BDBCD6-43D7-E2E1-F674-53B9106801EE",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "NavyMaterial",
             "AssetMetaDataPath": "./Content/Metadata/NavyMaterial.meta"
         },
         {
-            "Guid": "025CB682-41C8-9AD9-5F38-47B69556C0C8",
+            "Guid": "78C6C5E4-4A12-D627-1DF9-53BACE4B2D58",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "OrangeMaterial",
             "AssetMetaDataPath": "./Content/Metadata/OrangeMaterial.meta"
         },
         {
-            "Guid": "250D9A72-49F7-2BE7-B856-CA8998E02572",
+            "Guid": "2FA5832E-48EF-46DD-A602-25923DCD9294",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "PinkMaterial",
             "AssetMetaDataPath": "./Content/Metadata/PinkMaterial.meta"
         },
         {
-            "Guid": "4A852183-4ED9-F3E8-1D75-0C8784674CBA",
+            "Guid": "2BBF0F46-4FFD-67D8-D7B2-ADAE06D00CD5",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "PurpleMaterial",
             "AssetMetaDataPath": "./Content/Metadata/PurpleMaterial.meta"
         },
         {
-            "Guid": "751BECCD-44CB-0F2E-7771-1FBA4C6C0514",
+            "Guid": "CC8BFCC2-47F8-933C-51A4-AB87F00EA572",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "TealMaterial",
             "AssetMetaDataPath": "./Content/Metadata/TealMaterial.meta"
         },
         {
-            "Guid": "8E1A95AF-48E0-A792-B10C-F79ED7D8003C",
+            "Guid": "DF6C07AF-41C3-A51F-3E39-209FCB2249D1",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "WhiteMaterial",
             "AssetMetaDataPath": "./Content/Metadata/WhiteMaterial.meta"
         },
         {
-            "Guid": "8D9ACAC5-4E79-18F0-3DA1-4AAC4A0B32BC",
+            "Guid": "F48C5D0B-4038-38A3-2D79-E98960527153",
             "TypeName": "UPipeline",
             "Name": "",
             "AssetName": "TexturedPipeline",
             "AssetMetaDataPath": "./Content/Metadata/TexturedTestPipeline.meta"
         },
         {
-            "Guid": "5F24D556-4905-67D7-8C90-B49C5C909B2F",
+            "Guid": "6F03E0A2-46AF-1C24-6BFB-B2A6D7B0C807",
             "TypeName": "UTexture",
             "Name": "",
             "AssetName": "PlankTexture",
             "AssetMetaDataPath": "./Content/Metadata/TexturedTestTexture.meta"
         },
         {
-            "Guid": "2BEBF33C-44D8-1B23-73F5-588812200193",
+            "Guid": "362CF24F-4A83-E830-0B48-85828749287A",
             "TypeName": "UTexturedMaterial",
             "Name": "",
             "AssetName": "TexturedMaterial",
             "AssetMetaDataPath": "./Content/Metadata/TexturedTestMaterial.meta"
         },
         {
-            "Guid": "897047EA-472A-0979-3C22-D9B919484240",
+            "Guid": "20404414-44EF-8970-B9BE-F9886B43CA71",
             "TypeName": "UTexture",
             "Name": "",
             "AssetName": "SkyDomeTexture",
             "AssetMetaDataPath": "./Content/Metadata/SkyDomeTexture.meta"
         },
         {
-            "Guid": "99967FA6-4816-0E59-7F05-E5B27DD5B675",
+            "Guid": "968F2E20-4A34-497D-4072-DB81283D3EB0",
             "TypeName": "UTexturedMaterial",
             "Name": "",
             "AssetName": "SkyDomeMaterial",
             "AssetMetaDataPath": "./Content/Metadata/SkyDomeMaterial.meta"
         },
         {
-            "Guid": "67A936C7-4E68-965F-F28F-3F97670B92A0",
+            "Guid": "88A3C032-49DD-1AEA-4FE1-99A2218AB257",
             "TypeName": "UPipeline",
             "Name": "",
             "AssetName": "SkyDomePipeline",
             "AssetMetaDataPath": "./Content/Metadata/SkyDomePipeline.meta"
         },
         {
-            "Guid": "027FA03A-493B-C9BD-391C-4F995900B36E",
+            "Guid": "3B74C2ED-4997-C718-8CA1-08937D4B4044",
             "TypeName": "UMesh",
             "Name": "",
             "AssetName": "SkyDome",
             "AssetMetaDataPath": "./Content/Metadata/SkyDomeMesh.meta"
         },
         {
-            "Guid": "0521E68D-4304-0436-CCB7-9F930F59596B",
+            "Guid": "2993F600-431F-17B4-2178-20BD2E6ABE03",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "__DefaultStaticMeshMaterial",
             "AssetMetaDataPath": "./Content/Metadata/DefaultStaticMeshMaterial.meta"
         },
         {
-            "Guid": "ED4EFF4A-409E-5E91-E6EB-C4BC83482AAD",
+            "Guid": "4983887D-4DDE-1A26-08D9-4F9CC21C78A6",
             "TypeName": "UPipeline",
             "Name": "",
             "AssetName": "__DefaultStaticMeshPipeline",
             "AssetMetaDataPath": "./Content/Metadata/DefaultStaticMeshPipeline.meta"
         },
         {
-            "Guid": "BA6A98B9-48CB-641F-D099-DA84243DD35A",
+            "Guid": "BF96C496-413C-DA1F-1E35-4795DDA235EE",
             "TypeName": "UPipeline",
             "Name": "",
             "AssetName": "TextPipeline",
             "AssetMetaDataPath": "./Content/Metadata/TextPipeline.meta"
         },
         {
-            "Guid": "623076C6-4372-914C-F860-9EBA9661F865",
+            "Guid": "A7B24D4F-4D13-267D-9096-6D95CCAD1319",
             "TypeName": "UTexture",
             "Name": "",
             "AssetName": "AsciiFontTexture",
             "AssetMetaDataPath": "./Content/Metadata/AsciiFontTexture.meta"
         },
         {
-            "Guid": "C196050F-4270-13E1-4330-8BBB9069B65E",
+            "Guid": "F3255F98-4F05-C478-AA3A-E7AC9440C28D",
             "TypeName": "UFont",
             "Name": "",
             "AssetName": "AsciiFont",
             "AssetMetaDataPath": ""
         },
         {
-            "Guid": "FB17F8ED-4D57-2DE4-02FF-B3B84C47E598",
+            "Guid": "E4D3A314-4DC7-CAA7-2204-6CA0AF435B15",
             "TypeName": "UKFont",
             "Name": "",
             "AssetName": "KoreanFont",
@@ -329,7 +329,8 @@
                         "Rotation": [
                             0.0,
                             0.0,
-                            0.0
+                            0.0,
+                            1.0
                         ],
                         "Scale": [
                             1.0,
@@ -342,9 +343,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "027FA03A-493B-C9BD-391C-4F995900B36E",
-                    "GuidMaterialHandle": "99967FA6-4816-0E59-7F05-E5B27DD5B675",
-                    "GuidPipelineHandle": "67A936C7-4E68-965F-F28F-3F97670B92A0"
+                    "GuidMeshHandle": "3B74C2ED-4997-C718-8CA1-08937D4B4044",
+                    "GuidMaterialHandle": "968F2E20-4A34-497D-4072-DB81283D3EB0",
+                    "GuidPipelineHandle": "88A3C032-49DD-1AEA-4FE1-99A2218AB257"
                 }
             ],
             "GuidRootComponent": ""
@@ -368,7 +369,8 @@
                         "Rotation": [
                             0.0,
                             0.0,
-                            0.0
+                            0.0,
+                            1.0
                         ],
                         "Scale": [
                             1.0,
@@ -381,8 +383,8 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidFontHandle": "FB17F8ED-4D57-2DE4-02FF-B3B84C47E598",
-                    "GuidPipelineHandle": "BA6A98B9-48CB-641F-D099-DA84243DD35A",
+                    "GuidFontHandle": "E4D3A314-4DC7-CAA7-2204-6CA0AF435B15",
+                    "GuidPipelineHandle": "BF96C496-413C-DA1F-1E35-4795DDA235EE",
                     "Text": "크래프톤 정글3주차",
                     "Color": [
                         1.0,
@@ -416,7 +418,8 @@
                         "Rotation": [
                             0.0,
                             0.0,
-                            0.0
+                            0.0,
+                            1.0
                         ],
                         "Scale": [
                             1.0,
@@ -429,9 +432,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "747B20EC-4EF1-E221-16F7-129516704AD9",
-                    "GuidMaterialHandle": "D8F0A7BF-48D9-A848-127D-4A9E60FCB976",
-                    "GuidPipelineHandle": "A48EB277-4B2A-26F3-C7A4-8F90B68E9ACB"
+                    "GuidMeshHandle": "0981E121-4713-FD4A-8718-12B4F90C5A3C",
+                    "GuidMaterialHandle": "7F3C5740-4742-9546-3692-CD9CD0DC3D3B",
+                    "GuidPipelineHandle": "1ADB12C8-46AA-336D-529B-93B7D8CBE82B"
                 },
                 {
                     "Guid": "DFA8DE01-45D3-83A4-796B-FD8AD79E36FB",
@@ -447,7 +450,8 @@
                         "Rotation": [
                             0.0,
                             0.0,
-                            0.0
+                            0.0,
+                            1.0
                         ],
                         "Scale": [
                             1.0,
@@ -460,9 +464,9 @@
                     },
                     "Parent": "8E837B4E-46C6-240A-659B-5BA128EF445B",
                     "bVisible": true,
-                    "GuidMeshHandle": "747B20EC-4EF1-E221-16F7-129516704AD9",
-                    "GuidMaterialHandle": "D8F0A7BF-48D9-A848-127D-4A9E60FCB976",
-                    "GuidPipelineHandle": "A48EB277-4B2A-26F3-C7A4-8F90B68E9ACB"
+                    "GuidMeshHandle": "0981E121-4713-FD4A-8718-12B4F90C5A3C",
+                    "GuidMaterialHandle": "7F3C5740-4742-9546-3692-CD9CD0DC3D3B",
+                    "GuidPipelineHandle": "1ADB12C8-46AA-336D-529B-93B7D8CBE82B"
                 },
                 {
                     "Guid": "D400BDAF-43DB-7305-A0C6-81B53BF83D1C",
@@ -478,7 +482,8 @@
                         "Rotation": [
                             0.0,
                             0.0,
-                            0.0
+                            0.0,
+                            1.0
                         ],
                         "Scale": [
                             1.0,
@@ -491,9 +496,9 @@
                     },
                     "Parent": "DFA8DE01-45D3-83A4-796B-FD8AD79E36FB",
                     "bVisible": true,
-                    "GuidMeshHandle": "747B20EC-4EF1-E221-16F7-129516704AD9",
-                    "GuidMaterialHandle": "D8F0A7BF-48D9-A848-127D-4A9E60FCB976",
-                    "GuidPipelineHandle": "A48EB277-4B2A-26F3-C7A4-8F90B68E9ACB"
+                    "GuidMeshHandle": "0981E121-4713-FD4A-8718-12B4F90C5A3C",
+                    "GuidMaterialHandle": "7F3C5740-4742-9546-3692-CD9CD0DC3D3B",
+                    "GuidPipelineHandle": "1ADB12C8-46AA-336D-529B-93B7D8CBE82B"
                 },
                 {
                     "Guid": "6F2A3DE6-49DD-CF4E-29E6-81BEED59B63E",
@@ -509,7 +514,8 @@
                         "Rotation": [
                             0.0,
                             0.0,
-                            0.0
+                            0.0,
+                            1.0
                         ],
                         "Scale": [
                             1.0,
@@ -522,9 +528,9 @@
                     },
                     "Parent": "D400BDAF-43DB-7305-A0C6-81B53BF83D1C",
                     "bVisible": true,
-                    "GuidMeshHandle": "747B20EC-4EF1-E221-16F7-129516704AD9",
-                    "GuidMaterialHandle": "D8F0A7BF-48D9-A848-127D-4A9E60FCB976",
-                    "GuidPipelineHandle": "A48EB277-4B2A-26F3-C7A4-8F90B68E9ACB"
+                    "GuidMeshHandle": "0981E121-4713-FD4A-8718-12B4F90C5A3C",
+                    "GuidMaterialHandle": "7F3C5740-4742-9546-3692-CD9CD0DC3D3B",
+                    "GuidPipelineHandle": "1ADB12C8-46AA-336D-529B-93B7D8CBE82B"
                 },
                 {
                     "Guid": "0C5714EE-479B-8AAA-9557-DAACA74B02E8",
@@ -540,7 +546,8 @@
                         "Rotation": [
                             0.0,
                             0.0,
-                            0.0
+                            0.0,
+                            1.0
                         ],
                         "Scale": [
                             1.0,
@@ -553,9 +560,9 @@
                     },
                     "Parent": "6F2A3DE6-49DD-CF4E-29E6-81BEED59B63E",
                     "bVisible": true,
-                    "GuidMeshHandle": "747B20EC-4EF1-E221-16F7-129516704AD9",
-                    "GuidMaterialHandle": "D8F0A7BF-48D9-A848-127D-4A9E60FCB976",
-                    "GuidPipelineHandle": "A48EB277-4B2A-26F3-C7A4-8F90B68E9ACB"
+                    "GuidMeshHandle": "0981E121-4713-FD4A-8718-12B4F90C5A3C",
+                    "GuidMaterialHandle": "7F3C5740-4742-9546-3692-CD9CD0DC3D3B",
+                    "GuidPipelineHandle": "1ADB12C8-46AA-336D-529B-93B7D8CBE82B"
                 },
                 {
                     "Guid": "615D2644-4BD1-C822-1A5C-3F804A1705AB",
@@ -571,7 +578,8 @@
                         "Rotation": [
                             0.0,
                             0.0,
-                            0.0
+                            0.0,
+                            1.0
                         ],
                         "Scale": [
                             1.0,
@@ -618,14 +626,15 @@
                     "bActive": true,
                     "Transform": {
                         "Position": [
-                            12.0,
-                            0.0,
-                            8.0
+                            12.445976257324219,
+                            -8.931961059570313,
+                            11.20568561553955
                         ],
                         "Rotation": [
                             0.0,
                             0.0,
-                            0.0
+                            0.0,
+                            1.0
                         ],
                         "Scale": [
                             1.0,
@@ -638,9 +647,9 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "747B20EC-4EF1-E221-16F7-129516704AD9",
-                    "GuidMaterialHandle": "D8F0A7BF-48D9-A848-127D-4A9E60FCB976",
-                    "GuidPipelineHandle": "A48EB277-4B2A-26F3-C7A4-8F90B68E9ACB"
+                    "GuidMeshHandle": "0981E121-4713-FD4A-8718-12B4F90C5A3C",
+                    "GuidMaterialHandle": "7F3C5740-4742-9546-3692-CD9CD0DC3D3B",
+                    "GuidPipelineHandle": "1ADB12C8-46AA-336D-529B-93B7D8CBE82B"
                 },
                 {
                     "Guid": "81979E57-43B5-AD8A-F917-02B1228D5B33",
@@ -656,7 +665,8 @@
                         "Rotation": [
                             0.0,
                             0.0,
-                            0.0
+                            0.0,
+                            1.0
                         ],
                         "Scale": [
                             1.0,
@@ -710,7 +720,8 @@
                         "Rotation": [
                             0.0,
                             0.0,
-                            0.0
+                            0.0,
+                            1.0
                         ],
                         "Scale": [
                             1.0,
@@ -723,9 +734,9 @@
                     },
                     "Parent": "DF252838-4935-69A4-A06A-A297C77212AF",
                     "bVisible": true,
-                    "GuidMeshHandle": "747B20EC-4EF1-E221-16F7-129516704AD9",
-                    "GuidMaterialHandle": "D8F0A7BF-48D9-A848-127D-4A9E60FCB976",
-                    "GuidPipelineHandle": "A48EB277-4B2A-26F3-C7A4-8F90B68E9ACB"
+                    "GuidMeshHandle": "0981E121-4713-FD4A-8718-12B4F90C5A3C",
+                    "GuidMaterialHandle": "7F3C5740-4742-9546-3692-CD9CD0DC3D3B",
+                    "GuidPipelineHandle": "1ADB12C8-46AA-336D-529B-93B7D8CBE82B"
                 },
                 {
                     "Guid": "F5B785D3-44F3-A4EA-F1B6-8FBF51D3117E",
@@ -741,7 +752,8 @@
                         "Rotation": [
                             0.0,
                             0.0,
-                            0.0
+                            0.0,
+                            1.0
                         ],
                         "Scale": [
                             1.0,
@@ -788,14 +800,15 @@
                     "bActive": true,
                     "Transform": {
                         "Position": [
-                            5.0,
-                            5.0,
-                            5.0
+                            -50.71023178100586,
+                            -97.94036102294922,
+                            115.75608825683594
                         ],
                         "Rotation": [
-                            -0.32400017976760864,
-                            2.5350000858306885,
-                            -3.458186768057203e-7
+                            0.22883541882038116,
+                            -0.06434233486652374,
+                            0.26291990280151367,
+                            -0.9350762367248535
                         ],
                         "Scale": [
                             1.0,
@@ -808,7 +821,7 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "FOV": 1.0471999645233154,
-                    "AspectRatio": 1.760465145111084,
+                    "AspectRatio": 1.539577841758728,
                     "NearPlane": 0.10000000149011612,
                     "FarPlane": 1000.0
                 }
