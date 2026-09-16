@@ -38,8 +38,8 @@ class UCameraSubsystem;
 class UCollisionSubsystem;
 class UPickingSubsystem;
 class URenderSubsystem;
-class UTextSubsystem;
 class UBillboardSubsystem;
+class UTextSubsystem;
 
 class UWorld : public UObject
 {
@@ -85,10 +85,11 @@ public:
     const UPickingSubsystem& GetPickingSubsystem() const;
     UCameraSubsystem& GetCameraSubsystem();
     const UCameraSubsystem& GetCameraSubsystem() const;
-    UTextSubsystem& GetTextSubsystem();
-    const UTextSubsystem& GetTextSubsystem() const;
     UBillboardSubsystem& GetBillboardSubsystem();
     const UBillboardSubsystem& GetBillboardSubsystem() const;
+
+    UTextSubsystem& GetTextSubsystem();
+    const UTextSubsystem& GetTextSubsystem() const;
 
     bool SaveScene(const FString& SceneName, FAssetRegistry* AssetRegistry);
     bool LoadScene(const std::filesystem::path& ScenePath, ID3D11Device* Device, FAssetRegistry* AssetRegistry);
@@ -134,9 +135,9 @@ private:
     std::unique_ptr<UCollisionSubsystem> CollisionSubsystem;
     std::unique_ptr<UPickingSubsystem> PickingSubsystem;
     std::unique_ptr<UCameraSubsystem> CameraSubsystem;
-	std::unique_ptr<UTextSubsystem> TextSubsystem;
+
     std::unique_ptr<UBillboardSubsystem> BillboardSubsystem;
-	// std::unique_ptr<TextRenderSubSystem> TextRenderSubsystem;
+	std::unique_ptr<UTextSubsystem> TextSubsystem;
 
     FRenderProbe Probe{};
 

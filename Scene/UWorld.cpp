@@ -168,7 +168,7 @@ void UWorld::InitializeSubsystems() {
 	{
 		FEditorConfigManager::Save(Settings);
 	}
-}
+
 	BillboardSubsystem->Initialize(this);
 }
 
@@ -188,7 +188,6 @@ void UWorld::DeinitializeSubsystems() {
 	if (TextSubsystem != nullptr) {
 		TextSubsystem->Deinitialize();
 	}
-}
 	if (BillboardSubsystem != nullptr)
 	{
 		BillboardSubsystem->Deinitialize();
@@ -199,22 +198,6 @@ UTextSubsystem& UWorld::GetTextSubsystem()
 {
 	return *TextSubsystem;
 }
-FRenderProbe& UWorld::BuildRenderProbe() {
-	Probe.ActorProbes.clear();
-    Probe.GizmoProbes.clear();
-    Probe.TextProbes.clear();
-	Probe.BillboardProbes.clear();
-
- /*   for (const UStaticMeshComponent* Component : RenderableComponents)
-    {
-		FActorProbe ActorProbe{};
-		Component->MakeRender(ActorProbe);
-
-		UCollisionComponent* SelectedCollision = EditorContext->GetSelectedCollider();
-		if (SelectedCollision != nullptr && Component->GetOwner() == SelectedCollision->GetOwner()) {
-			ActorProbe.Flags |= 0x0000'0001; 
-		}
-	}*/
 
 const UTextSubsystem& UWorld::GetTextSubsystem() const
 {
@@ -225,6 +208,7 @@ FRenderProbe& UWorld::BuildRenderProbe() {
 	Probe.ActorProbes.clear();
     Probe.GizmoProbes.clear();
     Probe.TextProbes.clear();
+	Probe.BillboardProbes.clear();
 
 	RenderSubsystem->BuildRenderProbes(AssetRegistry, Probe);
 	TextSubsystem->BuildTextProbes(Probe);

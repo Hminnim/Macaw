@@ -366,7 +366,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     Camera->SetRotationSensitivity(World.GetSettings().RotationSensitivity);
     CameraActor->SetRootComponent(Camera);
 
-    }
     AssetRegistry.Finalize(); 
 
     IMGUI_CHECKVERSION();
