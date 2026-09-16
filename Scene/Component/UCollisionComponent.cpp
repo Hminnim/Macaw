@@ -31,14 +31,6 @@ void UCollisionComponent::DrawPanels(FPropertyEditorContext& Context)
 
 void UCollisionComponent::OnRegister()
 {
-    UPrimitiveComponent::OnRegister();
-
-    AActor* Owner = GetOwner();
-
-    if (Owner != nullptr && Owner->GetWorld() != nullptr)
-    {
-        Owner->GetWorld()->GetCollisionSubsystem().RegisterComponent(this);
-    }
 }
 
 void UCollisionComponent::OnUnregister() {

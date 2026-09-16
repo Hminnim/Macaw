@@ -477,8 +477,7 @@ void UWorld::HandleMousePickRequest(const FMousePickRequestMessage& Message) {
 		FMatrix InverseViewProjection;
 		if (!Camera->GetViewProjectionMatrix().TryInverse(InverseViewProjection)) return;
 		FVector3 RayOrigin, RayEnd;
-		if (!InverseViewProjection.TransformCoord({NdcX, NdcY, 0.0f}, RayOrigin)
-			|| !InverseViewProjection.TransformCoord({NdcX, NdcY, 1.0f}, RayEnd)) return;
+		if (!InverseViewProjection.TransformCoord({NdcX, NdcY, 0.0f}, RayOrigin) || !InverseViewProjection.TransformCoord({NdcX, NdcY, 1.0f}, RayEnd)) return;
 		FVector3 RayDirection = RayEnd - RayOrigin;
 
 		if (RayDirection.LengthSquared() > 0.0f) {
