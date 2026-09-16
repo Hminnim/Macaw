@@ -26,9 +26,11 @@ void FRenderer::Create(HWND WindowHandle, UINT width, UINT height) {
 	auto BackBuffer = std::make_unique<FSceneRenderSurface>();
 	BackBuffer->InitializeSwapChain(Device.Get(), SwapChain.Get());
 	BackBufferSurface = std::move(BackBuffer);
+	
 	auto Scene = std::make_unique<FSceneRenderSurface>();
 	Scene->InitializeOffscreen(Device.Get(), width, height);
 	SceneSurface = std::move(Scene);
+	
 	FRenderer::CreateSamplerStates();
 
 	ModelContextArray.Initialize(Device.Get(), DeviceContext.Get(), 128);
@@ -68,6 +70,7 @@ void FRenderer::RenderScene(FRenderProbe& Probe) {
 	if (AssetRegistry != nullptr) {
 		AssetRegistry->GetMaterialBuffer().Flush(DeviceContext.Get());
 	}
+	DeviceContext->RSSetViewports(1,&this->SceneSurface->GetViewport());
 
 	RenderActorList(Probe.ActorProbes,Probe.MainCameraProbe);
 	RenderOutline(Probe.ActorProbes, Probe.MainCameraProbe);
@@ -294,7 +297,7 @@ void FRenderer::CreateDeviceAndSwapChain(HWND WindowHandle) {
 	DXGI_SWAP_CHAIN_DESC swapchaindesc = {};
 	swapchaindesc.BufferDesc.Width = WindowInfoReader.Read().ScreenWidth; // 창 크기에 맞게 자동으로 설정
 	swapchaindesc.BufferDesc.Height = WindowInfoReader.Read().ScreenHeight; // 창 크기에 맞게 자동으로 설정
-	swapchaindesc.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM; // 색상 포맷
+	swapchaindesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // 색상 포맷
 	swapchaindesc.SampleDesc.Count = 1; // 멀티 샘플링 비활성화
 	swapchaindesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; // 렌더 타겟으로 사용
 	swapchaindesc.BufferCount = 2; // 더블 버퍼링
@@ -364,6 +367,6 @@ void FRenderer::RenderText(const FRenderProbe& Probe)
 {
 	if (AssetRegistry != nullptr)
 	{
-			TextRenderer.Render(DeviceContext.Get(),Probe.TextProbes,Probe.MainCameraProbe,AssetRegistry);
+		TextRenderer.Render(DeviceContext.Get(),Probe.TextProbes,Probe.MainCameraProbe,AssetRegistry);
 	}
 }

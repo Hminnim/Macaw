@@ -46,6 +46,14 @@ enum class ERenderObjectFlags : uint32 {
 	Selected = 1u << 0
 };
 
+enum class ERenderLayer : uint32 {
+	None = 0,
+    Sky = 1,
+	Opaque = 2,
+	Transparent = 3,
+	Gizmo = 4
+};
+
 constexpr uint32 operator|(ERenderObjectFlags Left, ERenderObjectFlags Right) {
 	return static_cast<uint32>(Left) | static_cast<uint32>(Right);
 }

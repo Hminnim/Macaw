@@ -349,7 +349,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         SubUVComp->SetSize(FVector2{ 2.0f, 2.0f });
         SubUVComp->SetColor(FVector4{ 1.0f, 1.0f, 1.0f, 1.0f });
 
-        SubUVComp->SetSubImage(4, 5, 19, 10.0f, true);
+        SubUVComp->SetSubImage(4, 4, 16, 10.0f, true);
 
         SubUVActor->SetActorRelativeLocation(FVector3{ 0.0f, 2.0f, 0.0f });
     }
@@ -372,7 +372,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     ImGui::CreateContext();
     ImGui_ImplWin32_Init((void*)hWnd);
     ImGui_ImplDX11_Init(Renderer.GetDevice(), Renderer.GetDeviceContext());
-
+    
+    ImGui::StyleColorsDark();
+    
     auto& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; 
 
@@ -429,13 +431,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 			//UndoCommandChannel.Dispatch();
 
 			FRenderProbe& Probe{ World.BuildRenderProbe() };
-			Renderer.BeginSceneRender();
 			EditorView.RenderInProbe(Probe);
+			Renderer.BeginSceneRender();
+
 			Renderer.RenderScene(Probe);
             EditorView.RenderSceneGuides(Renderer.GetDeviceContext(),Probe);
-            Renderer.RenderText(Probe);
 			Renderer.RenderGizmos(Probe);
+            Renderer.RenderText(Probe);
 			EditorView.RenderOrientationAxis(Renderer.GetDeviceContext(),Probe.MainCameraProbe);
+
+
 			ImGui::Image(reinterpret_cast<ImTextureID>(Renderer.GetSceneShaderResourceView()), SceneViewportSize);
 			ImGui::End();
             

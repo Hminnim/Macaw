@@ -91,7 +91,7 @@ void FSceneRenderSurface::CreateSwapChainResources(ID3D11Device* Device) {
 	ErrorHandler::ReportHRESULT(SwapChain->GetBuffer(0, IID_PPV_ARGS(ColorTexture.GetAddressOf())), "[ FSceneRenderSurface ]", "Failed to get swap chain back buffer.", ErrorHandler::EErrorLevel::Critical);
 
 	D3D11_RENDER_TARGET_VIEW_DESC RenderTargetViewDescription{};
-	RenderTargetViewDescription.Format = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
+	RenderTargetViewDescription.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	RenderTargetViewDescription.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 	ErrorHandler::ReportHRESULT(Device->CreateRenderTargetView(ColorTexture.Get(), &RenderTargetViewDescription, RenderTargetView.GetAddressOf()), "[ FSceneRenderSurface ]", "Failed to create swap chain render target view.", ErrorHandler::EErrorLevel::Critical);
 

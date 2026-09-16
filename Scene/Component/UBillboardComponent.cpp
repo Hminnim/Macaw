@@ -111,6 +111,7 @@ bool UBillboardComponent::MakeBillboardRender(FBillboardProbe& OutProbe) const
 
 void UBillboardComponent::DrawPanels(FPropertyEditorContext& Context)
 {
+	UPrimitiveComponent::DrawPanels(Context);
     Context.DrawColor("Color", GetColor(), [this](const FVector4& NewColor) { SetColor(NewColor);});
 
     AActor* Owner = GetOwner();
