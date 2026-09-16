@@ -94,11 +94,42 @@ void EditorViewport::RenderBounds(ELineDepthMode DepthMode) {
 	if (EditorContext == nullptr) return;
 
 	const UActorComponent* SelectedComponent = EditorContext->GetSelectedComponent();
-	if (SelectedComponent == nullptr || !SelectedComponent->GetTypeInfo()->IsA<UCollisionComponent>()) return;
+	if (SelectedComponent == nullptr) return;
 
-	const auto* CollisionComponent = static_cast<const UCollisionComponent*>(SelectedComponent);
+	if (SelectedComponent->GetTypeInfo()->IsA<UCollisionComponent>()) {
+		const auto* CollisionComponent = static_cast<const UCollisionComponent*>(SelectedComponent);
+		CollisionComponent->DrawEditorBounds(*LineRenderer, DepthMode);	
+	}
+	else if (SelectedComponent->GetTypeInfo()->IsA<UMeshComponent>()) {
+		const auto* MeshComponent = static_cast<const UMeshComponent*>(SelectedComponent);
+		
+		auto& BB = MeshComponent->GetPickingBox(); 
+		DirectX::BoundingOrientedBox WorldBB{};
+		BB.Transform(WorldBB, MeshComponent->GetComponentToWorld().ToSimpleMath());
 
-	CollisionComponent->DrawEditorBounds(*LineRenderer, DepthMode);
+
+		std::array<DirectX::XMFLOAT3, DirectX::BoundingOrientedBox::CORNER_COUNT> Corners{};
+		WorldBB.GetCorners(Corners.data());
+
+		const FVector4 LineColor = FVector4{ 0.0f, 0.0f, 1.0f, 1.0f };
+		const float Thickness = 1.0f;
+		const auto AddEdge = [this, &Corners, LineColor, Thickness, DepthMode](size_t Start, size_t End) {
+			LineRenderer->AddLine(FVector3{ Corners[Start] }, FVector3{ Corners[End] }, LineColor, Thickness, DepthMode);
+			};
+
+		AddEdge(0, 1);
+		AddEdge(1, 2);
+		AddEdge(2, 3);
+		AddEdge(3, 0);
+		AddEdge(4, 5);
+		AddEdge(5, 6);
+		AddEdge(6, 7);
+		AddEdge(7, 4);
+		AddEdge(0, 4);
+		AddEdge(1, 5);
+		AddEdge(2, 6);
+		AddEdge(3, 7);
+	}
 }
 
 void EditorViewport::RenderOrientationAxis(ID3D11DeviceContext* Context, CameraProbe& Probe) {
