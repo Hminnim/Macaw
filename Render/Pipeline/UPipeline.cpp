@@ -15,10 +15,10 @@ void UPipeline::Initialize(ID3D11Device* Device, const std::filesystem::path& me
 	ErrorHandler::Report(not MetadataParser.Load(AssetMetaDataPath), " [ UPipeline ]", "Failed to load metadata", ErrorHandler::EErrorLevel::Critical);
 
     const TFixedArray<std::filesystem::path, static_cast<size_t>(ERenderMode::Max)> ParsePath{
-        MetadataParser.ResolvePath("SolidFilePath"),
         MetadataParser.ResolvePath("LitFilePath"),
         MetadataParser.ResolvePath("UnlitFilePath"),
         MetadataParser.ResolvePath("WireframeFilePath"),
+        MetadataParser.ResolvePath("LitWireframeFilePath"),
         MetadataParser.ResolvePath("OutlineFilePath")
     };
 

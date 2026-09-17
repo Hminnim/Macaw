@@ -198,7 +198,7 @@ void FControlPanel::DrawPanel()
 
     ImGui::Separator();
     int RenderIndex = static_cast<int>(EditorContext->GetRenderModeState());
-    const char* RenderModes[] = { "Solid", "Lit", "Unlit", "Wireframe" };
+    const char* RenderModes[] = { "Lit", "Unlit", "Wireframe", "Lit Wireframe" };
     ImGui::SetNextItemWidth(110.0f);
     if (ImGui::Combo("Render Mode", &RenderIndex, RenderModes, IM_ARRAYSIZE(RenderModes)))
     {

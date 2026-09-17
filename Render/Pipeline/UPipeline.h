@@ -32,10 +32,10 @@ struct PipelineUnit {
 };
 
 enum class ERenderMode : size_t {
-    Solid,
     Lit,
     Unlit,
     Wireframe,
+    LitWireframe,
     Outline,
     Max
 };
@@ -72,7 +72,7 @@ protected:
 private:
 	std::filesystem::path OptionFilePath{};
     
-    ERenderMode Mode{ ERenderMode::Solid };
+    ERenderMode Mode{ ERenderMode::Lit };
 
     TFixedArray<PipelineUnit, static_cast<size_t>(ERenderMode::Max)> Pipelines{};
 

@@ -276,6 +276,7 @@ void AActor::Tick(float DeltaTime) {
 void AActor::Serialize(FArchive& Archive) {
     UObject::Serialize(Archive);
 
+    
     // components
     size_t ArraySize = Components.size();
     Archive.BeginArrayScope("Components", ArraySize);

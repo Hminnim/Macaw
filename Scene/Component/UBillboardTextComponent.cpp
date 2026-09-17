@@ -307,6 +307,20 @@ void UBillboardTextComponent::OnRegister()
 
     if (World != nullptr)
     {
+        FAssetRegistry* AssetRegistry = World->GetAssetRegistry();
+        if (AssetRegistry != nullptr)
+        {
+            if (AssetRegistry->ResolveAsset<UFont>(FontHandle) == nullptr)
+            {
+                FontHandle = AssetRegistry->GetAsset("DefaultFont");
+            }
+
+            if (AssetRegistry->ResolveAsset<UPipeline>(PipelineHandle) == nullptr)
+            {
+                PipelineHandle = AssetRegistry->GetAsset("TextPipeline");
+            }
+        }
+
         World->GetTextSubsystem().RegisterComponent(this);
     }
     RebuildTextGeometry();

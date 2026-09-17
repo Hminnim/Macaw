@@ -18,6 +18,40 @@ bool UBillboardComponent::CanRenderBillBoard() const
 
 void UBillboardComponent::Serialize(FArchive& Archive)
 {
+    UPrimitiveComponent::Serialize(Archive);
+
+    FString TextureGuid;
+    if (Archive.IsSaving() && TextureHandle) {
+        if (UAsset* Asset = Archive.GetAssetRegistry()->ResolveAsset<UAsset>(TextureHandle)) {
+            TextureGuid = Asset->GetGuid().ToString();
+        }
+    }
+    Archive.Serialize("GuidTextureHandle", TextureGuid);
+    if (Archive.IsLoading() && !TextureGuid.empty()) {
+        FGuid Guid;
+        if (Guid.Parse(TextureGuid)) {
+            TextureHandle = Archive.GetAssetRegistry()->GetAsset(Guid);
+        }
+    }
+
+    FString PipelineGuid;
+    if (Archive.IsSaving() && PipelineHandle) {
+        if (UAsset* Asset = Archive.GetAssetRegistry()->ResolveAsset<UAsset>(PipelineHandle)) {
+            PipelineGuid = Asset->GetGuid().ToString();
+        }
+    }
+    Archive.Serialize("GuidPipelineHandle", PipelineGuid);
+    if (Archive.IsLoading() && !PipelineGuid.empty()) {
+        FGuid Guid;
+        if (Guid.Parse(PipelineGuid)) {
+            PipelineHandle = Archive.GetAssetRegistry()->GetAsset(Guid);
+        }
+    }
+
+    Archive.Serialize("Size", Size);
+    Archive.Serialize("UVMin", UVMin);
+    Archive.Serialize("UVMax", UVMax);
+    Archive.Serialize("Color", Color);
 }
 
 bool UBillboardComponent::TryGetBillBoardWorld(FMatrix& OutWorld) const

@@ -228,7 +228,8 @@ FRenderProbe& UWorld::BuildRenderProbe() {
 	Probe.BillboardProbes.clear();
 	Probe.LightProbes.clear();
 	Probe.bForceUnlit = EditorContext != nullptr &&
-		EditorContext->GetRenderModeState() == static_cast<size_t>(ERenderMode::Unlit);
+		(EditorContext->GetRenderModeState() == static_cast<size_t>(ERenderMode::Unlit) ||
+		 EditorContext->GetRenderModeState() == static_cast<size_t>(ERenderMode::LitWireframe));
 
 	RenderSubsystem->BuildRenderProbes(AssetRegistry, Probe);
 	LightSubsystem->BuildLightProbes(Probe);
