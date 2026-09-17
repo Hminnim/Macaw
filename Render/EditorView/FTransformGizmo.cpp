@@ -225,15 +225,15 @@ void FTransformGizmo::SetTranslate(const FVector3& Pivot, float WorldUnitsPerPix
 
 	CylinderXAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength, ShaftRadius) * FMatrix::CreateRotationZ(DirectX::XMConvertToRadians(-90.0f)) * FMatrix::CreateTranslation(StartX + HalfShaftLength, Pivot.y, Pivot.z);
 
-	CylinderZAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength, ShaftRadius) * FMatrix::CreateTranslation(Pivot.x, StartY + HalfShaftLength, Pivot.z);
+	CylinderYAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength, ShaftRadius) * FMatrix::CreateTranslation(Pivot.x, StartY + HalfShaftLength, Pivot.z);
 
-	CylinderYAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength, ShaftRadius) * FMatrix::CreateRotationX(DirectX::XMConvertToRadians(90.0f)) * FMatrix::CreateTranslation(Pivot.x, Pivot.y, StartZ + HalfShaftLength);
+	CylinderZAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength, ShaftRadius) * FMatrix::CreateRotationX(DirectX::XMConvertToRadians(90.0f)) * FMatrix::CreateTranslation(Pivot.x, Pivot.y, StartZ + HalfShaftLength);
 
 	ConeXAxisTransform = FMatrix::CreateScale(ConeRadius, ConeLength, ConeRadius) * FMatrix::CreateRotationZ(DirectX::XMConvertToRadians(-90.0f)) * FMatrix::CreateTranslation(StartX + ShaftLength + HalfConeLength, Pivot.y, Pivot.z);
 
-	ConeZAxisTransform = FMatrix::CreateScale(ConeRadius, ConeLength, ConeRadius) * FMatrix::CreateTranslation(Pivot.x, StartY + ShaftLength + HalfConeLength, Pivot.z);
+	ConeYAxisTransform = FMatrix::CreateScale(ConeRadius, ConeLength, ConeRadius) * FMatrix::CreateTranslation(Pivot.x, StartY + ShaftLength + HalfConeLength, Pivot.z);
 
-	ConeYAxisTransform = FMatrix::CreateScale(ConeRadius, ConeLength, ConeRadius) * FMatrix::CreateRotationX(DirectX::XMConvertToRadians(90.0f)) * FMatrix::CreateTranslation(Pivot.x, Pivot.y, StartZ + ShaftLength + HalfConeLength);
+	ConeZAxisTransform = FMatrix::CreateScale(ConeRadius, ConeLength, ConeRadius) * FMatrix::CreateRotationX(DirectX::XMConvertToRadians(90.0f)) * FMatrix::CreateTranslation(Pivot.x, Pivot.y, StartZ + ShaftLength + HalfConeLength);
 
 	AxisHitProxies = {
 		FAxisHitProxy{
@@ -276,10 +276,10 @@ void FTransformGizmo::SetRotate(const FVector3& Pivot, float WorldUnitsPerPixel)
 		* FMatrix::CreateRotationZ(DirectX::XMConvertToRadians(-90.0f))
 		* FMatrix::CreateTranslation(Pivot);
 
-	TorusZAxisTransform =FMatrix::CreateScale(TorusScale,TorusScale,TorusScale)
+	TorusYAxisTransform =FMatrix::CreateScale(TorusScale,TorusScale,TorusScale)
 		* FMatrix::CreateTranslation(Pivot);
 
-	TorusYAxisTransform =FMatrix::CreateScale(TorusScale,TorusScale,TorusScale)
+	TorusZAxisTransform =FMatrix::CreateScale(TorusScale,TorusScale,TorusScale)
 		* FMatrix::CreateRotationX(DirectX::XMConvertToRadians(90.0f))
 		* FMatrix::CreateTranslation(Pivot);
 
@@ -307,20 +307,20 @@ void FTransformGizmo::SetScale(const FVector3& Pivot, float WorldUnitsPerPixel) 
 		* FMatrix::CreateRotationZ(DirectX::XMConvertToRadians(-90.0f))
 		* FMatrix::CreateTranslation(StartX + HalfShaftLength,Pivot.y,Pivot.z);
 
-	CylinderZAxisTransform = FMatrix::CreateScale(ShaftRadius,ShaftLength,ShaftRadius)
+	CylinderYAxisTransform = FMatrix::CreateScale(ShaftRadius,ShaftLength,ShaftRadius)
 		* FMatrix::CreateTranslation(Pivot.x, StartY + HalfShaftLength, Pivot.z);
 
-	CylinderYAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength,ShaftRadius)
+	CylinderZAxisTransform = FMatrix::CreateScale(ShaftRadius, ShaftLength,ShaftRadius)
 		* FMatrix::CreateRotationX(DirectX::XMConvertToRadians(90.0f))
 		* FMatrix::CreateTranslation(Pivot.x,Pivot.y,StartZ + HalfShaftLength);
 
 	CubeXAxisTransform = FMatrix::CreateScale(BoxSize, BoxSize, BoxSize)
 		* FMatrix::CreateTranslation(StartX + ShaftLength + HalfBoxSize,Pivot.y,Pivot.z);
 
-	CubeZAxisTransform =FMatrix::CreateScale(BoxSize, BoxSize, BoxSize)
+	CubeYAxisTransform =FMatrix::CreateScale(BoxSize, BoxSize, BoxSize)
 		* FMatrix::CreateTranslation(Pivot.x,StartY + ShaftLength + HalfBoxSize,Pivot.z);
 
-	CubeYAxisTransform =FMatrix::CreateScale(BoxSize, BoxSize, BoxSize)
+	CubeZAxisTransform =FMatrix::CreateScale(BoxSize, BoxSize, BoxSize)
 		* FMatrix::CreateTranslation(Pivot.x,Pivot.y,StartZ + ShaftLength + HalfBoxSize);
 
 	AxisHitProxies = {FAxisHitProxy{

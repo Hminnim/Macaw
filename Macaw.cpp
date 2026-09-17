@@ -124,6 +124,18 @@ namespace {
         Collider->SetMeshComponent(MeshComponent);
     }
 
+    void AddTestNameTag(AActor* Actor, USceneComponent* Root) {
+        if (Actor == nullptr || Root == nullptr) {
+            return;
+        }
+
+        UNameTagComponent* NameTag = Actor->AddComponent<UNameTagComponent>();
+        NameTag->AttachToComponent(Root);
+        NameTag->SetTargetActor(nullptr);
+        NameTag->SetVisible(true);
+        NameTag->SetActive(false);
+    }
+
     void CreateComponentHierarchyTest(UWorld& World, const FAssetHandle& MeshHandle, const FAssetHandle& PipelineHandle, const FAssetHandle& MaterialHandle, const UMesh* Mesh) {
         AActor* Actor = World.AdoptActor<AActor>();
         UStaticMeshComponent* Root = AddTestStaticMesh(Actor, MeshHandle, PipelineHandle, MaterialHandle, { -12.0f, 0.0f, 8.0f });
@@ -141,6 +153,7 @@ namespace {
         }
 
         AddTestCollider(Actor, Root, Root);
+        AddTestNameTag(Actor, Root);
     }
 
     void CreateActorHierarchyTest(UWorld& World, const FAssetHandle& MeshHandle, const FAssetHandle& PipelineHandle, const FAssetHandle& MaterialHandle, const UMesh* Mesh) {
@@ -150,6 +163,7 @@ namespace {
             return;
         }
         AddTestCollider(ParentActor, ParentRoot, ParentRoot);
+        AddTestNameTag(ParentActor, ParentRoot);
 
         AActor* ChildActor = World.AdoptActor<AActor>();
         UStaticMeshComponent* ChildRoot = AddTestStaticMesh(ChildActor, MeshHandle, PipelineHandle, MaterialHandle, { 0.0f, 0.0f, 3.0f });
@@ -162,6 +176,7 @@ namespace {
         }
 
         AddTestCollider(ChildActor, ChildRoot, ChildRoot);
+        AddTestNameTag(ChildActor, ChildRoot);
     }
 
     void CreateHierarchyTests(UWorld& World, const FAssetHandle& MeshHandle, const FAssetHandle& PipelineHandle, const FAssetHandle& MaterialHandle, const UMesh* Mesh) {
