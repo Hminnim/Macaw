@@ -757,7 +757,12 @@ void UWorld::HandleSpawnComponent(
 			StaticMeshComponent->SetPipelineHandle(PipelineHandle);
 			StaticMeshComponent->SetMaterialHandle(MaterialHandle);
 		}
+
+		auto tag = Actor->AddComponent<UNameTagComponent>();
+		tag->SetActive(false);
 	}
+
+
 
 	FlushPendingDestroyActors();
 }

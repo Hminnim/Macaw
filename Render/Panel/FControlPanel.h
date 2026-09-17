@@ -46,5 +46,8 @@ private:
 
     size_t RenderModeIndex = 0;
 
+    // Components 체크리스트에서 컴포넌트 타입을 검색한다.
+    ImGuiTextFilter ComponentFilter;
+
     HWND WindowHandle;
 };

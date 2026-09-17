@@ -1,308 +1,308 @@
 {
     "Assets": [
         {
-            "Guid": "B0E95F55-467B-479D-3267-D8882F68DA09",
+            "Guid": "2DEEFA02-4EF0-4179-CD18-4489D590EA5A",
             "TypeName": "UMesh",
             "Name": "",
             "AssetName": "CylinderMesh",
             "AssetMetaDataPath": "./Content/Metadata/CylinderMesh.meta"
         },
         {
-            "Guid": "800BC694-4106-299C-91F0-A09FC735FB14",
+            "Guid": "181C1921-462C-FDD6-EA08-2AAD0B06AEDF",
             "TypeName": "UMesh",
             "Name": "",
             "AssetName": "ConeMesh",
             "AssetMetaDataPath": "./Content/Metadata/ConeMesh.meta"
         },
         {
-            "Guid": "630D4969-4C84-6534-BB91-D9B5F9033A35",
+            "Guid": "146DF576-432A-CBF5-8B39-F18FD8E24722",
             "TypeName": "UMesh",
             "Name": "",
             "AssetName": "CubeMesh",
             "AssetMetaDataPath": "./Content/Metadata/CubeMesh.meta"
         },
         {
-            "Guid": "162B0745-4A44-DC1E-1F3C-148E41226028",
+            "Guid": "B74EF74B-4CCC-5B9F-E4B1-3A9706694369",
             "TypeName": "UMesh",
             "Name": "",
             "AssetName": "GizmoTorusMesh",
             "AssetMetaDataPath": "./Content/Metadata/GizmoTorusMesh.meta"
         },
         {
-            "Guid": "DB48D42F-489C-702A-6B30-D581B1D28BDF",
+            "Guid": "5AD67BCE-40BC-6AA6-CFC8-B9B87CB26393",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "Red",
             "AssetMetaDataPath": "./Content/Metadata/RedMaterial.meta"
         },
         {
-            "Guid": "ED37F6A4-46A1-2BC9-8542-678F80B49843",
+            "Guid": "49DFE0B1-474C-F9C0-3B9B-A1A839849EAF",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "Green",
             "AssetMetaDataPath": "./Content/Metadata/GreenMaterial.meta"
         },
         {
-            "Guid": "E7849F98-492A-2677-1548-8B88AEDBF2FA",
+            "Guid": "228F54B2-4B04-ED56-3613-2C9B1E7B7B45",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "Blue",
             "AssetMetaDataPath": "./Content/Metadata/BlueMaterial.meta"
         },
         {
-            "Guid": "9C60AF3E-4E4E-B9DC-7EBC-9597401FE64A",
+            "Guid": "EA7DC094-4708-A0C0-0ABA-72BCC35D005F",
             "TypeName": "UPipeline",
             "Name": "",
             "AssetName": "GizmoPipeline",
             "AssetMetaDataPath": "./Content/Metadata/GizmoPipeline.meta"
         },
         {
-            "Guid": "C7FC25A7-4163-5FED-D45C-EABBA48B2F7A",
+            "Guid": "8684BD69-4EF1-5445-FB98-7A91F552C3B1",
             "TypeName": "UPipeline",
             "Name": "",
             "AssetName": "BasePipeline",
             "AssetMetaDataPath": "./Content/Metadata/BasePipeline.meta"
         },
         {
-            "Guid": "CC5E965F-4475-40A0-00AA-77B81479E10C",
+            "Guid": "FB419800-4F51-9C3C-3985-96961CF75F18",
             "TypeName": "UPipeline",
             "Name": "",
             "AssetName": "AlternatePipeline",
             "AssetMetaDataPath": "./Content/Metadata/AlternatePipeline.meta"
         },
         {
-            "Guid": "28837676-4D46-82DB-A0EB-F9ACF21FC654",
+            "Guid": "8EEFBE08-4D9E-F6F7-BA00-F5BD4EA9DB96",
             "TypeName": "UMesh",
             "Name": "",
             "AssetName": "SphereMesh",
             "AssetMetaDataPath": "./Content/Metadata/SphereMesh.meta"
         },
         {
-            "Guid": "84FCD02D-4BE5-BC9F-DC3D-EABAA0F7B4DD",
+            "Guid": "5CE47FE5-42F8-E46F-E2BD-EE9A2C037F1B",
             "TypeName": "UMesh",
             "Name": "",
             "AssetName": "PlaneMesh",
             "AssetMetaDataPath": "./Content/Metadata/PlaneMesh.meta"
         },
         {
-            "Guid": "E7D76516-44F0-BE91-523C-258E60649FAC",
+            "Guid": "771EC556-49EE-BDF4-2444-899D419FFE89",
             "TypeName": "UMesh",
             "Name": "",
             "AssetName": "TorusMesh",
             "AssetMetaDataPath": "./Content/Metadata/TorusMesh.meta"
         },
         {
-            "Guid": "2E4466B2-43B3-4C57-EA67-88AB4F41C4A0",
+            "Guid": "CE2488AD-4F49-BCD3-25E4-C8885167C68D",
             "TypeName": "UMesh",
             "Name": "",
             "AssetName": "CapsuleMesh",
             "AssetMetaDataPath": "./Content/Metadata/CapsuleMesh.meta"
         },
         {
-            "Guid": "4945AD90-4FDD-7313-832C-0ABC1B365A39",
+            "Guid": "07361FCA-4E62-D238-7C61-00A23D5D57C2",
             "TypeName": "UMesh",
             "Name": "",
             "AssetName": "PyrimidMesh",
             "AssetMetaDataPath": "./Content/Metadata/PyramidMesh.meta"
         },
         {
-            "Guid": "A6E3467B-4D07-808C-5278-40BE04FF3AD6",
+            "Guid": "DF2AF1D5-430B-AAF2-AEC5-5F9E22C5A9BD",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "GreyMaterial",
             "AssetMetaDataPath": "./Content/Metadata/GreyMaterial.meta"
         },
         {
-            "Guid": "9FDA3D9C-4EC1-6453-0998-73869329D023",
+            "Guid": "A3DDE53B-4D6F-A680-8D1F-03965239AEA7",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "RedMaterial",
             "AssetMetaDataPath": "./Content/Metadata/RedMaterial.meta"
         },
         {
-            "Guid": "3E92E4DA-4AF2-1207-A00D-6BB1B70FF70A",
+            "Guid": "C017C3E2-4892-80EF-0247-5289A318CF6B",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "GreenMaterial",
             "AssetMetaDataPath": "./Content/Metadata/GreenMaterial.meta"
         },
         {
-            "Guid": "20CA3DAF-4F02-40FB-D9D6-AFB899BF4EF5",
+            "Guid": "A88856DE-42F8-5794-5749-3996BD6C82D2",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "BlueMaterial",
             "AssetMetaDataPath": "./Content/Metadata/BlueMaterial.meta"
         },
         {
-            "Guid": "246C68A0-4553-D1C7-F3BD-06866D23064A",
+            "Guid": "4EC0C3A6-4DB9-71A1-CC51-9F94777314CD",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "YellowMaterial",
             "AssetMetaDataPath": "./Content/Metadata/YellowMaterial.meta"
         },
         {
-            "Guid": "DA35176A-46C4-03D6-B335-A1AC0D05D780",
+            "Guid": "55E6F35F-434B-9591-EDD3-849C9E1E6871",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "AmberMaterial",
             "AssetMetaDataPath": "./Content/Metadata/AmberMaterial.meta"
         },
         {
-            "Guid": "2BE8A790-4888-2369-15C7-81A41AEB9646",
+            "Guid": "D0FFEC7F-4F73-2CD6-E714-1089AD339331",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "BrownMaterial",
             "AssetMetaDataPath": "./Content/Metadata/BrownMaterial.meta"
         },
         {
-            "Guid": "8B40760D-45E0-9E14-90A2-31B57947A04B",
+            "Guid": "01DF04BD-4F04-1B44-23DC-559DC1F880C7",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "CyanMaterial",
             "AssetMetaDataPath": "./Content/Metadata/CyanMaterial.meta"
         },
         {
-            "Guid": "CEA1020F-4DEF-2154-7B03-62AB9212F68A",
+            "Guid": "54CBA030-4317-1A31-4D5D-45A47AC6ECF6",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "LimeMaterial",
             "AssetMetaDataPath": "./Content/Metadata/LimeMaterial.meta"
         },
         {
-            "Guid": "7F4FA7D1-4FE1-EC19-32AB-95BA5B3B7FE3",
+            "Guid": "EFC135AF-4AA6-631B-4DAC-9D9EBE75B181",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "MagentaMaterial",
             "AssetMetaDataPath": "./Content/Metadata/MagentaMaterial.meta"
         },
         {
-            "Guid": "B80886CF-4EEC-9139-4EFC-BEABBD206D3F",
+            "Guid": "02139A1B-4BF3-D3A9-32D2-E081D7988285",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "NavyMaterial",
             "AssetMetaDataPath": "./Content/Metadata/NavyMaterial.meta"
         },
         {
-            "Guid": "C07E36CD-4322-5EFC-79EF-9893B34D3268",
+            "Guid": "F7DC66F3-4CB4-A43A-9B2F-439891B6D0CA",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "OrangeMaterial",
             "AssetMetaDataPath": "./Content/Metadata/OrangeMaterial.meta"
         },
         {
-            "Guid": "AEDE3BEE-4305-DA0B-8255-C6AB31E1F67C",
+            "Guid": "8724E5CA-45A6-0C16-57E9-D096CAFE5168",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "PinkMaterial",
             "AssetMetaDataPath": "./Content/Metadata/PinkMaterial.meta"
         },
         {
-            "Guid": "8774AAE2-456A-D649-7201-54A6D6BE07E3",
+            "Guid": "CA6A0F5E-4CFF-D536-0D63-DC9DA085AADA",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "PurpleMaterial",
             "AssetMetaDataPath": "./Content/Metadata/PurpleMaterial.meta"
         },
         {
-            "Guid": "C37CDF25-4C3F-FE82-AC8A-EF85E6F04549",
+            "Guid": "7B876893-452F-2104-A3C3-E98AB1D4115D",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "TealMaterial",
             "AssetMetaDataPath": "./Content/Metadata/TealMaterial.meta"
         },
         {
-            "Guid": "96AB0C43-4E7A-C1D9-BF78-A49044BF437F",
+            "Guid": "5A2A6B1C-4CE5-74DA-1B23-7CA18ADEAB16",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "WhiteMaterial",
             "AssetMetaDataPath": "./Content/Metadata/WhiteMaterial.meta"
         },
         {
-            "Guid": "870EC5C9-43E1-C650-0E0B-059200B0C815",
+            "Guid": "C9B1916F-4212-4E8C-5D9F-E4A7383445BA",
             "TypeName": "UPipeline",
             "Name": "",
             "AssetName": "TexturedPipeline",
             "AssetMetaDataPath": "./Content/Metadata/TexturedTestPipeline.meta"
         },
         {
-            "Guid": "095F3C4B-4D8C-8394-B294-3DA7A675F3EA",
+            "Guid": "19212521-4D03-3A2D-45A4-C08D5B5092BA",
             "TypeName": "UTexture",
             "Name": "",
             "AssetName": "PlankTexture",
             "AssetMetaDataPath": "./Content/Metadata/TexturedTestTexture.meta"
         },
         {
-            "Guid": "2D7DDADE-4C1F-A838-EAF4-3B90AC7A4A03",
+            "Guid": "6A9B4B7B-411B-B583-4F66-D8920E7C417F",
             "TypeName": "UTexture",
             "Name": "",
             "AssetName": "TestSprite",
             "AssetMetaDataPath": "./Content/Metadata/TestSprite.meta"
         },
         {
-            "Guid": "1B4533DE-4F80-4C54-9CF9-F995C7724040",
+            "Guid": "C0226F3F-43CF-2D87-6E88-8A976957B0D9",
             "TypeName": "UTexturedMaterial",
             "Name": "",
             "AssetName": "TexturedMaterial",
             "AssetMetaDataPath": "./Content/Metadata/TexturedTestMaterial.meta"
         },
         {
-            "Guid": "2208ADED-4C13-95E5-29FA-F28F55A2BDD5",
+            "Guid": "58F3AFC1-4C10-C856-CD45-5EB157CB659E",
             "TypeName": "UTexture",
             "Name": "",
             "AssetName": "SkyDomeTexture",
             "AssetMetaDataPath": "./Content/Metadata/SkyDomeTexture.meta"
         },
         {
-            "Guid": "500A8CAC-4FC9-6177-A95F-569A2E3E5E96",
+            "Guid": "4E01A8D2-409C-9BA0-4451-ABB8C136B40E",
             "TypeName": "UTexturedMaterial",
             "Name": "",
             "AssetName": "SkyDomeMaterial",
             "AssetMetaDataPath": "./Content/Metadata/SkyDomeMaterial.meta"
         },
         {
-            "Guid": "D626E6C3-4B23-2EC1-87EB-30AFB9D2BE84",
+            "Guid": "641DD3AF-4334-AD94-E3B9-67B95613E892",
             "TypeName": "UPipeline",
             "Name": "",
             "AssetName": "SkyDomePipeline",
             "AssetMetaDataPath": "./Content/Metadata/SkyDomePipeline.meta"
         },
         {
-            "Guid": "35FEA867-42E4-85A8-5F94-40836F10ADB7",
+            "Guid": "A100BFE0-402D-5612-017A-AA9B3BFCC8D6",
             "TypeName": "UMesh",
             "Name": "",
             "AssetName": "SkyDome",
             "AssetMetaDataPath": "./Content/Metadata/SkyDomeMesh.meta"
         },
         {
-            "Guid": "9164B8D3-4B3E-4EEE-949A-D49BB6207FF4",
+            "Guid": "71790AF8-4BE9-993E-EB36-CDABD73B7A78",
             "TypeName": "UColorMaterial",
             "Name": "",
             "AssetName": "__DefaultStaticMeshMaterial",
             "AssetMetaDataPath": "./Content/Metadata/DefaultStaticMeshMaterial.meta"
         },
         {
-            "Guid": "3BE71D4F-4196-0989-2B42-DC8D38802DD0",
+            "Guid": "9834FBEA-4E41-D79C-DC30-06ACF196C277",
             "TypeName": "UPipeline",
             "Name": "",
             "AssetName": "__DefaultStaticMeshPipeline",
             "AssetMetaDataPath": "./Content/Metadata/DefaultStaticMeshPipeline.meta"
         },
         {
-            "Guid": "0ADCF09D-4D01-51E9-A883-43940DE9B798",
+            "Guid": "57EB5F10-45CE-2197-E879-8D9E2F3B07AA",
             "TypeName": "UPipeline",
             "Name": "",
             "AssetName": "TextPipeline",
             "AssetMetaDataPath": "./Content/Metadata/TextPipeline.meta"
         },
         {
-            "Guid": "D8D3B611-4114-9895-927E-9C98483EB8FC",
+            "Guid": "CF822CF5-4B9F-1F04-808B-259EA60C07E6",
             "TypeName": "UFreeTypeFont",
             "Name": "",
             "AssetName": "DefaultFont",
             "AssetMetaDataPath": "./Content/Metadata/NotoSansKR.meta"
         },
         {
-            "Guid": "174BB614-4294-087A-49F4-C892B0462EB0",
+            "Guid": "9871276A-4283-449C-8EF8-3EBD4BADD62A",
             "TypeName": "UPipeline",
             "Name": "",
             "AssetName": "BillboardPipeline",
@@ -311,12 +311,12 @@
     ],
     "Actors": [
         {
-            "Guid": "7EF839FE-4508-1F72-E26B-8D9F91B61FF4",
+            "Guid": "F0DD0F39-4352-4ACC-7C97-308212E6B522",
             "TypeName": "AActor",
             "Name": "AActor",
             "Components": [
                 {
-                    "Guid": "6BBA1198-4C5A-D40A-234E-65A9B7B73EBF",
+                    "Guid": "663F84FF-48D4-08C2-E15E-3081F4714495",
                     "TypeName": "UStaticMeshComponent",
                     "Name": "",
                     "bActive": true,
@@ -343,27 +343,27 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "35FEA867-42E4-85A8-5F94-40836F10ADB7",
-                    "GuidMaterialHandle": "500A8CAC-4FC9-6177-A95F-569A2E3E5E96",
-                    "GuidPipelineHandle": "D626E6C3-4B23-2EC1-87EB-30AFB9D2BE84"
+                    "GuidMeshHandle": "A100BFE0-402D-5612-017A-AA9B3BFCC8D6",
+                    "GuidMaterialHandle": "4E01A8D2-409C-9BA0-4451-ABB8C136B40E",
+                    "GuidPipelineHandle": "641DD3AF-4334-AD94-E3B9-67B95613E892"
                 }
             ],
             "GuidRootComponent": ""
         },
         {
-            "Guid": "D449A8A7-433A-AC36-85B2-FAB5526EC693",
+            "Guid": "2719F283-4FC2-DA36-CD41-73B658507CA0",
             "TypeName": "AActor",
             "Name": "AActor_1",
             "Components": [],
             "GuidRootComponent": ""
         },
         {
-            "Guid": "B7C9ABAF-4B0B-80B4-5A05-BE83580D55AD",
+            "Guid": "673F12F7-425E-C65A-42EB-5AB2EE32FA3B",
             "TypeName": "AActor",
             "Name": "AActor_2",
             "Components": [
                 {
-                    "Guid": "4A092F1E-4ADC-9126-0097-B699FDD1E657",
+                    "Guid": "49DAEBA0-47CF-343F-E864-C3B99D50D27B",
                     "TypeName": "USubUVComponent",
                     "Name": "",
                     "bActive": true,
@@ -390,18 +390,18 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidTextureHandle": "2D7DDADE-4C1F-A838-EAF4-3B90AC7A4A03",
-                    "GuidPipelineHandle": "174BB614-4294-087A-49F4-C892B0462EB0",
+                    "GuidTextureHandle": "6A9B4B7B-411B-B583-4F66-D8920E7C417F",
+                    "GuidPipelineHandle": "9871276A-4283-449C-8EF8-3EBD4BADD62A",
                     "Size": [
                         2.0,
                         2.0
                     ],
                     "UVMin": [
-                        0.75,
+                        0.25,
                         0.75
                     ],
                     "UVMax": [
-                        1.0,
+                        0.5,
                         1.0
                     ],
                     "Color": [
@@ -412,15 +412,15 @@
                     ]
                 }
             ],
-            "GuidRootComponent": "4A092F1E-4ADC-9126-0097-B699FDD1E657"
+            "GuidRootComponent": "49DAEBA0-47CF-343F-E864-C3B99D50D27B"
         },
         {
-            "Guid": "BCB0FA41-4FB6-C8F7-26A8-B6A0E1FB9D3B",
+            "Guid": "6E05396C-4824-7BDD-5E93-57884EA2ED8E",
             "TypeName": "AActor",
             "Name": "AActor_3",
             "Components": [
                 {
-                    "Guid": "1BEA633C-4179-E0D1-72B4-DFBB58844861",
+                    "Guid": "D01368FC-4D1D-575D-205A-2E896AB389A6",
                     "TypeName": "UStaticMeshComponent",
                     "Name": "",
                     "bActive": true,
@@ -447,12 +447,12 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "630D4969-4C84-6534-BB91-D9B5F9033A35",
-                    "GuidMaterialHandle": "A6E3467B-4D07-808C-5278-40BE04FF3AD6",
-                    "GuidPipelineHandle": "C7FC25A7-4163-5FED-D45C-EABBA48B2F7A"
+                    "GuidMeshHandle": "146DF576-432A-CBF5-8B39-F18FD8E24722",
+                    "GuidMaterialHandle": "DF2AF1D5-430B-AAF2-AEC5-5F9E22C5A9BD",
+                    "GuidPipelineHandle": "8684BD69-4EF1-5445-FB98-7A91F552C3B1"
                 },
                 {
-                    "Guid": "7B8DB0C7-47B0-6846-63B7-5881D018C34C",
+                    "Guid": "8997349C-4F36-4FEE-9365-E08AD07F3D65",
                     "TypeName": "UStaticMeshComponent",
                     "Name": "",
                     "bActive": true,
@@ -477,14 +477,14 @@
                         "bAbsoluteRotation": false,
                         "bAbsoluteScale": false
                     },
-                    "Parent": "1BEA633C-4179-E0D1-72B4-DFBB58844861",
+                    "Parent": "D01368FC-4D1D-575D-205A-2E896AB389A6",
                     "bVisible": true,
-                    "GuidMeshHandle": "630D4969-4C84-6534-BB91-D9B5F9033A35",
-                    "GuidMaterialHandle": "A6E3467B-4D07-808C-5278-40BE04FF3AD6",
-                    "GuidPipelineHandle": "C7FC25A7-4163-5FED-D45C-EABBA48B2F7A"
+                    "GuidMeshHandle": "146DF576-432A-CBF5-8B39-F18FD8E24722",
+                    "GuidMaterialHandle": "DF2AF1D5-430B-AAF2-AEC5-5F9E22C5A9BD",
+                    "GuidPipelineHandle": "8684BD69-4EF1-5445-FB98-7A91F552C3B1"
                 },
                 {
-                    "Guid": "E2B690D2-402C-C1D6-FBE8-71B2F3DAB53F",
+                    "Guid": "DAD40558-45AF-8A85-C4EE-03ADEA5D8DB4",
                     "TypeName": "UStaticMeshComponent",
                     "Name": "",
                     "bActive": true,
@@ -509,14 +509,14 @@
                         "bAbsoluteRotation": false,
                         "bAbsoluteScale": false
                     },
-                    "Parent": "7B8DB0C7-47B0-6846-63B7-5881D018C34C",
+                    "Parent": "8997349C-4F36-4FEE-9365-E08AD07F3D65",
                     "bVisible": true,
-                    "GuidMeshHandle": "630D4969-4C84-6534-BB91-D9B5F9033A35",
-                    "GuidMaterialHandle": "A6E3467B-4D07-808C-5278-40BE04FF3AD6",
-                    "GuidPipelineHandle": "C7FC25A7-4163-5FED-D45C-EABBA48B2F7A"
+                    "GuidMeshHandle": "146DF576-432A-CBF5-8B39-F18FD8E24722",
+                    "GuidMaterialHandle": "DF2AF1D5-430B-AAF2-AEC5-5F9E22C5A9BD",
+                    "GuidPipelineHandle": "8684BD69-4EF1-5445-FB98-7A91F552C3B1"
                 },
                 {
-                    "Guid": "53F40BB8-449F-933C-8EA2-57B4ED810A06",
+                    "Guid": "81E2A6DB-4C9F-FDEE-0D8F-C7B76D1663C9",
                     "TypeName": "UStaticMeshComponent",
                     "Name": "",
                     "bActive": true,
@@ -541,14 +541,14 @@
                         "bAbsoluteRotation": false,
                         "bAbsoluteScale": false
                     },
-                    "Parent": "E2B690D2-402C-C1D6-FBE8-71B2F3DAB53F",
+                    "Parent": "DAD40558-45AF-8A85-C4EE-03ADEA5D8DB4",
                     "bVisible": true,
-                    "GuidMeshHandle": "630D4969-4C84-6534-BB91-D9B5F9033A35",
-                    "GuidMaterialHandle": "A6E3467B-4D07-808C-5278-40BE04FF3AD6",
-                    "GuidPipelineHandle": "C7FC25A7-4163-5FED-D45C-EABBA48B2F7A"
+                    "GuidMeshHandle": "146DF576-432A-CBF5-8B39-F18FD8E24722",
+                    "GuidMaterialHandle": "DF2AF1D5-430B-AAF2-AEC5-5F9E22C5A9BD",
+                    "GuidPipelineHandle": "8684BD69-4EF1-5445-FB98-7A91F552C3B1"
                 },
                 {
-                    "Guid": "96036357-49CF-2638-DE63-32B62278C1A4",
+                    "Guid": "C6C62ABB-4038-6EC7-A686-03BCE039CD4C",
                     "TypeName": "UStaticMeshComponent",
                     "Name": "",
                     "bActive": true,
@@ -573,14 +573,14 @@
                         "bAbsoluteRotation": false,
                         "bAbsoluteScale": false
                     },
-                    "Parent": "53F40BB8-449F-933C-8EA2-57B4ED810A06",
+                    "Parent": "81E2A6DB-4C9F-FDEE-0D8F-C7B76D1663C9",
                     "bVisible": true,
-                    "GuidMeshHandle": "630D4969-4C84-6534-BB91-D9B5F9033A35",
-                    "GuidMaterialHandle": "A6E3467B-4D07-808C-5278-40BE04FF3AD6",
-                    "GuidPipelineHandle": "C7FC25A7-4163-5FED-D45C-EABBA48B2F7A"
+                    "GuidMeshHandle": "146DF576-432A-CBF5-8B39-F18FD8E24722",
+                    "GuidMaterialHandle": "DF2AF1D5-430B-AAF2-AEC5-5F9E22C5A9BD",
+                    "GuidPipelineHandle": "8684BD69-4EF1-5445-FB98-7A91F552C3B1"
                 },
                 {
-                    "Guid": "DF2A0702-4865-43F1-9297-DE990B285DA7",
+                    "Guid": "DD8A96A1-41C4-BDC4-2A19-D9916E1BA3F5",
                     "TypeName": "UBoxColliderComponent",
                     "Name": "",
                     "bActive": true,
@@ -605,10 +605,10 @@
                         "bAbsoluteRotation": false,
                         "bAbsoluteScale": false
                     },
-                    "Parent": "1BEA633C-4179-E0D1-72B4-DFBB58844861",
+                    "Parent": "D01368FC-4D1D-575D-205A-2E896AB389A6",
                     "bVisible": true,
                     "bCollisionEnabled": true,
-                    "GuidMeshComponent": "1BEA633C-4179-E0D1-72B4-DFBB58844861",
+                    "GuidMeshComponent": "D01368FC-4D1D-575D-205A-2E896AB389A6",
                     "OBB_Center": [
                         0.0,
                         0.0,
@@ -625,62 +625,17 @@
                         0.0,
                         1.0
                     ]
-                },
-                {
-                    "Guid": "0BAA8B98-409B-8713-3F3D-87951E896078",
-                    "TypeName": "UNameTagComponent",
-                    "Name": "",
-                    "bActive": false,
-                    "Transform": {
-                        "Position": [
-                            0.0,
-                            0.0,
-                            0.0
-                        ],
-                        "Rotation": [
-                            0.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ],
-                        "Scale": [
-                            1.0,
-                            1.0,
-                            1.0
-                        ],
-                        "bAbsoluteLocation": false,
-                        "bAbsoluteRotation": false,
-                        "bAbsoluteScale": false
-                    },
-                    "Parent": "1BEA633C-4179-E0D1-72B4-DFBB58844861",
-                    "bVisible": true,
-                    "Text": "BCB0FA41-4FB6-C8F7-26A8-B6A0E1FB9D3B",
-                    "Color": [
-                        1.0,
-                        1.0,
-                        1.0,
-                        1.0
-                    ],
-                    "CharacterHeight": 1.0,
-                    "LetterSpacing": 0.0,
-                    "LineSpacing": 0.0,
-                    "TargetActorGuid": "00000000-0000-0000-0000-000000000000",
-                    "TargetLocalOffset": [
-                        0.0,
-                        1.0,
-                        0.0
-                    ]
                 }
             ],
-            "GuidRootComponent": "1BEA633C-4179-E0D1-72B4-DFBB58844861"
+            "GuidRootComponent": "D01368FC-4D1D-575D-205A-2E896AB389A6"
         },
         {
-            "Guid": "2085861D-4CFA-1749-6314-A396CB7C8948",
+            "Guid": "ED612053-4B1F-D722-A079-1297F759B9D3",
             "TypeName": "AActor",
             "Name": "AActor_4",
             "Components": [
                 {
-                    "Guid": "7F5474A5-4AD5-7D05-DD3E-D99A0B48209E",
+                    "Guid": "43CCF9BE-48EA-21FC-6DF4-F7821D3D10D7",
                     "TypeName": "UStaticMeshComponent",
                     "Name": "",
                     "bActive": true,
@@ -707,12 +662,12 @@
                     },
                     "Parent": "00000000-0000-0000-0000-000000000000",
                     "bVisible": true,
-                    "GuidMeshHandle": "630D4969-4C84-6534-BB91-D9B5F9033A35",
-                    "GuidMaterialHandle": "A6E3467B-4D07-808C-5278-40BE04FF3AD6",
-                    "GuidPipelineHandle": "C7FC25A7-4163-5FED-D45C-EABBA48B2F7A"
+                    "GuidMeshHandle": "146DF576-432A-CBF5-8B39-F18FD8E24722",
+                    "GuidMaterialHandle": "DF2AF1D5-430B-AAF2-AEC5-5F9E22C5A9BD",
+                    "GuidPipelineHandle": "8684BD69-4EF1-5445-FB98-7A91F552C3B1"
                 },
                 {
-                    "Guid": "853C47E4-4C54-16C4-B7EC-34AD21375B4B",
+                    "Guid": "3C0E251F-475A-A5AA-69B2-2BAC04AB1226",
                     "TypeName": "UBoxColliderComponent",
                     "Name": "",
                     "bActive": true,
@@ -737,10 +692,10 @@
                         "bAbsoluteRotation": false,
                         "bAbsoluteScale": false
                     },
-                    "Parent": "7F5474A5-4AD5-7D05-DD3E-D99A0B48209E",
+                    "Parent": "43CCF9BE-48EA-21FC-6DF4-F7821D3D10D7",
                     "bVisible": true,
                     "bCollisionEnabled": true,
-                    "GuidMeshComponent": "7F5474A5-4AD5-7D05-DD3E-D99A0B48209E",
+                    "GuidMeshComponent": "43CCF9BE-48EA-21FC-6DF4-F7821D3D10D7",
                     "OBB_Center": [
                         0.0,
                         0.0,
@@ -759,15 +714,15 @@
                     ]
                 }
             ],
-            "GuidRootComponent": "7F5474A5-4AD5-7D05-DD3E-D99A0B48209E"
+            "GuidRootComponent": "43CCF9BE-48EA-21FC-6DF4-F7821D3D10D7"
         },
         {
-            "Guid": "F4BEB211-4DD4-6770-2860-3483FCCD1E82",
+            "Guid": "326BCF6C-46EB-2992-01CC-6EB7EA10F88C",
             "TypeName": "AActor",
             "Name": "AActor_5",
             "Components": [
                 {
-                    "Guid": "371E9F80-428D-CAE6-ED92-9CB483436176",
+                    "Guid": "4B0FFE82-47AA-4A45-90BE-5B994610032B",
                     "TypeName": "UStaticMeshComponent",
                     "Name": "",
                     "bActive": true,
@@ -792,14 +747,14 @@
                         "bAbsoluteRotation": false,
                         "bAbsoluteScale": false
                     },
-                    "Parent": "7F5474A5-4AD5-7D05-DD3E-D99A0B48209E",
+                    "Parent": "43CCF9BE-48EA-21FC-6DF4-F7821D3D10D7",
                     "bVisible": true,
-                    "GuidMeshHandle": "630D4969-4C84-6534-BB91-D9B5F9033A35",
-                    "GuidMaterialHandle": "A6E3467B-4D07-808C-5278-40BE04FF3AD6",
-                    "GuidPipelineHandle": "C7FC25A7-4163-5FED-D45C-EABBA48B2F7A"
+                    "GuidMeshHandle": "146DF576-432A-CBF5-8B39-F18FD8E24722",
+                    "GuidMaterialHandle": "DF2AF1D5-430B-AAF2-AEC5-5F9E22C5A9BD",
+                    "GuidPipelineHandle": "8684BD69-4EF1-5445-FB98-7A91F552C3B1"
                 },
                 {
-                    "Guid": "E8B82D6E-461F-E482-AD39-2DB46D8B35A5",
+                    "Guid": "8B9DB4F2-45FF-0575-1D53-B5BD86BAD932",
                     "TypeName": "UBoxColliderComponent",
                     "Name": "",
                     "bActive": true,
@@ -824,10 +779,10 @@
                         "bAbsoluteRotation": false,
                         "bAbsoluteScale": false
                     },
-                    "Parent": "371E9F80-428D-CAE6-ED92-9CB483436176",
+                    "Parent": "4B0FFE82-47AA-4A45-90BE-5B994610032B",
                     "bVisible": true,
                     "bCollisionEnabled": true,
-                    "GuidMeshComponent": "371E9F80-428D-CAE6-ED92-9CB483436176",
+                    "GuidMeshComponent": "4B0FFE82-47AA-4A45-90BE-5B994610032B",
                     "OBB_Center": [
                         0.0,
                         0.0,
@@ -846,29 +801,29 @@
                     ]
                 }
             ],
-            "GuidRootComponent": "371E9F80-428D-CAE6-ED92-9CB483436176"
+            "GuidRootComponent": "4B0FFE82-47AA-4A45-90BE-5B994610032B"
         },
         {
-            "Guid": "2947D76A-45AC-F75E-2B04-C78F97522223",
+            "Guid": "6F4D6391-4E41-CD47-84C2-F199DA104D65",
             "TypeName": "AActor",
             "Name": "AActor_6",
             "Components": [
                 {
-                    "Guid": "643A8FC5-4D1A-2547-0708-AD94D7C6E326",
+                    "Guid": "38B5A9BD-447D-04FD-0FA1-1E929CDFCB70",
                     "TypeName": "UCameraComponent",
                     "Name": "",
                     "bActive": true,
                     "Transform": {
                         "Position": [
-                            -6.225194454193115,
-                            12.44742202758789,
-                            9.863694190979004
+                            -4.098186492919922,
+                            6.969976902008057,
+                            4.1812825202941895
                         ],
                         "Rotation": [
-                            0.024065088480710983,
-                            -0.06018030270934105,
-                            0.9265618324279785,
-                            -0.3705163896083832
+                            -0.024703005328774452,
+                            0.055225785821676254,
+                            -0.9111658930778503,
+                            0.4075740873813629
                         ],
                         "Scale": [
                             1.0,
@@ -886,7 +841,602 @@
                     "FarPlane": 1000.0
                 }
             ],
-            "GuidRootComponent": "643A8FC5-4D1A-2547-0708-AD94D7C6E326"
+            "GuidRootComponent": "38B5A9BD-447D-04FD-0FA1-1E929CDFCB70"
+        },
+        {
+            "Guid": "C33F6C44-4B63-04F5-9B16-C5934A2272C5",
+            "TypeName": "AActor",
+            "Name": "AActor_7",
+            "Components": [
+                {
+                    "Guid": "5E76F29E-4EE9-ED12-692F-798F79A3CB3C",
+                    "TypeName": "UStaticMeshComponent",
+                    "Name": "",
+                    "bActive": true,
+                    "Transform": {
+                        "Position": [
+                            0.8611087799072266,
+                            2.424985885620117,
+                            2.0686278343200684
+                        ],
+                        "Rotation": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "Scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "bAbsoluteLocation": false,
+                        "bAbsoluteRotation": false,
+                        "bAbsoluteScale": false
+                    },
+                    "Parent": "00000000-0000-0000-0000-000000000000",
+                    "bVisible": true,
+                    "GuidMeshHandle": "146DF576-432A-CBF5-8B39-F18FD8E24722",
+                    "GuidMaterialHandle": "EFC135AF-4AA6-631B-4DAC-9D9EBE75B181",
+                    "GuidPipelineHandle": "8684BD69-4EF1-5445-FB98-7A91F552C3B1"
+                },
+                {
+                    "Guid": "E3B8A521-4542-34E5-F3D0-CFB6573B5A33",
+                    "TypeName": "UNameTagComponent",
+                    "Name": "",
+                    "bActive": false,
+                    "Transform": {
+                        "Position": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Rotation": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "Scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "bAbsoluteLocation": false,
+                        "bAbsoluteRotation": false,
+                        "bAbsoluteScale": false
+                    },
+                    "Parent": "00000000-0000-0000-0000-000000000000",
+                    "bVisible": true,
+                    "Text": "C33F6C44-4B63-04F5-9B16-C5934A2272C5",
+                    "Color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "CharacterHeight": 1.0,
+                    "LetterSpacing": 0.0,
+                    "LineSpacing": 0.0,
+                    "TargetActorGuid": "00000000-0000-0000-0000-000000000000",
+                    "TargetLocalOffset": [
+                        0.0,
+                        1.0,
+                        0.0
+                    ]
+                }
+            ],
+            "GuidRootComponent": "5E76F29E-4EE9-ED12-692F-798F79A3CB3C"
+        },
+        {
+            "Guid": "ABD718A7-486B-55F7-8EAC-49AD7EC07CB2",
+            "TypeName": "AActor",
+            "Name": "AActor_8",
+            "Components": [
+                {
+                    "Guid": "9962781E-4E03-F66D-CBC3-21B32E688EE1",
+                    "TypeName": "UStaticMeshComponent",
+                    "Name": "",
+                    "bActive": true,
+                    "Transform": {
+                        "Position": [
+                            -1.7212133407592773,
+                            -0.36896228790283203,
+                            5.504016399383545
+                        ],
+                        "Rotation": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "Scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "bAbsoluteLocation": false,
+                        "bAbsoluteRotation": false,
+                        "bAbsoluteScale": false
+                    },
+                    "Parent": "00000000-0000-0000-0000-000000000000",
+                    "bVisible": true,
+                    "GuidMeshHandle": "146DF576-432A-CBF5-8B39-F18FD8E24722",
+                    "GuidMaterialHandle": "55E6F35F-434B-9591-EDD3-849C9E1E6871",
+                    "GuidPipelineHandle": "8684BD69-4EF1-5445-FB98-7A91F552C3B1"
+                },
+                {
+                    "Guid": "A5ABDED3-4A4C-915F-2F1E-AAAD80BB0A50",
+                    "TypeName": "UNameTagComponent",
+                    "Name": "",
+                    "bActive": false,
+                    "Transform": {
+                        "Position": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Rotation": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "Scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "bAbsoluteLocation": false,
+                        "bAbsoluteRotation": false,
+                        "bAbsoluteScale": false
+                    },
+                    "Parent": "00000000-0000-0000-0000-000000000000",
+                    "bVisible": true,
+                    "Text": "ABD718A7-486B-55F7-8EAC-49AD7EC07CB2",
+                    "Color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "CharacterHeight": 1.0,
+                    "LetterSpacing": 0.0,
+                    "LineSpacing": 0.0,
+                    "TargetActorGuid": "00000000-0000-0000-0000-000000000000",
+                    "TargetLocalOffset": [
+                        0.0,
+                        1.0,
+                        0.0
+                    ]
+                }
+            ],
+            "GuidRootComponent": "9962781E-4E03-F66D-CBC3-21B32E688EE1"
+        },
+        {
+            "Guid": "DBF9A05A-4DB7-48FD-FE2F-A1B050424014",
+            "TypeName": "AActor",
+            "Name": "AActor_9",
+            "Components": [
+                {
+                    "Guid": "CB63887F-4329-0EAC-BAE5-CAB3F7CE7F84",
+                    "TypeName": "UStaticMeshComponent",
+                    "Name": "",
+                    "bActive": true,
+                    "Transform": {
+                        "Position": [
+                            1.458308219909668,
+                            -4.348106384277344,
+                            3.4302597045898438
+                        ],
+                        "Rotation": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "Scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "bAbsoluteLocation": false,
+                        "bAbsoluteRotation": false,
+                        "bAbsoluteScale": false
+                    },
+                    "Parent": "00000000-0000-0000-0000-000000000000",
+                    "bVisible": true,
+                    "GuidMeshHandle": "146DF576-432A-CBF5-8B39-F18FD8E24722",
+                    "GuidMaterialHandle": "54CBA030-4317-1A31-4D5D-45A47AC6ECF6",
+                    "GuidPipelineHandle": "8684BD69-4EF1-5445-FB98-7A91F552C3B1"
+                },
+                {
+                    "Guid": "647EEA32-4E67-A3C1-D39C-C38C8074D8E6",
+                    "TypeName": "UNameTagComponent",
+                    "Name": "",
+                    "bActive": false,
+                    "Transform": {
+                        "Position": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Rotation": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "Scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "bAbsoluteLocation": false,
+                        "bAbsoluteRotation": false,
+                        "bAbsoluteScale": false
+                    },
+                    "Parent": "00000000-0000-0000-0000-000000000000",
+                    "bVisible": true,
+                    "Text": "DBF9A05A-4DB7-48FD-FE2F-A1B050424014",
+                    "Color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "CharacterHeight": 1.0,
+                    "LetterSpacing": 0.0,
+                    "LineSpacing": 0.0,
+                    "TargetActorGuid": "00000000-0000-0000-0000-000000000000",
+                    "TargetLocalOffset": [
+                        0.0,
+                        1.0,
+                        0.0
+                    ]
+                }
+            ],
+            "GuidRootComponent": "CB63887F-4329-0EAC-BAE5-CAB3F7CE7F84"
+        },
+        {
+            "Guid": "49B8557A-48AE-771F-DC6E-D5ABCBBAEAC8",
+            "TypeName": "AActor",
+            "Name": "AActor_10",
+            "Components": [
+                {
+                    "Guid": "4D8A4250-424F-BF1D-720D-BF88CD3E570E",
+                    "TypeName": "UStaticMeshComponent",
+                    "Name": "",
+                    "bActive": true,
+                    "Transform": {
+                        "Position": [
+                            -2.049340009689331,
+                            4.6748456954956055,
+                            2.8436591625213623
+                        ],
+                        "Rotation": [
+                            -0.33936160802841187,
+                            0.0,
+                            0.0,
+                            0.9406560659408569
+                        ],
+                        "Scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "bAbsoluteLocation": false,
+                        "bAbsoluteRotation": false,
+                        "bAbsoluteScale": false
+                    },
+                    "Parent": "00000000-0000-0000-0000-000000000000",
+                    "bVisible": true,
+                    "GuidMeshHandle": "146DF576-432A-CBF5-8B39-F18FD8E24722",
+                    "GuidMaterialHandle": "5A2A6B1C-4CE5-74DA-1B23-7CA18ADEAB16",
+                    "GuidPipelineHandle": "8684BD69-4EF1-5445-FB98-7A91F552C3B1"
+                },
+                {
+                    "Guid": "452BE94A-4B4F-0FB2-A5C7-30AB571B09BA",
+                    "TypeName": "UNameTagComponent",
+                    "Name": "",
+                    "bActive": true,
+                    "Transform": {
+                        "Position": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Rotation": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "Scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "bAbsoluteLocation": false,
+                        "bAbsoluteRotation": false,
+                        "bAbsoluteScale": false
+                    },
+                    "Parent": "00000000-0000-0000-0000-000000000000",
+                    "bVisible": true,
+                    "Text": "49B8557A-48AE-771F-DC6E-D5ABCBBAEAC8",
+                    "Color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "CharacterHeight": 1.0,
+                    "LetterSpacing": 0.0,
+                    "LineSpacing": 0.0,
+                    "TargetActorGuid": "00000000-0000-0000-0000-000000000000",
+                    "TargetLocalOffset": [
+                        0.0,
+                        1.0,
+                        0.0
+                    ]
+                }
+            ],
+            "GuidRootComponent": "4D8A4250-424F-BF1D-720D-BF88CD3E570E"
+        },
+        {
+            "Guid": "2820E538-472F-ADC2-1DC0-52979DB6360C",
+            "TypeName": "AActor",
+            "Name": "AActor_11",
+            "Components": [
+                {
+                    "Guid": "A119637D-43DE-0984-83E5-3A82D5D7B302",
+                    "TypeName": "UStaticMeshComponent",
+                    "Name": "",
+                    "bActive": true,
+                    "Transform": {
+                        "Position": [
+                            -2.6899850368499756,
+                            -3.786561965942383,
+                            2.003718376159668
+                        ],
+                        "Rotation": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "Scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "bAbsoluteLocation": false,
+                        "bAbsoluteRotation": false,
+                        "bAbsoluteScale": false
+                    },
+                    "Parent": "00000000-0000-0000-0000-000000000000",
+                    "bVisible": true,
+                    "GuidMeshHandle": "146DF576-432A-CBF5-8B39-F18FD8E24722",
+                    "GuidMaterialHandle": "CA6A0F5E-4CFF-D536-0D63-DC9DA085AADA",
+                    "GuidPipelineHandle": "8684BD69-4EF1-5445-FB98-7A91F552C3B1"
+                },
+                {
+                    "Guid": "D773BCFC-4B5A-5001-F712-489D97D49F6A",
+                    "TypeName": "UNameTagComponent",
+                    "Name": "",
+                    "bActive": false,
+                    "Transform": {
+                        "Position": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Rotation": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "Scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "bAbsoluteLocation": false,
+                        "bAbsoluteRotation": false,
+                        "bAbsoluteScale": false
+                    },
+                    "Parent": "00000000-0000-0000-0000-000000000000",
+                    "bVisible": true,
+                    "Text": "2820E538-472F-ADC2-1DC0-52979DB6360C",
+                    "Color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "CharacterHeight": 1.0,
+                    "LetterSpacing": 0.0,
+                    "LineSpacing": 0.0,
+                    "TargetActorGuid": "00000000-0000-0000-0000-000000000000",
+                    "TargetLocalOffset": [
+                        0.0,
+                        1.0,
+                        0.0
+                    ]
+                }
+            ],
+            "GuidRootComponent": "A119637D-43DE-0984-83E5-3A82D5D7B302"
+        },
+        {
+            "Guid": "33363A9D-408E-F9DE-7379-B3ACC231F5AE",
+            "TypeName": "AActor",
+            "Name": "AActor_12",
+            "Components": [
+                {
+                    "Guid": "B273F541-463C-A834-4B29-689817C98804",
+                    "TypeName": "UStaticMeshComponent",
+                    "Name": "",
+                    "bActive": true,
+                    "Transform": {
+                        "Position": [
+                            -4.646332263946533,
+                            4.388158798217773,
+                            3.367311477661133
+                        ],
+                        "Rotation": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "Scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "bAbsoluteLocation": false,
+                        "bAbsoluteRotation": false,
+                        "bAbsoluteScale": false
+                    },
+                    "Parent": "00000000-0000-0000-0000-000000000000",
+                    "bVisible": true,
+                    "GuidMeshHandle": "146DF576-432A-CBF5-8B39-F18FD8E24722",
+                    "GuidMaterialHandle": "DF2AF1D5-430B-AAF2-AEC5-5F9E22C5A9BD",
+                    "GuidPipelineHandle": "8684BD69-4EF1-5445-FB98-7A91F552C3B1"
+                },
+                {
+                    "Guid": "CA0865B8-42F8-C609-C035-4D857CF4E877",
+                    "TypeName": "UNameTagComponent",
+                    "Name": "",
+                    "bActive": false,
+                    "Transform": {
+                        "Position": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Rotation": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "Scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "bAbsoluteLocation": false,
+                        "bAbsoluteRotation": false,
+                        "bAbsoluteScale": false
+                    },
+                    "Parent": "00000000-0000-0000-0000-000000000000",
+                    "bVisible": true,
+                    "Text": "33363A9D-408E-F9DE-7379-B3ACC231F5AE",
+                    "Color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "CharacterHeight": 1.0,
+                    "LetterSpacing": 0.0,
+                    "LineSpacing": 0.0,
+                    "TargetActorGuid": "00000000-0000-0000-0000-000000000000",
+                    "TargetLocalOffset": [
+                        0.0,
+                        1.0,
+                        0.0
+                    ]
+                }
+            ],
+            "GuidRootComponent": "B273F541-463C-A834-4B29-689817C98804"
+        },
+        {
+            "Guid": "311AC393-46D0-1BD0-B487-CA9355E57614",
+            "TypeName": "AActor",
+            "Name": "AActor_13",
+            "Components": [
+                {
+                    "Guid": "3FDA6829-4DF6-3B46-F445-548E86684CB8",
+                    "TypeName": "UStaticMeshComponent",
+                    "Name": "",
+                    "bActive": true,
+                    "Transform": {
+                        "Position": [
+                            -0.9669284820556641,
+                            -4.004607200622559,
+                            6.21097469329834
+                        ],
+                        "Rotation": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "Scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "bAbsoluteLocation": false,
+                        "bAbsoluteRotation": false,
+                        "bAbsoluteScale": false
+                    },
+                    "Parent": "00000000-0000-0000-0000-000000000000",
+                    "bVisible": true,
+                    "GuidMeshHandle": "146DF576-432A-CBF5-8B39-F18FD8E24722",
+                    "GuidMaterialHandle": "8724E5CA-45A6-0C16-57E9-D096CAFE5168",
+                    "GuidPipelineHandle": "8684BD69-4EF1-5445-FB98-7A91F552C3B1"
+                },
+                {
+                    "Guid": "0CCD9783-4A53-7117-4CB7-E6997CC481FE",
+                    "TypeName": "UNameTagComponent",
+                    "Name": "",
+                    "bActive": false,
+                    "Transform": {
+                        "Position": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Rotation": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            1.0
+                        ],
+                        "Scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "bAbsoluteLocation": false,
+                        "bAbsoluteRotation": false,
+                        "bAbsoluteScale": false
+                    },
+                    "Parent": "00000000-0000-0000-0000-000000000000",
+                    "bVisible": true,
+                    "Text": "311AC393-46D0-1BD0-B487-CA9355E57614",
+                    "Color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "CharacterHeight": 1.0,
+                    "LetterSpacing": 0.0,
+                    "LineSpacing": 0.0,
+                    "TargetActorGuid": "00000000-0000-0000-0000-000000000000",
+                    "TargetLocalOffset": [
+                        0.0,
+                        1.0,
+                        0.0
+                    ]
+                }
+            ],
+            "GuidRootComponent": "3FDA6829-4DF6-3B46-F445-548E86684CB8"
         }
     ]
 }

@@ -4,9 +4,11 @@
 #include <windows.h>
 #include <commdlg.h>
 #include <filesystem>
+#include <map>
 
 #include "../../Serialize/FEditorConfigManager.h"
 #include "../../Core/Base/TypeRegistry.h"
+#include "../../Scene/AActor.h"
 #include "../../Scene/Component/UActorComponent.h"
 #include "../../Scene/Component/UStaticMeshComponent.h"
 #include "../../Scene/UWorld.h"
@@ -145,6 +147,119 @@ void FControlPanel::DrawPanel()
 
             if (FileName.size() < sizeof(SceneNameBuffer))
                 std::memcpy(SceneNameBuffer, FileName.data(), FileName.size() + 1);
+        }
+
+        ImGui::EndMenu();
+    }
+
+    // Components: Scene 전체 Component를 타입별로 묶어 Active 상태를 관리한다.
+    if (ImGui::BeginMenu("Components"))
+    {
+        UWorld* World = EditorContext != nullptr ? EditorContext->GetWorld() : nullptr;
+        if (World == nullptr)
+        {
+            ImGui::TextDisabled("World is unavailable.");
+        }
+        else
+        {
+            struct FComponentTypeState
+            {
+                size_t ActiveCount = 0;
+                std::vector<UActorComponent*> Components;
+            };
+
+            std::map<FString, FComponentTypeState> ComponentsByType;
+            for (const std::unique_ptr<AActor>& Actor : World->GetActors())
+            {
+                if (Actor == nullptr)
+                {
+                    continue;
+                }
+
+                for (const std::unique_ptr<UActorComponent>& Component : Actor->GetComponents())
+                {
+                    if (Component != nullptr)
+                    {
+                        FComponentTypeState& TypeState = ComponentsByType[FString(Component->GetTypeInfo()->TypeName.data())];
+                        TypeState.Components.push_back(Component.get());
+                        TypeState.ActiveCount += Component->IsActive() ? 1 : 0;
+                    }
+                }
+            }
+
+            ComponentFilter.Draw("Search types##SceneComponents", 240.0f);
+            const auto IsTypeVisible = [this](const FString& TypeName) {
+                return ComponentFilter.PassFilter(TypeName.c_str());
+            };
+            const auto SetVisibleTypesActive = [&ComponentsByType, &IsTypeVisible](bool bActive) {
+                for (auto& [TypeName, TypeState] : ComponentsByType)
+                {
+                    if (!IsTypeVisible(TypeName))
+                    {
+                        continue;
+                    }
+
+                    for (UActorComponent* Component : TypeState.Components)
+                    {
+                        if (Component != nullptr)
+                        {
+                            Component->SetActive(bActive);
+                        }
+                    }
+                }
+            };
+
+            if (ImGui::Button("Enable filtered"))
+            {
+                SetVisibleTypesActive(true);
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Disable filtered"))
+            {
+                SetVisibleTypesActive(false);
+            }
+            ImGui::Separator();
+
+            bool bHasVisibleType = false;
+            for (const auto& [TypeName, TypeState] : ComponentsByType)
+            {
+                if (!IsTypeVisible(TypeName))
+                {
+                    continue;
+                }
+
+                bHasVisibleType = true;
+                ImGui::PushID(TypeName.c_str());
+                const size_t ComponentCount = TypeState.Components.size();
+                const bool bAllActive = TypeState.ActiveCount == ComponentCount;
+                const bool bMixed = TypeState.ActiveCount != 0 && !bAllActive;
+                bool bTypeActive = bAllActive;
+                ImGui::PushItemFlag(ImGuiItemFlags_MixedValue, bMixed);
+                FString Label = TypeName;
+                Label += " (";
+                Label += std::to_string(TypeState.ActiveCount).c_str();
+                Label += "/";
+                Label += std::to_string(ComponentCount).c_str();
+                Label += ")";
+                const bool bTypeChanged = ImGui::Checkbox(Label.c_str(), &bTypeActive);
+                ImGui::PopItemFlag();
+                if (bTypeChanged)
+                {
+                    for (UActorComponent* Component : TypeState.Components)
+                    {
+                        if (Component != nullptr)
+                        {
+                            Component->SetActive(bTypeActive);
+                        }
+                    }
+                }
+                ImGui::PopID();
+            }
+
+            if (!bHasVisibleType)
+            {
+                ImGui::TextDisabled("No component types match the current filter.");
+            }
         }
 
         ImGui::EndMenu();
